@@ -1,0 +1,31 @@
+{
+  "name": "matrix-link",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --fix --ext .js,.jsx ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/rest": "^1.0.0",
+    "axios": "^0.27.2",
+    "better-sqlite3": "^7.6.2",
+    "canvas": "^2.9.3",
+    "discord.js": "^14.0.3",
+    "dotenv": "^16.0.1",
+    "googleapis": "^39.2.0",
+    "mineflayer": "^4.3.0",
+    "node-cron": "^3.0.1",
+    "node-gyp": "^9.1.0",
+    "undici": "^5.8.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.20.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0"
+  }
+}
