@@ -9,7 +9,6 @@ module.exports = {
     try {
       await command.execute(interaction);
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error(error);
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }

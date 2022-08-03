@@ -1,6 +1,6 @@
 async function nameToUUID(name) {
   try {
-    return (await (await fetch(`https://playerdb.co/api/player/minecraft/${name}`)).json()).data.player.id;
+    return (await (await fetch(`https://playerdb.co/api/player/minecraft/${name}`)).json()).data.player.raw_id;
   } catch (e) {
     return null;
   }
@@ -83,15 +83,9 @@ function getLevel(exp) {
   return 1000;
 }
 
-async function sleep(ms) {
-  // eslint-disable-next-line no-promise-executor-return
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 module.exports = {
   nameToUUID,
   UUIDtoName,
   formatMentions,
   getLevel,
-  sleep,
 };

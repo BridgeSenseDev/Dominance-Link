@@ -1,7 +1,5 @@
 const { ActivityType } = require('discord.js');
-const {
-  getLevel, sleep,
-} = require('./utils');
+const { getLevel } = require('./utils');
 const config = require('../config.json');
 
 async function channelUpdate(client) {
@@ -21,9 +19,8 @@ async function channelUpdate(client) {
     await levelChannel.setName(`🔰│Guild Level: ${getLevel(level)}`);
 
     // Online members
-    await sleep(15000);
     await onlineChannel.setName(`🔰│Online Members: ${onlineMembers}`);
-  }, 360000);
+  }, 7 * 60 * 1000);
 }
 
 module.exports = channelUpdate;

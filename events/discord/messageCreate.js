@@ -8,7 +8,7 @@ module.exports = {
     if (message.channel.id === logChannel.id) {
       await bot.chat(message.content);
     } else if (message.channel.id === guildChat.id) {
-      const user = db.prepare('SELECT uuid, tag FROM guild_members WHERE discord = ?').get(message.author.id);
+      const user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
       if (user === undefined) {
         const embed = new EmbedBuilder()
           .setColor(0xe74d3c)

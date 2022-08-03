@@ -27,13 +27,13 @@ module.exports = {
     } else if (msg.indexOf('cannot say the same message') !== -1) {
       await guildChat.send({
         files: [messageToImage(
-          '§6----------------------------------------§r §cYou cannot say the same message twice!§6----------------------------------------',
+          '§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------',
         )],
       });
     } else if (msg.indexOf('left the guild!') !== -1) {
       await guildChat.send({
         files: [messageToImage(
-          `§b----------------------------------------§r ${rawMsg} §b----------------------------------------`,
+          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
         )],
       });
     } else if (msg.indexOf('joined the guild!') !== -1) {
@@ -41,13 +41,13 @@ module.exports = {
       await bot.chat(`/gc Welcome to Matrix, ${name}! Join our discord using /g discord to learn more about our roles and rules. Our current GEXP requirement is 250k per week.`);
       await guildChat.send({
         files: [messageToImage(
-          `§b----------------------------------------§r ${rawMsg} §b----------------------------------------`,
+          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
         )],
       });
     } else if (msg.indexOf('was promoted') !== -1) {
       await guildChat.send({
         files: [messageToImage(
-          `§6----------------------------------------§r ${rawMsg} §6----------------------------------------`,
+          `§6-------------------------------------------------------------§r ${rawMsg} §6-------------------------------------------------------------`,
         )],
       });
     } else if (msg.indexOf('Guild >') !== -1) {
@@ -60,8 +60,8 @@ module.exports = {
         [name] = msg.replace(/Guild > |:/g, '').split(' ');
         uuid = await nameToUUID(name);
       }
-      db.prepare('INSERT OR IGNORE INTO players (uuid, messages) VALUES (?, ?)').run(uuid, 0);
-      db.prepare('UPDATE players SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages) VALUES (?, ?)').run(uuid, 0);
+      db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
 
       // Dad joke
       msg = msg.split(' ');

@@ -9,7 +9,6 @@ module.exports = {
       config.minecraft.ign = bot._client.session.selectedProfile.name;
       fs.writeFileSync('./config.json', JSON.stringify(config, null, 2));
       await statusChannel.send(`${config.minecraft.ign} has logged in to Hypixel.`);
-      // eslint-disable-next-line no-console
       console.log('[MINECRAFT] Logged in!');
       emittedEvent = true;
 

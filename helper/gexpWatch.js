@@ -24,7 +24,7 @@ function doubleDigits(number) {
 }
 
 async function gexpWatch(client) {
-  cron.schedule('00 50 11 * * 0-6', async () => {
+  cron.schedule('00 50 10 * * 0-6', async () => {
     const rebelWatch = client.channels.cache.get('712590243949183036');
     const cronosWatch = client.channels.cache.get('932283305108340766');
     const dawnsWatch = client.channels.cache.get('932283336745959474');
@@ -37,7 +37,7 @@ async function gexpWatch(client) {
     const guildGexp = [];
     for (let i = 0; i < urls.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      guildGexp.push((await (await fetch(urls[i])).json()).data.guild.exp);
+      guildGexp.push((await (await fetch(urls[i])).json()).guild.exp);
     }
     const date = new Date();
     const today = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
@@ -50,17 +50,17 @@ async function gexpWatch(client) {
     const unix = Math.floor(Date.now() / 1000);
 
     // Matrix
-    let result = db.prepare('SELECT gexp FROM matrix_watch WHERE date=?').get(previous).gexp;
+    let result = db.prepare('SELECT gexp FROM matrixWatch WHERE date=?').get(previous).gexp;
     let gained = guildGexp[0] - result;
-    db.prepare('INSERT INTO matrix_watch (date, gexp, gained) VALUES (?, ?, ?)').run(today, guildGexp[2], gained);
+    db.prepare('INSERT INTO matrixWatch (date, gexp, gained) VALUES (?, ?, ?)').run(today, guildGexp[2], gained);
 
     // Rebel
-    result = db.prepare('SELECT separation FROM rebel_watch WHERE date=?').get(previous).separation;
-    let weekly = db.prepare('SELECT separation FROM rebel_watch WHERE date=?').get(prevWeek).separation;
-    let monthly = db.prepare('SELECT separation FROM rebel_watch WHERE date=?').get(prevMonth).separation;
+    result = db.prepare('SELECT separation FROM rebelWatch WHERE date=?').get(previous).separation;
+    let weekly = db.prepare('SELECT separation FROM rebelWatch WHERE date=?').get(prevWeek).separation;
+    let monthly = db.prepare('SELECT separation FROM rebelWatch WHERE date=?').get(prevMonth).separation;
     let difference = guildGexp[0] - guildGexp[2];
     gained = difference - result;
-    db.prepare('INSERT INTO rebel_watch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)').run(today, guildGexp[2], difference, gained);
+    db.prepare('INSERT INTO rebelWatch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)').run(today, guildGexp[2], difference, gained);
     let embed = new EmbedBuilder()
       .setColor(gexpGained(gained)[1])
       .setTitle(`We are ${difference.toLocaleString()} GEXP ahead of Rebel`)
@@ -73,12 +73,12 @@ async function gexpWatch(client) {
     await rebelWatch.send({ embeds: [embed] });
 
     // Cronos
-    result = db.prepare('SELECT separation FROM cronos_watch WHERE date=?').get(previous).separation;
-    weekly = db.prepare('SELECT separation FROM cronos_watch WHERE date=?').get(prevWeek).separation;
-    monthly = db.prepare('SELECT separation FROM cronos_watch WHERE date=?').get(prevMonth).separation;
+    result = db.prepare('SELECT separation FROM cronosWatch WHERE date=?').get(previous).separation;
+    weekly = db.prepare('SELECT separation FROM cronosWatch WHERE date=?').get(prevWeek).separation;
+    monthly = db.prepare('SELECT separation FROM cronosWatch WHERE date=?').get(prevMonth).separation;
     difference = guildGexp[0] - guildGexp[1];
     gained = difference - result;
-    db.prepare('INSERT INTO cronos_watch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)').run(today, guildGexp[1], difference, gained);
+    db.prepare('INSERT INTO cronosWatch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)').run(today, guildGexp[1], difference, gained);
     embed = new EmbedBuilder()
       .setColor(gexpGained(gained)[1])
       .setTitle(`We are ${difference.toLocaleString()} GEXP ahead of Cronos`)
@@ -91,12 +91,12 @@ async function gexpWatch(client) {
     await cronosWatch.send({ embeds: [embed] });
 
     // Dawns
-    result = db.prepare('SELECT separation FROM dawns_watch WHERE date=?').get(previous).separation;
-    weekly = db.prepare('SELECT separation FROM dawns_watch WHERE date=?').get(prevWeek).separation;
-    monthly = db.prepare('SELECT separation FROM dawns_watch WHERE date=?').get(prevMonth).separation;
+    result = db.prepare('SELECT separation FROM dawnsWatch WHERE date=?').get(previous).separation;
+    weekly = db.prepare('SELECT separation FROM dawnsWatch WHERE date=?').get(prevWeek).separation;
+    monthly = db.prepare('SELECT separation FROM dawnsWatch WHERE date=?').get(prevMonth).separation;
     difference = guildGexp[0] - guildGexp[3];
     gained = difference - result;
-    db.prepare('INSERT INTO dawns_watch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)').run(today, guildGexp[1], difference, gained);
+    db.prepare('INSERT INTO dawnsWatch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)').run(today, guildGexp[1], difference, gained);
     embed = new EmbedBuilder()
       .setColor(gexpGained(gained)[1])
       .setTitle(`We are ${difference.toLocaleString()} GEXP ahead of The Dawns Awakening`)

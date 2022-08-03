@@ -1,4 +1,3 @@
-const axios = require('axios');
 const { EmbedBuilder } = require('discord.js');
 const fs = require('fs');
 const mineflayer = require('mineflayer');
@@ -30,9 +29,8 @@ function startBot(client) {
 
 async function autoRejoin() {
   setInterval(async () => {
-    const status = (await axios.get(`https://api.hypixel.net/status?key=${config.keys.hypixelApiKey}&uuid=5760aae2-d977-467c-bf62-048469d5f507`)).data.session.online;
+    const status = (await (await fetch(`https://api.hypixel.net/status?key=${config.keys.hypixelApiKey}&uuid=5760aae2-d977-467c-bf62-048469d5f507`)).json()).session.online;
     if (!status) {
-      // eslint-disable-next-line no-console
       console.log('Restarting bot');
       const embed = new EmbedBuilder()
         .setColor(0xe74d3c)
@@ -45,7 +43,6 @@ async function autoRejoin() {
       try {
         bot.quit();
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.log(err);
       }
       startBot();

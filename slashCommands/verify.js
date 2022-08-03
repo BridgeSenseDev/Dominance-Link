@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const axios = require('axios');
 const config = require('../config.json');
 
 module.exports = {
@@ -16,7 +15,7 @@ module.exports = {
     let disc;
     const ign = interaction.options.getString('ign');
     try {
-      uuid = (await axios.get(`https://api.mojang.com/users/profiles/minecraft/${ign}`)).data.id;
+      uuid = (await (await fetch(`https://api.mojang.com/users/profiles/minecraft/${ign}`)).json()).id;
       uuid = `${uuid.slice(0, 8)}-${uuid.slice(8, 12)}-${uuid.slice(12, 16)}-${uuid.slice(16, 20)}-${uuid.slice(20)}`;
     } catch (e) {
       const embed = new EmbedBuilder()
@@ -26,7 +25,7 @@ module.exports = {
       await interaction.editReply({ embeds: [embed] });
       return;
     }
-    const { player } = (await axios.get(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).data;
+    const { player } = (await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json());
     const name = player.displayname;
     try {
       disc = player.socialMedia.links.DISCORD;
@@ -42,7 +41,7 @@ module.exports = {
     if (disc === interaction.user.tag) {
       await interaction.member.roles.remove(interaction.guild.roles.cache.get('907911526118223912'));
       await interaction.member.roles.add(interaction.guild.roles.cache.get('445669382539051008'));
-      const { guild } = (await axios.get(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).data;
+      const { guild } = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json());
       if (guild === null) {
         const embed = new EmbedBuilder()
           .setColor(0x2ecc70)

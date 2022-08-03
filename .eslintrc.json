@@ -15,7 +15,8 @@
         "global-require": "off",
         "import/no-dynamic-require": "off",
         "no-restricted-syntax": "off",
-        "no-shadow": "off"
+        "no-shadow": "off",
+        "no-console": "off"
     },
     "globals": {
         "bot": true,

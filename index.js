@@ -8,6 +8,7 @@ const config = require('./config.json');
 const gexpWatch = require('./helper/gexpWatch');
 const channelUpdate = require('./helper/channelUpdate');
 const { autoRejoin, startBot } = require('./helper/autoRejoin');
+const { database, gsrun, sheet } = require('./helper/database');
 
 const client = new Client({
   intents: [
@@ -49,10 +50,8 @@ const rest = new REST({ version: '10' }).setToken(config.keys.discordBotToken);
       Routes.applicationGuildCommands(clientId, guildId),
       { body: commands },
     );
-    // eslint-disable-next-line no-console
     console.log('Successfully reloaded application (/) commands.');
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
   }
 })();
@@ -65,8 +64,7 @@ fs.readdirSync('./events/discord')
     client.on(name, event.execute.bind(null, client));
   });
 
-client.on('ready', () => {
-  // eslint-disable-next-line no-console
+client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   global.statusChannel = client.channels.cache.get('1001465850555027477');
   global.logChannel = client.channels.cache.get('987636182135480350');
@@ -78,5 +76,7 @@ client.on('ready', () => {
   gexpWatch(client);
   channelUpdate(client);
   autoRejoin();
+  database();
+  gsrun(sheet, client);
   startBot(client);
 });

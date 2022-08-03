@@ -3,7 +3,7 @@ const db = require('better-sqlite3')('matrix.db');
 const config = require('../config.json');
 
 const ranks = {
-  GUILDMASTER: '[GM]', Manager: '[MNG]', Officer: '[OFC]', Active: '[Active]', Crew: '[Crew]', 'Trial Member': '[Trial]',
+  GUILDMASTER: '[GM]', Owner: '[Owner]', Manager: '[MNG]', Officer: '[OFC]', Active: '[Active]', Crew: '[Crew]', 'Trial Member': '[Trial]',
 };
 const roles = {
   'Trial Member': '753172820133150772', Crew: '242360892346466312', Active: '950083054326677514', Officer: '766347970094170221', Manager: '848906700291571742',
@@ -46,7 +46,6 @@ module.exports = {
       await interaction.editReply({ embeds: [embed] });
       return;
     }
-
     if (disc === interaction.user.tag) {
       let rank;
       let added = 'None';
@@ -55,14 +54,19 @@ module.exports = {
         for (let i = 0; i < guild.members.length; i += 1) {
           if (guild.members[i].uuid === uuid) {
             rank = guild.members[i].rank;
-            db.prepare('INSERT OR IGNORE INTO guild_members (uuid, discord, tag) VALUES (?, ?, ?)').run(uuid, interaction.user.id, ranks[rank]);
+            db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, tag) VALUES (?, ?, ?)').run(uuid, 0, ranks[rank]);
+            db.prepare('UPDATE guildMembers SET discord = (?) WHERE uuid = (?)').run(interaction.user.id, uuid);
             break;
           }
         }
         if (!interaction.member.roles.cache.has(roles[rank])) {
-          await interaction.member.roles.add(interaction.guild.roles.cache.get(roles[rank]));
-          await interaction.member.setNickname(name);
-          added = `<@${roles[rank]}>`;
+          try {
+            await interaction.member.roles.add(interaction.guild.roles.cache.get(roles[rank]));
+            await interaction.member.setNickname(name);
+            added = `<@${roles[rank]}>`;
+          } catch (e) {
+            console.error(e);
+          }
         }
         const embed = new EmbedBuilder()
           .setColor(0x2ecc70)
