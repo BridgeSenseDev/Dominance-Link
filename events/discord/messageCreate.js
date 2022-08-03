@@ -13,7 +13,7 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setColor(0xe74d3c)
           .setTitle('Error')
-          .setDescription('Please link your discord account to your minecraft account using `/link`');
+          .setDescription('<a:across:986170696512204820> You must link your discord account to your minecraft account using `/link` before talking here');
         message.reply({ embeds: [embed] });
         return;
       }
@@ -25,6 +25,7 @@ module.exports = {
         return;
       }
       await bot.chat(`/gc ${await UUIDtoName(user.uuid)} ${user.tag}: ${message.content}`);
+      await message.delete();
     }
   },
 };

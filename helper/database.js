@@ -49,7 +49,7 @@ async function gsrun(sheet, client) {
     const gsapi = google.sheets({ version: 'v4', auth: sheet });
     const data = db.prepare('SELECT * FROM guildMembers').all();
     const array = [];
-    await gsapi.spreadsheets.values.clear({spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:I126'})
+    await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:I126' });
     for (let i = 0; i < data.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
       data[i].name = await UUIDtoName(data[i].uuid);
