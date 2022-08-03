@@ -68,7 +68,7 @@ async function gsrun(sheet, client) {
       resource: { values: array },
     };
     await gsapi.spreadsheets.values.update(options);
-  }, 10 * 10 * 1000);
+  }, 10 * 60 * 1000);
 }
 
 module.exports = {
