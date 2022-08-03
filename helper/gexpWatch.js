@@ -24,7 +24,7 @@ function doubleDigits(number) {
 }
 
 async function gexpWatch(client) {
-  cron.schedule('00 50 10 * * 0-6', async () => {
+  cron.schedule('00 50 11 * * 0-6', async () => {
     const rebelWatch = client.channels.cache.get('712590243949183036');
     const cronosWatch = client.channels.cache.get('932283305108340766');
     const dawnsWatch = client.channels.cache.get('932283336745959474');
