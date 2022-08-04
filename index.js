@@ -3,7 +3,6 @@ const { REST } = require('@discordjs/rest');
 const {
   Client, GatewayIntentBits, Collection, Routes,
 } = require('discord.js');
-const { Agent } = require('undici');
 const config = require('./config.json');
 const gexpWatch = require('./helper/gexpWatch');
 const channelUpdate = require('./helper/channelUpdate');
@@ -17,16 +16,8 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
   ],
+  rest: { rejectOnRateLimit: (rateLimitData) => rateLimitData },
 });
-
-const agent = new Agent({
-  connect: {
-    timeout: 10_000,
-  },
-});
-
-client.rest.setAgent(agent);
-client.login(config.keys.discordBotToken);
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./slashCommands/');
@@ -80,3 +71,5 @@ client.on('ready', async () => {
   gsrun(sheet, client);
   startBot(client);
 });
+
+client.login(config.keys.discordBotToken);
