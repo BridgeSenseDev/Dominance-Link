@@ -83,9 +83,14 @@ function getLevel(exp) {
   return 1000;
 }
 
+async function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 module.exports = {
   nameToUUID,
   UUIDtoName,
   formatMentions,
   getLevel,
+  sleep,
 };

@@ -12,6 +12,7 @@ const minecraftLoginOptions = {
   checkTimeoutInterval: 60000,
   viewDistance: 'tiny',
   chatLengthLimit: 256,
+  defaultChatPatterns: false,
 };
 
 function startBot(client) {
@@ -47,7 +48,7 @@ async function autoRejoin() {
       }
       startBot();
     }
-  }, 60000);
+  }, 60 * 1000);
 }
 
 module.exports = {

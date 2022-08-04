@@ -1,6 +1,7 @@
 const { ActivityType } = require('discord.js');
 const { getLevel } = require('./utils');
 const config = require('../config.json');
+const { sleep } = require('./utils');
 
 async function channelUpdate(client) {
   setInterval(async () => {
@@ -14,11 +15,13 @@ async function channelUpdate(client) {
 
     // Total members
     await membersChannel.setName(`🧑│All members: ${membersChannel.guild.memberCount}`);
+
     // Guild level
     const level = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.exp;
     await levelChannel.setName(`🔰│Guild Level: ${getLevel(level)}`);
 
     // Online members
+    await sleep(5000);
     await onlineChannel.setName(`🔰│Online Members: ${onlineMembers}`);
   }, 7 * 60 * 1000);
 }
