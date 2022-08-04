@@ -21,7 +21,7 @@ async function channelUpdate(client) {
     await levelChannel.setName(`🔰│Guild Level: ${getLevel(level)}`);
 
     // Online members
-    await sleep(5000);
+    await sleep(10000);
     await onlineChannel.setName(`🔰│Online Members: ${onlineMembers}`);
   }, 7 * 60 * 1000);
 }
