@@ -58,6 +58,7 @@ fs.readdirSync('./events/discord')
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   global.statusChannel = client.channels.cache.get('1001465850555027477');
+  global.logChannel = client.channels.cache.get('987636182135480350');
   global.guildChat = client.channels.cache.get('961635398226956288');
   global.onlineChannel = client.channels.cache.get('995685430420852766');
   global.membersChannel = client.channels.cache.get('995685323818410004');
