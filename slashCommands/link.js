@@ -24,7 +24,7 @@ module.exports = {
     let name;
     const ign = interaction.options.getString('ign');
     try {
-      uuid = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player.id;
+      uuid = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player.raw_id;
     } catch (e) {
       const embed = new EmbedBuilder()
         .setColor(0xe74d3c)
