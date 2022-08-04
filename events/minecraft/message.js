@@ -6,7 +6,7 @@ const {
 const messageToImage = require('../../helper/messageToImage');
 const config = require('../../config.json');
 
-const webhook = new WebhookClient({ url: 'https://discord.com/api/webhooks/1004702051424538704/pCsSZLHfUNZSo8Xj0V_-iSOdWPleFei-FZimGjgm5lgAqGIXV47_rNWvq3873wiE_5M1' });
+const webhook = new WebhookClient({ url: config.keys.webhookUrl });
 
 module.exports = {
   async execute(client, message, messagePosition) {
@@ -23,7 +23,7 @@ module.exports = {
       }
     }
     const rawMsg = message.toMotd();
-    await webhook.send({ content: msg, username: 'Matrix Link', avatarURL: config.keys.webhookUrl });
+    await webhook.send({ content: msg, username: 'Matrix Link', avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png' });
 
     // Guild Chat
     if (msg.indexOf('Online Members:') !== -1) {
