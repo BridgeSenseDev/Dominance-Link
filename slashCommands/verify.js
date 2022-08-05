@@ -40,14 +40,14 @@ module.exports = {
     }
     if (disc === interaction.user.tag) {
       await interaction.member.roles.remove(interaction.guild.roles.cache.get('907911526118223912'));
-      await interaction.member.roles.add(interaction.guild.roles.cache.get('445669382539051008'));
+      await interaction.member.roles.add(interaction.guild.roles.cache.get('753172820133150772'));
       const { guild } = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json());
       if (guild === null) {
         const embed = new EmbedBuilder()
           .setColor(0x2ecc70)
           .setTitle('Successful')
           .setDescription(`<a:atick:986173414723162113> Verification successful, **${name}** is not in Matrix\n<:plus:925735955837636648>\
-                  Added: <@&445669382539051008>\n<:minus:926070848593494047> Removed: <@&907911526118223912>`)
+                  Added: <@&753172820133150772>\n<:minus:926070848593494047> Removed: <@&907911526118223912>`)
           .setThumbnail(`https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`);
         await interaction.editReply({ embeds: [embed] });
       } else if (guild.name_lower === 'matrix') {
@@ -56,7 +56,7 @@ module.exports = {
           .setColor(0x2ecc70)
           .setTitle('Successful')
           .setDescription(`<a:atick:986173414723162113> Verification successful, **${name}** is in Matrix\n<:plus:925735955837636648> Added: \
-                    <@&445669382539051008>, <@&753172820133150772>\n<:minus:926070848593494047> Removed: <@&907911526118223912>`)
+                    <@&753172820133150772>, <@&753172820133150772>\n<:minus:926070848593494047> Removed: <@&907911526118223912>`)
           .setThumbnail(`https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`);
         await interaction.editReply({ embeds: [embed] });
       } else {
@@ -64,7 +64,7 @@ module.exports = {
           .setColor(0x2ecc70)
           .setTitle('Successful')
           .setDescription(`<a:atick:986173414723162113> Verification successful, **${name}** is not in Matrix\n<:plus:925735955837636648>\
-                    Added: <@&445669382539051008>\n<:minus:926070848593494047> Removed: <@&907911526118223912>`)
+                    Added: <@&753172820133150772>\n<:minus:926070848593494047> Removed: <@&907911526118223912>`)
           .setThumbnail(`https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`);
         await interaction.editReply({ embeds: [embed] });
       }

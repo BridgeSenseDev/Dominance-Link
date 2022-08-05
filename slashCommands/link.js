@@ -6,7 +6,7 @@ const ranks = {
   GUILDMASTER: '[GM]', Owner: '[Owner]', Manager: '[MNG]', Officer: '[OFC]', Active: '[Active]', Crew: '[Crew]', 'Trial Member': '[Trial]',
 };
 const roles = {
-  'Trial Member': '753172820133150772', Crew: '242360892346466312', Active: '950083054326677514', Officer: '766347970094170221', Manager: '848906700291571742',
+  Crew: '753172820133150772', Active: '950083054326677514', Officer: '766347970094170221', Manager: '848906700291571742',
 };
 
 module.exports = {
