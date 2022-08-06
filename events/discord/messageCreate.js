@@ -13,7 +13,7 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setColor(0xe74d3c)
           .setTitle('Error')
-          .setDescription('<a:across:986170696512204820> You must link your discord account to your minecraft account using `/link` before talking here');
+          .setDescription(`<a:across:986170696512204820> <@${message.author.id}> You must link your discord account to your minecraft account using \`/link\` before talking here`);
         message.reply({ embeds: [embed] });
         return;
       }

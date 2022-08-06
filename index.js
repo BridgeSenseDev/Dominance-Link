@@ -31,6 +31,14 @@ for (const file of commandFiles) {
   }
 }
 
+fs.readdirSync('./events/discord')
+  .filter((file) => file.endsWith('.js'))
+  .forEach((file) => {
+    const event = require(`./events/discord/${file}`);
+    const name = file.split('.')[0];
+    client.on(name, event.execute.bind(null, client));
+  });
+
 const clientId = '960769680765771806';
 const guildId = '242357942664429568';
 const rest = new REST({ version: '10' }).setToken(config.keys.discordBotToken);
@@ -46,14 +54,6 @@ const rest = new REST({ version: '10' }).setToken(config.keys.discordBotToken);
     console.error(error);
   }
 })();
-
-fs.readdirSync('./events/discord')
-  .filter((file) => file.endsWith('.js'))
-  .forEach((file) => {
-    const event = require(`./events/discord/${file}`);
-    const name = file.split('.')[0];
-    client.on(name, event.execute.bind(null, client));
-  });
 
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
