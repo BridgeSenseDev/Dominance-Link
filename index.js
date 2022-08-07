@@ -8,6 +8,8 @@ const gexpWatch = require('./helper/gexpWatch');
 const channelUpdate = require('./helper/channelUpdate');
 const { autoRejoin, startBot } = require('./helper/autoRejoin');
 const { database, gsrun, sheet } = require('./helper/database');
+// eslint-disable-next-line no-unused-vars
+const { notificationRoles } = require('./helper/buttons');
 
 const client = new Client({
   intents: [
@@ -70,6 +72,7 @@ client.on('ready', async () => {
   database();
   gsrun(sheet, client);
   startBot(client);
+  // notificationRoles(client, '583661446202785815');
 });
 
 client.login(config.keys.discordBotToken);
