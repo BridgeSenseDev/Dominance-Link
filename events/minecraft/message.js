@@ -47,7 +47,7 @@ module.exports = {
       });
     } else if (msg.indexOf('joined the guild!') !== -1) {
       const name = msg.substring(msg.search(/ (.*?) joined/g) + 1, msg.lastIndexOf(' joined'));
-      await bot.chat(`/gc Welcome to Matrix, ${name}! Join our discord using /g discord to learn more about our roles and rules. Our current GEXP requirement is 250k per week.`);
+      await bot.chat(`/gc Welcome to Matrix, ${name}! Join our discord using /g discord to learn more about our roles and rules. Our current GEXP requirement is 150k per week.`);
       await gcWebhook.send({
         username: 'Matrix',
         avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png',

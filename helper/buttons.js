@@ -45,15 +45,126 @@ async function notificationRoles(client, channelId) {
         .setLabel('Youtube')
         .setStyle(ButtonStyle.Primary)
         .setEmoji('a:ayoutube:999685789917122650'),
+      new ButtonBuilder()
+        .setCustomId('challenges')
+        .setLabel('Challenges')
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji(':challenges:1006204018999164958'),
+      new ButtonBuilder()
+        .setCustomId('gexpparty')
+        .setLabel('GEXP Party')
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji(':party:1006203392886050886'),
+      new ButtonBuilder()
+        .setCustomId('lbw')
+        .setLabel('LBW')
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji(':bedwars:1006049483383115867'),
     );
 
   const embed = new EmbedBuilder()
     .setColor(0x2f3136)
     .setAuthor({ name: 'Notification Roles', iconURL: 'https://cdn.discordapp.com/attachments/986281342457237624/1005133447712473108/notification-bell_1.png' })
-    .setDescription('Use the buttons below to select notification pings');
+    .setDescription('Use the buttons below to select notification pings\nRed buttons are for guild members');
   await channel.send({ components: [row, row2], embeds: [embed] });
+}
+
+async function gamemodeRoles(client, channelId) {
+  const channel = client.channels.cache.get(channelId);
+  const row = new ActionRowBuilder()
+    .addComponents(
+      new ButtonBuilder()
+        .setCustomId('arcade')
+        .setLabel('Arcade')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji(':arcade:1006049485656424599'),
+      new ButtonBuilder()
+        .setCustomId('bedwars')
+        .setLabel('Bedwars')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(':bedwars:1006049483383115867'),
+      new ButtonBuilder()
+        .setCustomId('blitz')
+        .setLabel('Blitz')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji(':blitzsg:1006049481860587610'),
+      new ButtonBuilder()
+        .setCustomId('buildbattle')
+        .setLabel('Build Battle')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(':buildbattle:1006049480061222922'),
+      new ButtonBuilder()
+        .setCustomId('classicgames')
+        .setLabel('Classic Games')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji(':classicgames:1006049478001819839'),
+    );
+
+  const row2 = new ActionRowBuilder()
+    .addComponents(
+      new ButtonBuilder()
+        .setCustomId('duels')
+        .setLabel('Duels')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(':duels:1006051301534212147'),
+      new ButtonBuilder()
+        .setCustomId('housing')
+        .setLabel('Housing')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji(':housing:1006051299520950314'),
+      new ButtonBuilder()
+        .setCustomId('murdermystery')
+        .setLabel('Murder Mystery')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(':murdermystery:1006051297549619201'),
+      new ButtonBuilder()
+        .setCustomId('pit')
+        .setLabel('Pit')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji(':pit:1006051293741187183'),
+      new ButtonBuilder()
+        .setCustomId('skyblock')
+        .setLabel('Skyblock')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(':skyblock:1006051295695745065'),
+    );
+
+  const row3 = new ActionRowBuilder()
+    .addComponents(
+      new ButtonBuilder()
+        .setCustomId('skywars')
+        .setLabel('Skywars')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji(':skywars:1006052635062829066'),
+      new ButtonBuilder()
+        .setCustomId('smashheroes')
+        .setLabel('Smash Heroes')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(':smashheroes:1006052633133457519'),
+      new ButtonBuilder()
+        .setCustomId('tnt')
+        .setLabel('Tnt')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji(':tnt:1006052631258599564'),
+      new ButtonBuilder()
+        .setCustomId('uhc')
+        .setLabel('Uhc')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(':uhc:1006052628893020221'),
+      new ButtonBuilder()
+        .setCustomId('megawalls')
+        .setLabel('Mega Walls')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji(':megawalls:1006054180093448273'),
+    );
+  const embed = new EmbedBuilder()
+    .setColor(0x2f3136)
+    .setAuthor({ name: 'Gamemode Roles', iconURL: 'https://cdn.discordapp.com/attachments/986281342457237624/1006054852381651034/DdNypQdN_400x400.png' })
+    .setDescription('Use the buttons below to select what gamemodes you like to play\nThese roles can be mentioned!');
+  await channel.send({ components: [row, row2, row3], embeds: [embed] });
 }
 
 module.exports = {
   notificationRoles,
+  gamemodeRoles,
 };
