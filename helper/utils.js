@@ -88,10 +88,31 @@ async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+function formatDate(dateObj) {
+  let suffix;
+  const date = dateObj.getDate();
+  if (date > 3 && date < 21) suffix = 'th';
+  switch (date % 10) {
+    case 1:
+      suffix = 'st';
+      break;
+    case 2:
+      suffix = 'nd';
+      break;
+    case 3:
+      suffix = 'rd';
+      break;
+    default: suffix = 'th';
+  }
+  const month = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][dateObj.getMonth()];
+  return `${date + suffix} ${month} ${dateObj.getFullYear()}`;
+}
+
 module.exports = {
   nameToUUID,
   UUIDtoName,
   formatMentions,
   getLevel,
   sleep,
+  formatDate,
 };
