@@ -15,7 +15,10 @@ module.exports = {
       // LIMBO CHECK
       setTimeout(async () => {
         await bot.chat('/locraw');
-      }, 5000);
+      }, 3000);
+      setTimeout(async () => {
+        await bot.chat('/g online');
+      }, 10000);
       setInterval(async () => {
         await bot.chat('/locraw');
       }, 1000 * 60);

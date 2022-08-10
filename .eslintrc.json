@@ -28,6 +28,8 @@
         "guildChat": true,
         "onlineChannel": true,
         "membersChannel": true,
-        "levelChannel": true
+        "levelChannel": true,
+        "messageCache": true,
+        "guildOnline": true
     }
 }

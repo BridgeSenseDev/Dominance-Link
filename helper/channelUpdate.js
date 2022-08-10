@@ -23,7 +23,7 @@ async function channelUpdate(client) {
     // Online members
     await sleep(10000);
     await onlineChannel.setName(`🔰│Online Members: ${onlineMembers}`);
-  }, 7 * 60 * 1000);
+  }, 6 * 60 * 1000);
 }
 
 module.exports = channelUpdate;

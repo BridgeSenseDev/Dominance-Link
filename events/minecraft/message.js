@@ -8,6 +8,8 @@ const config = require('../../config.json');
 
 const logWebhook = new WebhookClient({ url: config.keys.logWebhookUrl });
 const gcWebhook = new WebhookClient({ url: config.keys.gcWebhookUrl });
+global.messageCache = [];
+global.guildOnline = [];
 
 module.exports = {
   async execute(client, message, messagePosition) {
@@ -25,9 +27,21 @@ module.exports = {
     }
     const rawMsg = message.toMotd();
     await logWebhook.send({ content: msg, username: 'Matrix Link', avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png' });
+    if (messageCache.length >= 20) messageCache.shift();
+    messageCache.push(msg);
 
     // Guild Chat
-    if (msg.indexOf('Online Members:') !== -1) {
+    if (msg.indexOf('Offline Members:') !== -1) {
+      let includes = 0;
+      for (let i = messageCache.length - 1; i >= 0; i -= 1) {
+        if (messageCache[i].includes('Guild Name:') || messageCache[i].includes('Total Members:') || messageCache[i].includes('Online Members:') || messageCache[i].includes('Offline Members:')
+        ) includes += 1;
+        if (includes === 4) {
+          guildOnline = messageCache.splice(i);
+          break;
+        }
+      }
+    } else if (msg.indexOf('Online Members:') !== -1) {
       [, onlineMembers] = msg.split('Online Members: ');
     } else if (msg.indexOf('cannot say the same message') !== -1) {
       await gcWebhook.send({
@@ -37,7 +51,7 @@ module.exports = {
           '§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------',
         )],
       });
-    } else if (msg.indexOf('left the guild!') !== -1) {
+    } else if (msg.indexOf('left the guild!') !== -1 || msg.indexOf('was promoted') !== -1 || msg.indexOf('was kicked') !== -1) {
       await gcWebhook.send({
         username: 'Matrix',
         avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png',
@@ -53,14 +67,6 @@ module.exports = {
         avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png',
         files: [messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-        )],
-      });
-    } else if (msg.indexOf('was promoted') !== -1) {
-      await gcWebhook.send({
-        username: 'Matrix',
-        avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png',
-        files: [messageToImage(
-          `§6-------------------------------------------------------------§r ${rawMsg} §6-------------------------------------------------------------`,
         )],
       });
     } else if (msg.indexOf('Guild >') !== -1) {
