@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const config = require('../config.json');
 
 function formatMembers(msg) {
   let online = '';
@@ -44,7 +45,7 @@ module.exports = {
       .setColor(0x2f3136)
       .setTitle('Online Members')
       .setDescription(`${online}\n\nTotal Members: \`${totalMembers}\` / \`125\`\nOnline Members: \`${onlineMembers}\`\nOffline Members: \`${offlineMembers}\``)
-      .setThumbnail('https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png');
+      .setThumbnail(config.guild.icon);
     await interaction.editReply({ embeds: [embed] });
   },
 };

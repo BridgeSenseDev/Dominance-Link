@@ -50,7 +50,13 @@ module.exports = {
       let rank;
       let added = 'None';
       const { guild } = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json());
-      if (guild.name_lower === 'matrix') {
+      if (guild === null) {
+        const embed = new EmbedBuilder()
+          .setColor(0xe74d3c)
+          .setTitle('Error')
+          .setDescription(`<a:across:986170696512204820> ${name} is not in Matrix`);
+        await interaction.editReply({ embeds: [embed] });
+      } else if (guild.name_lower === 'matrix') {
         for (let i = 0; i < guild.members.length; i += 1) {
           if (guild.members[i].uuid === uuid) {
             rank = guild.members[i].rank;

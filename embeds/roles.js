@@ -17,7 +17,7 @@ client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   const embed = new EmbedBuilder()
     .setColor(0x206694)
-    .setAuthor({ name: 'Roles Info', iconURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png' })
+    .setAuthor({ name: 'Roles Info', iconURL: config.guild.icon })
     .addFields(
       {
         name: '<a:economy:1006182871314219169> Economy Roles',

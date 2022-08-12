@@ -26,7 +26,7 @@ module.exports = {
       }
     }
     const rawMsg = message.toMotd();
-    await logWebhook.send({ content: msg, username: 'Matrix Link', avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png' });
+    await logWebhook.send({ content: msg, username: 'Matrix Link', avatarURL: config.guild.icon });
     if (messageCache.length >= 20) messageCache.shift();
     messageCache.push(msg);
 
@@ -46,7 +46,7 @@ module.exports = {
     } else if (msg.indexOf('cannot say the same message') !== -1) {
       await gcWebhook.send({
         username: 'Matrix',
-        avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png',
+        avatarURL: config.guild.icon,
         files: [messageToImage(
           '§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------',
         )],
@@ -54,7 +54,7 @@ module.exports = {
     } else if (msg.indexOf('left the guild!') !== -1 || msg.indexOf('was promoted') !== -1 || msg.indexOf('was kicked') !== -1) {
       await gcWebhook.send({
         username: 'Matrix',
-        avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png',
+        avatarURL: config.guild.icon,
         files: [messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
         )],
@@ -64,7 +64,7 @@ module.exports = {
       await bot.chat(`/gc Welcome to Matrix, ${name}! Join our discord using /g discord to learn more about our roles and rules. Our current GEXP requirement is 150k per week.`);
       await gcWebhook.send({
         username: 'Matrix',
-        avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png',
+        avatarURL: config.guild.icon,
         files: [messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
         )],
@@ -72,7 +72,7 @@ module.exports = {
     } else if (msg.indexOf('Guild >') !== -1) {
       await gcWebhook.send({
         username: 'Matrix',
-        avatarURL: 'https://cdn.discordapp.com/attachments/986281342457237624/986282015278125157/886245b66dd1d5f5c2469737e58a24ca.png',
+        avatarURL: config.guild.icon,
         files: [messageToImage(rawMsg)],
       });
       let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
