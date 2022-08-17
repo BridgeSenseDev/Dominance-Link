@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { removeSectionSymbols } = require('../helper/utils')
+const { removeSectionSymbols } = require('../helper/utils');
 const config = require('../config.json');
 
 const validSkills = ['farming', 'mining', 'combat', 'foraging', 'fishing', 'enchanting', 'alchemy', 'taming'];
@@ -36,14 +36,13 @@ module.exports = {
 
   async execute(interaction) {
     await interaction.deferReply();
-    let uuid; let player; let name; let skyblockData; let guildData; let guild;
+    let uuid; let player; let name; let guildData; let guild;
     let bedwars; let duels; let skywars; let skyblock;
     const ign = interaction.options.getString('ign');
     try {
       uuid = (await (await fetch(`https://api.mojang.com/users/profiles/minecraft/${ign}`)).json()).id;
       ({ player } = await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json());
       name = player.displayname;
-      skyblockData = (await (await fetch(`http://192.168.1.119:3000/v1/profiles/${name}?key=matrixlink`)).json());
       guildData = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json()).guild;
     } catch (e) {
       const embed = new EmbedBuilder()
@@ -55,6 +54,7 @@ module.exports = {
     }
 
     // Get player data
+    const [skyblockData] = (await (await fetch(`http://192.168.1.119:3000/v1/profiles/${name}?key=matrixlink`)).json()).data;
     try {
       bedwars = [player.achievements.bedwars_level, Math.round((
         player.stats.Bedwars.final_kills_bedwars / player.stats.Bedwars.final_deaths_bedwars)
@@ -77,8 +77,8 @@ module.exports = {
     }
 
     try {
-      skywars = [removeSectionSymbols(player.stats.SkyWars.levelFormatted), Math.round(
-        (player.stats.SkyWars.kills / player.stats.SkyWars.deaths) * 100) / 100];
+      skywars = [removeSectionSymbols(player.stats.SkyWars.levelFormatted),
+        Math.round((player.stats.SkyWars.kills / player.stats.SkyWars.deaths) * 100) / 100];
     } catch (e) {
       skywars = ['No SkyWars Data', 'No SkyWars Data'];
     }
@@ -103,7 +103,7 @@ module.exports = {
     let meetingReqs = false;
     let author; let color;
 
-    if (bedwars[0] > 200 && bedwars[1] > 3 && bedwars[0] !== 'No Bedwars Data') {
+    if (bedwars[0] >= 200 && bedwars[1] >= 3 && bedwars[0] !== 'No Bedwars Data') {
       meetingReqs = true;
       requirements += ':green_circle: You meet our **Bedwars Requirements!**\n';
     } else {
@@ -112,19 +112,19 @@ module.exports = {
     if (bedwars[0] === 'No Bedwars Data') {
       requirements += '<a:across:986170696512204820> **Bedwars Stars:** `No Bedwars Data`\n<a:across:986170696512204820> **Bedwars FKDR:** `No Bedwars Data`\n\n';
     } else {
-      if (bedwars[0] > 200) {
+      if (bedwars[0] >= 200) {
         requirements += `<a:atick:986173414723162113> **Bedwars Stars:** \`${bedwars[0]}\`\n`;
       } else {
         requirements += `<a:across:986170696512204820> **Bedwars Stars:** \`${bedwars[0]} / 300\`\n`;
       }
-      if (bedwars[1] > 3) {
+      if (bedwars[1] >= 3) {
         requirements += `<a:atick:986173414723162113> **Bedwars FKDR:** \`${bedwars[1]}\`\n\n`;
       } else {
         requirements += `<a:across:986170696512204820> **Bedwars FKDR:** \`${bedwars[1]} / 3\`\n\n`;
       }
     }
 
-    if (duels[0] > 10000 && duels[1] > 2 && duels[0] !== 'No Duels Data') {
+    if (duels[0] >= 10000 && duels[1] >= 2 && duels[0] !== 'No Duels Data') {
       meetingReqs = true;
       requirements += ':green_circle: You meet our **Duels Requirements!**\n';
     } else {
@@ -133,19 +133,19 @@ module.exports = {
     if (duels[0] === 'No Duels Data') {
       requirements += '<a:across:986170696512204820> **Duels Wins:** `No Duels Data`\n<a:across:986170696512204820> **Duels WLR:** `No Duels Data`\n\n';
     } else {
-      if (duels[0] > 10000) {
+      if (duels[0] >= 10000) {
         requirements += `<a:atick:986173414723162113> **Duels Wins:** \`${duels[0]}\`\n`;
       } else {
         requirements += `<a:across:986170696512204820> **Duels Wins:** \`${duels[0]} / 10,000\`\n`;
       }
-      if (duels[1] > 2) {
+      if (duels[1] >= 2) {
         requirements += `<a:atick:986173414723162113> **Duels WLR:** \`${duels[1]}\`\n\n`;
       } else {
         requirements += `<a:across:986170696512204820> **Duels WLR:** \`${duels[1]} / 2\`\n\n`;
       }
     }
 
-    if (skywars[0] > 10000 && skywars[1] > 2 && skywars[0] !== 'No SkyWars Data') {
+    if (skywars[0] >= 10000 && skywars[1] >= 2 && skywars[0] !== 'No SkyWars Data') {
       meetingReqs = true;
       requirements += ':green_circle: You meet our **Skywars Requirements!**\n';
     } else {
@@ -154,19 +154,19 @@ module.exports = {
     if (skywars[0] === 'No SkyWars Data') {
       requirements += '<a:across:986170696512204820> **Skywars Stars:** `No Skywars Data`\n<a:across:986170696512204820> **Skywars KDR:** `No Skywars Data`\n\n';
     } else {
-      if (skywars[0] > 10000) {
+      if (skywars[0] >= 10000) {
         requirements += `<a:atick:986173414723162113> **Skywars Stars:** \`${skywars[0]}\`\n`;
       } else {
         requirements += `<a:across:986170696512204820> **Skywars Stars:** \`${skywars[0]} / 12☆\`\n`;
       }
-      if (skywars[1] > 1.5) {
+      if (skywars[1] >= 1.5) {
         requirements += `<a:atick:986173414723162113> **Skywars KDR:** \`${skywars[1]}\`\n\n`;
       } else {
         requirements += `<a:across:986170696512204820> **Skywars KDR:** \`${skywars[1]} / 1.5\`\n\n`;
       }
     }
 
-    if (skyblock[0] > 500000000 && skyblock[1] > 30 && skyblock[0] !== 'No Skyblock Data / API Disabled') {
+    if (skyblock[0] >= 500000000 && skyblock[1] >= 30 && skyblock[0] !== 'No Skyblock Data / API Disabled') {
       meetingReqs = true;
       requirements += ':green_circle: You meet our **Skyblock Requirements!**\n';
     } else {
@@ -176,19 +176,19 @@ module.exports = {
       requirements += '<a:across:986170696512204820> **Skyblock Networth:** `No Skyblock Data / API Disabled`\n<a:across:986170696512204820> **Skyblock Skill \
       Average:** `No Skyblock Data / API Disabled`\n\n';
     } else {
-      if (skyblock[0] > 10000) {
+      if (skyblock[0] >= 500000000) {
         requirements += `<a:atick:986173414723162113> **Skyblock Networth:** \`${skyblock[0]}\`\n`;
       } else {
         requirements += `<a:across:986170696512204820> **Skyblock Networth:** \`${skyblock[0]} / 500m\`\n`;
       }
-      if (skyblock[1] > 2) {
+      if (skyblock[1] >= 30) {
         requirements += `<a:atick:986173414723162113> **Skyblock Skill Average:** \`${skyblock[1]}\`\n\n`;
       } else {
         requirements += `<a:across:986170696512204820> **Skyblock Skill Average:** \`${skyblock[1]} / 30\`\n\n`;
       }
     }
 
-    if (guild[1] > config.guild.gexpReq && guild[0] !== 'None') {
+    if (guild[1] >= config.guild.gexpReqNum && guild[0] !== 'None') {
       meetingReqs = true;
       requirements += `:green_circle: You meet our **GEXP Requirements!**\n<a:atick:986173414723162113> **Weekly GEXP** \`${guild[1]}\`\n`;
     } else if (guild[0] === 'None') {
