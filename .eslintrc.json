@@ -17,7 +17,8 @@
         "no-restricted-syntax": "off",
         "no-shadow": "off",
         "no-console": "off",
-        "no-multi-str": "off"
+        "no-multi-str": "off",
+        "no-constant-condition": "off"
     },
     "globals": {
         "bot": true,

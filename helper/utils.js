@@ -108,6 +108,17 @@ function formatDate(dateObj) {
   return `${date + suffix} ${month} ${dateObj.getFullYear()}`;
 }
 
+function removeSectionSymbols(msg) {
+  while (true) {
+    const pos = msg.indexOf('\u00A7');
+    if (pos === -1) {
+      return msg;
+    }
+    msg = msg.slice(0, pos) + msg.slice(pos + 1);
+    msg = msg.slice(0, pos) + msg.slice(pos + 1);
+  }
+}
+
 module.exports = {
   nameToUUID,
   UUIDtoName,
@@ -115,4 +126,5 @@ module.exports = {
   getLevel,
   sleep,
   formatDate,
+  removeSectionSymbols,
 };
