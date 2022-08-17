@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const { removeSectionSymbols } = require('../helper/utils')
 const config = require('../config.json');
 
 const validSkills = ['farming', 'mining', 'combat', 'foraging', 'fishing', 'enchanting', 'alchemy', 'taming'];
@@ -76,8 +77,8 @@ module.exports = {
     }
 
     try {
-      skywars = [player.stats.SkyWars.levelFormatted, Math.round((player.stats.SkyWars.kills
-        / player.stats.SkyWars.deaths) * 100) / 100];
+      skywars = [removeSectionSymbols(player.stats.SkyWars.levelFormatted), Math.round(
+        (player.stats.SkyWars.kills / player.stats.SkyWars.deaths) * 100) / 100];
     } catch (e) {
       skywars = ['No SkyWars Data', 'No SkyWars Data'];
     }
