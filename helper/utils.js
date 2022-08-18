@@ -119,6 +119,17 @@ function removeSectionSymbols(msg) {
   }
 }
 
+function formatNumber(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function abbreviateNumber(num) {
+  return Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(num);
+}
+
 module.exports = {
   nameToUUID,
   UUIDtoName,
@@ -127,4 +138,6 @@ module.exports = {
   sleep,
   formatDate,
   removeSectionSymbols,
+  formatNumber,
+  abbreviateNumber,
 };

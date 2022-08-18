@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { removeSectionSymbols } = require('../helper/utils');
+const { removeSectionSymbols, abbreviateNumber } = require('../helper/utils');
 const config = require('../config.json');
 
 const validSkills = ['farming', 'mining', 'combat', 'foraging', 'fishing', 'enchanting', 'alchemy', 'taming'];
@@ -87,13 +87,17 @@ module.exports = {
     }
 
     try {
-      skyblock = [skyblockData.networth.total_networth, skillAverage(skyblockData.skills)];
+      skyblock = [abbreviateNumber(Math.round(skyblockData.networth.total_networth * 100) / 100),
+        skillAverage(skyblockData.skills)];
     } catch (e) {
+      skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
+    }
+    if (skyblock[1] === 0) {
       skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
     }
 
     try {
-      guild = [guildData.name, weeklyGexp(guildData.members, uuid)];
+      guild = [guildData.name, abbreviateNumber(weeklyGexp(guildData.members, uuid))];
     } catch (e) {
       guild = ['None', 'Not in a guild'];
     }
