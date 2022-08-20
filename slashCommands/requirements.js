@@ -97,7 +97,7 @@ module.exports = {
     }
 
     try {
-      guild = [guildData.name, abbreviateNumber(weeklyGexp(guildData.members, uuid))];
+      guild = [guildData.name, weeklyGexp(guildData.members, uuid)];
     } catch (e) {
       guild = ['None', 'Not in a guild'];
     }
@@ -149,7 +149,7 @@ module.exports = {
       }
     }
 
-    if (skywars[0] >= 10000 && skywars[1] >= 2 && skywars[0] !== 'No SkyWars Data') {
+    if (skywars[0].slice(0, -1) >= 12 && skywars[1] >= 1.5 && skywars[0] !== 'No SkyWars Data') {
       meetingReqs = true;
       requirements += ':green_circle: You meet our **Skywars Requirements!**\n';
     } else {
@@ -158,7 +158,7 @@ module.exports = {
     if (skywars[0] === 'No SkyWars Data') {
       requirements += '<a:across:986170696512204820> **Skywars Stars:** `No Skywars Data`\n<a:across:986170696512204820> **Skywars KDR:** `No Skywars Data`\n\n';
     } else {
-      if (skywars[0] >= 10000) {
+      if (skywars[0].slice(0, -1) >= 12) {
         requirements += `<a:atick:986173414723162113> **Skywars Stars:** \`${skywars[0]}\`\n`;
       } else {
         requirements += `<a:across:986170696512204820> **Skywars Stars:** \`${skywars[0]} / 12☆\`\n`;
@@ -192,14 +192,14 @@ module.exports = {
       }
     }
 
-    if (guild[1] >= config.guild.gexpReqNum && guild[0] !== 'None') {
+    /*     if (guild[1] >= config.guild.gexpReqNum && guild[0] !== 'None') {
       meetingReqs = true;
-      requirements += `:green_circle: You meet our **GEXP Requirements!**\n<a:atick:986173414723162113> **Weekly GEXP** \`${guild[1]}\`\n`;
+      requirements += `:green_circle: You meet our **GEXP Requirements!**\n<a:atick:986173414723162113> **Weekly GEXP:** \`${abbreviateNumber(guild[1])}\`\n`;
     } else if (guild[0] === 'None') {
       requirements += ':red_circle: You don\'t meet our **GEXP Requirements!**\n<a:across:986170696512204820> **Weekly GEXP:** `Not in a guild`\n';
     } else {
       requirements += `:red_circle: You don't meet our **GEXP Requirements!**\n<a:across:986170696512204820> **Weekly GEXP:** \`${guild[1]}\` / \`150k\`\n`;
-    }
+    } */
 
     if (meetingReqs) {
       author = `${name} meets Matrix requirements!`;
