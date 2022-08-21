@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const { removeSectionSymbols, abbreviateNumber } = require('../helper/utils');
+const { removeSectionSymbols, abbreviateNumber, formatNumber } = require('../helper/utils');
 const config = require('../config.json');
 
 const validSkills = ['farming', 'mining', 'combat', 'foraging', 'fishing', 'enchanting', 'alchemy', 'taming'];
@@ -87,8 +87,7 @@ module.exports = {
     }
 
     try {
-      skyblock = [abbreviateNumber(Math.round(skyblockData.networth.total_networth * 100) / 100),
-        skillAverage(skyblockData.skills)];
+      skyblock = [skyblockData.networth.total_networth, skillAverage(skyblockData.skills)];
     } catch (e) {
       skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
     }
@@ -138,9 +137,9 @@ module.exports = {
       requirements += '<a:across:986170696512204820> **Duels Wins:** `No Duels Data`\n<a:across:986170696512204820> **Duels WLR:** `No Duels Data`\n\n';
     } else {
       if (duels[0] >= 10000) {
-        requirements += `<a:atick:986173414723162113> **Duels Wins:** \`${duels[0]}\`\n`;
+        requirements += `<a:atick:986173414723162113> **Duels Wins:** \`${formatNumber(duels[0])}\`\n`;
       } else {
-        requirements += `<a:across:986170696512204820> **Duels Wins:** \`${duels[0]} / 10,000\`\n`;
+        requirements += `<a:across:986170696512204820> **Duels Wins:** \`${formatNumber(duels[0])} / 10,000\`\n`;
       }
       if (duels[1] >= 2) {
         requirements += `<a:atick:986173414723162113> **Duels WLR:** \`${duels[1]}\`\n\n`;
@@ -181,9 +180,9 @@ module.exports = {
       Average:** `No Skyblock Data / API Disabled`\n\n';
     } else {
       if (skyblock[0] >= 500000000) {
-        requirements += `<a:atick:986173414723162113> **Skyblock Networth:** \`${skyblock[0]}\`\n`;
+        requirements += `<a:atick:986173414723162113> **Skyblock Networth:** \`${abbreviateNumber(Math.round(skyblock[0] * 100) / 100)}\`\n`;
       } else {
-        requirements += `<a:across:986170696512204820> **Skyblock Networth:** \`${skyblock[0]} / 500m\`\n`;
+        requirements += `<a:across:986170696512204820> **Skyblock Networth:** \`${abbreviateNumber(Math.round(skyblock[0] * 100) / 100)} / 500m\`\n`;
       }
       if (skyblock[1] >= 30) {
         requirements += `<a:atick:986173414723162113> **Skyblock Skill Average:** \`${skyblock[1]}\`\n\n`;
