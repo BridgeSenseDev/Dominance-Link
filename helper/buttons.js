@@ -46,10 +46,10 @@ async function notificationRoles(client, channelId) {
         .setStyle(ButtonStyle.Primary)
         .setEmoji('a:ayoutube:999685789917122650'),
       new ButtonBuilder()
-        .setCustomId('challenges')
-        .setLabel('Challenges')
-        .setStyle(ButtonStyle.Danger)
-        .setEmoji(':challenges:1006204018999164958'),
+        .setCustomId('twitch')
+        .setLabel('Twitch')
+        .setStyle(ButtonStyle.Secondary)
+        .setEmoji(':twitch1:1010787855976636457'),
       new ButtonBuilder()
         .setCustomId('gexpparty')
         .setLabel('GEXP Party')
