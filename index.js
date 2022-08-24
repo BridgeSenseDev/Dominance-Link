@@ -60,11 +60,13 @@ const rest = new REST({ version: '10' }).setToken(config.keys.discordBotToken);
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   global.statusChannel = client.channels.cache.get('1001465850555027477');
-  global.logChannel = client.channels.cache.get('987636182135480350');
+  global.logChannel = client.channels.cache.get('1011845953826857030');
   global.guildChat = client.channels.cache.get('961635398226956288');
   global.onlineChannel = client.channels.cache.get('995685430420852766');
   global.membersChannel = client.channels.cache.get('995685323818410004');
   global.levelChannel = client.channels.cache.get('995685400700006520');
+  global.applicationsChannel = client.channels.cache.get('947091885019762708');
+  global.officerChat = client.channels.cache.get('1011845835102900324');
   global.onlineMembers = 0;
   gexpWatch(client);
   channelUpdate(client);
