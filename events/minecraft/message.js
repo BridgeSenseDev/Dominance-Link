@@ -8,6 +8,7 @@ const config = require('../../config.json');
 
 const logWebhook = new WebhookClient({ url: config.keys.logWebhookUrl });
 const gcWebhook = new WebhookClient({ url: config.keys.gcWebhookUrl });
+const ocWebhook = new WebhookClient({ url: config.keys.ocWebhookUrl });
 global.messageCache = [];
 global.guildOnline = [];
 
@@ -92,6 +93,20 @@ module.exports = {
           await bot.chat(`/gc Hi ${msg[i + 1]}, im dad`);
         }
       }
+    } else if (msg.indexOf('Officer >') !== -1) {
+      await ocWebhook.send({
+        username: 'Matrix',
+        avatarURL: config.guild.icon,
+        files: [messageToImage(rawMsg)],
+      });
+      let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
+      let uuid = await nameToUUID(name);
+      if (uuid == null) {
+        [name] = msg.replace(/Officer > |:/g, '').split(' ');
+        uuid = await nameToUUID(name);
+      }
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages) VALUES (?, ?)').run(uuid, 0);
+      db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
     }
   },
 };
