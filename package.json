@@ -20,7 +20,7 @@
     "mineflayer": "^4.4.0",
     "node-cron": "^3.0.2",
     "node-gyp": "^9.1.0",
-    "undici": "^5.9.1"
+    "undici": "^5.10.0"
   },
   "devDependencies": {
     "eslint": "^8.22.0",
