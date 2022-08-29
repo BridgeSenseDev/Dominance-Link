@@ -21,7 +21,7 @@ client.on('ready', async () => {
     .setAuthor({ name: 'Server Rules', iconURL: config.guild.icon })
     .setDescription('════ ⋆★⋆ ════\n\n**[General Rules]**\n• Discord alts are forbidden\n• Follow [Discord TOS](https://discord.com/terms) and \
     [Hypixel Rules](http://hypixel.net/rules)\n• No harassment or toxicity\n• No racism or politics\n• All kinds of NSFW are not allowed\n• No spamming / mass \
-    pinging\n• No DDoSing / doxing\n\n════ ⋆★⋆ ════\n\n**[Chat Rules]**\n• No sending watchdog reports in discord / guild chat\n• No unsolicited chat advertising\n\
+    pinging\n• No DDoSing / doxing\n\n════ ⋆★⋆ ════\n\n**[Chat Rules]**\n• No unsolicited chat advertising\n\
     • Chat in the correct channels\n• No overuse of bad language\n• No discussion of inappropriate topics\n• No talking about self-harm, or other deeply negative \
     experiences\n\n════ ⋆★⋆ ════\n\n**[Punishments]**\nFirst offense: 12 hour mute + warning\nSecond offense: 24 hour mute + warning\nThird offense: 48 hour mute \
     + warning\nFourth offense: Kick from the guild / discord\n\n**When reporting, contact a staff member and NEVER public shame**\n\nWarnings will be issued before \
