@@ -54,7 +54,13 @@ module.exports = {
     }
 
     // Get player data
-    const [skyblockData] = (await (await fetch(`http://192.168.1.119:3000/v1/profiles/${name}?key=matrixlink`)).json()).data;
+    let skyblockData;
+    try {
+      [skyblockData] = (await (await fetch(`http://192.168.1.119:3000/v1/profiles/${name}?key=matrixlink`)).json()).data;
+      skyblock = [skyblockData.networth.total_networth, skillAverage(skyblockData.skills)];
+    } catch (e) {
+      skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
+    }
     try {
       bedwars = [player.achievements.bedwars_level, Math.round((
         player.stats.Bedwars.final_kills_bedwars / player.stats.Bedwars.final_deaths_bedwars)
@@ -84,15 +90,6 @@ module.exports = {
     }
     if (skywars[0] === undefined) {
       skywars = ['No SkyWars Data', 'No SkyWars Data'];
-    }
-
-    try {
-      skyblock = [skyblockData.networth.total_networth, skillAverage(skyblockData.skills)];
-    } catch (e) {
-      skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
-    }
-    if (skyblock[1] === 0) {
-      skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
     }
 
     try {
