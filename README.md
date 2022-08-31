@@ -9,7 +9,7 @@
   </h1>
   
 <h3 align="center">
-  A Discord bot for Matirx with various functions.
+  A Discord bot for Matrix with various functions.
   <br />
 </h3>
 
