@@ -1,6 +1,6 @@
 <br />
 <p align="center">
-  <a href="https://discord.gg/hk">
+  <a href="https://discord.com/invite/3Yj2ggz">
     <img src="https://raw.githubusercontent.com/BridgeSenseMC/Matrix-Link/main/.github/assets/img/Matrix%20Logo%20Full.png" alt="Matrix" width="150" height="auto">
   </a>
 </p>
@@ -9,7 +9,7 @@
   </h1>
   
 <h3 align="center">
-  A Discord bot for Matirx with various functions.
+  A Discord bot for Matrix with various functions.
   <br />
 </h3>
 

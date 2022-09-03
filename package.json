@@ -15,7 +15,7 @@
     "better-sqlite3": "^7.6.2",
     "canvas": "^2.9.3",
     "discord.js": "^14.3.0",
-    "dotenv": "^16.0.1",
+    "dotenv": "^16.0.2",
     "googleapis": "^107.0.0",
     "mineflayer": "^4.4.0",
     "node-cron": "^3.0.2",
