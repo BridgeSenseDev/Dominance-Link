@@ -1,6 +1,7 @@
 const {
   ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder,
 } = require('discord.js');
+const config = require('../config.json');
 
 async function notificationRoles(client, channelId) {
   const channel = client.channels.cache.get(channelId);
@@ -158,13 +159,35 @@ async function gamemodeRoles(client, channelId) {
         .setEmoji(':megawalls:1006054180093448273'),
     );
   const embed = new EmbedBuilder()
-    .setColor(0x2f3136)
+    .setColor(0xfcdf30)
     .setAuthor({ name: 'Gamemode Roles', iconURL: 'https://cdn.discordapp.com/attachments/986281342457237624/1006054852381651034/DdNypQdN_400x400.png' })
     .setDescription('Use the buttons below to select what gamemodes you like to play\nThese roles can be mentioned!');
   await channel.send({ components: [row, row2, row3], embeds: [embed] });
 }
 
+async function applications(client, channelId) {
+  const channel = client.channels.cache.get(channelId);
+  const row = new ActionRowBuilder()
+    .addComponents(
+      new ButtonBuilder()
+        .setCustomId('apply')
+        .setLabel('Apply')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji('a:checkmark:1011799454959022081'),
+    );
+
+  const embed = new EmbedBuilder()
+    .setColor(0xfcdf30)
+    .setAuthor({ name: 'Applications', iconURL: config.guild.icon })
+    .setDescription('**Click the button below to apply**\n\n════ ⋆★⋆ ════\n\n**[Rejoining]**\n`-` If your application gets rejected wait **3 weeks** before \
+    reapplying\n`-` Wait **1 month** before reapplying if you get kicked / leave\n`-` Wait **2 months** before reapplying if you get kicked within a month\n`-` \
+    You can reapply **unlimited** times\n\n════ ⋆★⋆ ════')
+    .setThumbnail('https://cdn.discordapp.com/attachments/986281342457237624/1011808965920825345/web-browser.png');
+  await channel.send({ components: [row], embeds: [embed] });
+}
+
 module.exports = {
   notificationRoles,
   gamemodeRoles,
+  applications,
 };

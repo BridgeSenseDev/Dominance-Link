@@ -31,6 +31,8 @@
         "membersChannel": true,
         "levelChannel": true,
         "messageCache": true,
-        "guildOnline": true
+        "guildOnline": true,
+        "applicationsChannel": true,
+        "officerChat": true
     }
 }

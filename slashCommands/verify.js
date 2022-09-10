@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const db = require('better-sqlite3')('matrix.db');
 const config = require('../config.json');
 
 module.exports = {
@@ -11,12 +12,10 @@ module.exports = {
 
   async execute(interaction) {
     await interaction.deferReply({ ephemeral: true });
-    let uuid;
-    let disc;
+    let uuid; let disc;
     const ign = interaction.options.getString('ign');
     try {
       uuid = (await (await fetch(`https://api.mojang.com/users/profiles/minecraft/${ign}`)).json()).id;
-      uuid = `${uuid.slice(0, 8)}-${uuid.slice(8, 12)}-${uuid.slice(12, 16)}-${uuid.slice(16, 20)}-${uuid.slice(20)}`;
     } catch (e) {
       const embed = new EmbedBuilder()
         .setColor(0xe74d3c)
@@ -43,6 +42,7 @@ module.exports = {
       await interaction.member.roles.add(interaction.guild.roles.cache.get('445669382539051008'));
       const { guild } = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json());
       if (guild === null) {
+        db.prepare('INSERT OR IGNORE INTO members (uuid, discord) VALUES (?, ?)').run(uuid, interaction.user.id);
         const embed = new EmbedBuilder()
           .setColor(0x2ecc70)
           .setTitle('Successful')
@@ -52,6 +52,7 @@ module.exports = {
         await interaction.editReply({ embeds: [embed] });
       } else if (guild.name_lower === 'matrix') {
         await interaction.member.roles.add(interaction.guild.roles.cache.get('753172820133150772'));
+        db.prepare('INSERT OR IGNORE INTO members (uuid, discord) VALUES (?, ?)').run(uuid, interaction.user.id);
         const embed = new EmbedBuilder()
           .setColor(0x2ecc70)
           .setTitle('Successful')
@@ -60,6 +61,7 @@ module.exports = {
           .setThumbnail(`https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`);
         await interaction.editReply({ embeds: [embed] });
       } else {
+        db.prepare('INSERT OR IGNORE INTO members (uuid, discord) VALUES (?, ?)').run(uuid, interaction.user.id);
         const embed = new EmbedBuilder()
           .setColor(0x2ecc70)
           .setTitle('Successful')

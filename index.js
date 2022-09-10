@@ -9,7 +9,7 @@ const channelUpdate = require('./helper/channelUpdate');
 const { autoRejoin, startBot } = require('./helper/autoRejoin');
 const { database, gsrun, sheet } = require('./helper/database');
 // eslint-disable-next-line no-unused-vars
-const { notificationRoles, gamemodeRoles } = require('./helper/buttons');
+const { notificationRoles, gamemodeRoles, applications } = require('./embeds/buttons');
 
 const client = new Client({
   intents: [
@@ -76,6 +76,7 @@ client.on('ready', async () => {
   startBot(client);
   // notificationRoles(client, '583661446202785815');
   // gamemodeRoles(client, '583661446202785815');
+  // applications(client, '1017099269372657724');
 });
 
 client.login(config.keys.discordBotToken);
