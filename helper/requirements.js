@@ -125,17 +125,18 @@ async function requirements(uuid, playerData) {
     }
   }
 
-  if (playerData.stats.BuildBattle.score >= 20000) {
-    meetingReqs = true;
-    requirements += ':green_circle: **Build Battle**\n';
-    requirements += `<a:atick:986173414723162113> **Build Battle Score:** \`${playerData.stats.BuildBattle.score}\`\n\n`;
-  } else {
-    requirements += ':red_circle: **Build Battle**\n';
-    try {
+  try {
+    if (playerData.stats.BuildBattle.score >= 20000) {
+      meetingReqs = true;
+      requirements += ':green_circle: **Build Battle**\n';
+      requirements += `<a:atick:986173414723162113> **Build Battle Score:** \`${playerData.stats.BuildBattle.score}\`\n\n`;
+    } else {
+      requirements += ':red_circle: **Build Battle**\n';
       requirements += `<a:across:986170696512204820> **Build Battle Score:** \`${formatNumber(playerData.stats.BuildBattle.score)} / 20,000\`\n\n`;
-    } catch (e) {
-      requirements += '<a:across:986170696512204820> **Arcade Wins:** `No Build Battle Data`\n\n';
     }
+  } catch (e) {
+    requirements += ':red_circle: **Build Battle**\n';
+    requirements += '<a:across:986170696512204820> **Build Battle Score:** `No Build Battle Data`\n\n';
   }
 
   if (duels[0] >= 10000 && duels[1] >= 2 && duels[0] !== 'No Duels Data') {
