@@ -65,7 +65,7 @@ client.on('ready', async () => {
   global.onlineChannel = client.channels.cache.get('995685430420852766');
   global.membersChannel = client.channels.cache.get('995685323818410004');
   global.levelChannel = client.channels.cache.get('995685400700006520');
-  global.applicationsChannel = client.channels.cache.get('947091885019762708');
+  global.applicationsChannel = client.channels.cache.get('1018079280443424898');
   global.officerChat = client.channels.cache.get('1016735077385912360');
   global.onlineMembers = 0;
   gexpWatch(client);
