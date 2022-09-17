@@ -15,7 +15,7 @@ global.guildOnline = [];
 module.exports = {
   async execute(client, message, messagePosition) {
     if (messagePosition !== 'chat') return;
-    let msg = message.toString();
+    const msg = message.toString();
     if (msg.trim() === '') return;
     // Limbo Check
     if (msg.indexOf('"server"') !== -1) {
@@ -85,15 +85,6 @@ module.exports = {
       }
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages) VALUES (?, ?)').run(uuid, 0);
       db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-
-      // Dad joke
-      msg = msg.split(' ');
-      for (let i = 0; i < msg.length; i += 1) {
-        if ((msg[i].toLowerCase() === 'im' || msg[i].toLowerCase() === "i'm") && name !== 'MatrixLink') {
-          // eslint-disable-next-line no-await-in-loop
-          await bot.chat(`/gc Hi ${msg[i + 1]}, im dad`);
-        }
-      }
     } else if (msg.indexOf('Officer >') !== -1) {
       await ocWebhook.send({
         username: 'Matrix',
