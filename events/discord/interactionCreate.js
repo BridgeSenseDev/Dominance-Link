@@ -3,7 +3,7 @@ const roles = {
 };
 const {
   EmbedBuilder, InteractionType, TextInputBuilder, ModalBuilder, TextInputStyle, ActionRowBuilder,
-  ButtonBuilder, ButtonStyle,
+  ButtonBuilder, ButtonStyle, ChannelType, SelectMenuBuilder,
 } = require('discord.js');
 const db = require('better-sqlite3')('matrix.db');
 const { nameToUUID, UUIDtoName } = require('../../helper/utils');
@@ -23,6 +23,15 @@ module.exports = {
         console.error(error);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
       }
+    } else if (interaction.isSelectMenu()) {
+      await interaction.deferUpdate({ ephemeral: true });
+      const user = await client.users.fetch(interaction.customId);
+      const embed = new EmbedBuilder()
+        .setColor(0xe74d3c)
+        .setTitle('Your Matrix application has been denied')
+        .setDescription(`**Reason:** ${interaction.values}`);
+      await user.send({ embeds: [embed] });
+      await interaction.editReply({ content: 'Successfully denied', components: [] });
     } else if (interaction.isButton()) {
       if (interaction.customId === 'requirements') {
         await interaction.deferReply({ ephemeral: true });
@@ -77,13 +86,66 @@ module.exports = {
         modal.addComponents(firstActionRow, secondActionRow, thirdActionRow);
         await interaction.showModal(modal);
       } else if (interaction.customId === 'accept') {
+        await interaction.deferReply({ ephemeral: true });
         const name = await interaction.message.embeds[0].data.fields[0].value;
         const discordId = await interaction.message.embeds[0].data.fields[3].value.slice(2, -1);
         const uuid = await nameToUUID(name);
-        db.prepare('INSERT INTO waitlist (uuid, discord, time) VALUES (?, ?, ?)').run(uuid, discordId, Math.floor(Date.now() / 1000));
+        const user = await client.users.fetch(discordId);
+        interaction.guild.channels.create({
+          name: `🔴 ${name}`,
+          type: ChannelType.GuildText,
+          parent: '1020948893204217856',
+        }).then(async (channel) => {
+          await channel.permissionOverwrites.edit(user, {
+            ViewChannel: true,
+            SendMessages: true,
+            ReadMessageHistory: true,
+          });
+          const embed = new EmbedBuilder()
+            .setColor(0x2ecc70)
+            .setTitle(`Congrats ${name}, your application has been accepted!`)
+            .setDescription('**How to get started:**\n`1.` **Join The Guild**\nYou can get invited to the guild at anytime without staff. Just type `/msg MatrixLink .` \
+            or if you are muted, type `/immuted MatrixLink`\n\n`2.` **Familiarize Yourself**\nHang out with other guild members in <#1016840866322714684> or talk in-game \
+            using <#1016734361472729088>. Don\'t miss out on weekly announcements in <#795342812538863676>\n\n`3.` **Confused?**\nFeel free to ask any questions here, only \
+            ping staff if needed!')
+            .setThumbnail(`https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`);
+          db.prepare('INSERT INTO waitlist (uuid, discord, time, channel) VALUES (?, ?, ?, ?)').run(uuid, discordId, Math.floor(Date.now() / 1000), channel.id);
+          await channel.send({ content: user.toString(), embeds: [embed] });
+          await interaction.editReply('Application accepted');
+          await interaction.message.delete();
+        });
       } else if (interaction.customId === 'deny') {
-        const name = await interaction.message.embeds[0].data.fields[0].value;
         const discordId = await interaction.message.embeds[0].data.fields[3].value.slice(2, -1);
+        const row = new ActionRowBuilder()
+          .addComponents(
+            new SelectMenuBuilder()
+              .setCustomId(discordId)
+              .setPlaceholder('Select a reason')
+              .addOptions(
+                {
+                  label: 'Not meeting guild requirements',
+                  value: 'Not meeting guild requirements',
+                },
+                {
+                  label: 'Not writing enough on your application',
+                  value: 'Not writing enough on your application',
+                },
+                {
+                  label: 'Being a guild hopper',
+                  value: 'Being a guild hopper',
+                },
+                {
+                  label: 'Being a known hacker/cheater',
+                  value: 'Being a known hacker/cheater',
+                },
+                {
+                  label: 'Being toxic',
+                  value: 'Being toxic',
+                },
+              ),
+          );
+        await interaction.reply({ components: [row], ephemeral: true });
+        await interaction.message.delete();
       } else if (interaction.customId in roles) {
         const roleId = roles[interaction.customId];
         let msg;
