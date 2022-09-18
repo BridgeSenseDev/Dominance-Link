@@ -11,6 +11,7 @@ const gcWebhook = new WebhookClient({ url: config.keys.gcWebhookUrl });
 const ocWebhook = new WebhookClient({ url: config.keys.ocWebhookUrl });
 global.messageCache = [];
 global.guildOnline = [];
+db.defaultSafeIntegers(true);
 
 module.exports = {
   async execute(client, message, messagePosition) {
@@ -79,7 +80,7 @@ module.exports = {
       });
       let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
       let uuid = await nameToUUID(name);
-      if (uuid == null) {
+      if (uuid === null) {
         [name] = msg.replace(/Guild > |:/g, '').split(' ');
         uuid = await nameToUUID(name);
       }
@@ -99,6 +100,22 @@ module.exports = {
       }
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages) VALUES (?, ?)').run(uuid, 0);
       db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
+    } else if (msg.indexOf('From') !== -1) {
+      let [, , name] = msg.split(' ');
+      name = name.slice(0, -1);
+      let uuid = await nameToUUID(name);
+      if (uuid === null) {
+        [, name] = msg.split(' ');
+        name = name.slice(0, -1);
+        uuid = await nameToUUID(name);
+      }
+      const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
+      if (waitlist !== undefined) {
+        await bot.chat(`/g invite ${name}`);
+        const channel = client.channels.cache.get(waitlist.channel.toString());
+        await channel.send(`<@${waitlist.discord.toString()}> has been invited to the guild.
+If you did not receive an invite make sure you are not in a guild`);
+      }
     }
   },
 };
