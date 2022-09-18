@@ -179,9 +179,9 @@ async function applications(client, channelId) {
   const embed = new EmbedBuilder()
     .setColor(0xfcdf30)
     .setAuthor({ name: 'Applications', iconURL: config.guild.icon })
-    .setDescription('**Click the button below to apply**\n\n════ ⋆★⋆ ════\n\n**[Rejoining]**\n`-` If your application gets rejected wait **3 weeks** before \
-    reapplying\n`-` Wait **1 month** before reapplying if you get kicked / leave\n`-` Wait **2 months** before reapplying if you get kicked within a month\n`-` \
-    You can reapply **unlimited** times\n\n════ ⋆★⋆ ════')
+    .setDescription('**Click the button below to apply**\nYou **WILL NOT** get a response if you\'re rejected and your dm\'s are closed\n\n════ ⋆★⋆ ════\n\n**[Rejoining]**\n\
+    `-` If your application gets rejected wait **3 weeks** before reapplying\n`-` Wait **1 month** before reapplying if you get kicked / leave\n`-` Wait **2 months** before \
+    reapplying if you get kicked within a month\n`-` You can reapply **unlimited** times\n\n════ ⋆★⋆ ════')
     .setThumbnail('https://cdn.discordapp.com/attachments/986281342457237624/1011808965920825345/web-browser.png');
   await channel.send({ components: [row], embeds: [embed] });
 }
