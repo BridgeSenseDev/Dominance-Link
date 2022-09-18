@@ -41,7 +41,8 @@ async function database() {
       placeholders += ', ?';
     }
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
-  }, 5 * 60 * 1000);
+    db.prepare('DELETE FROM guildMembers WHERE uuid IS NULL').run();
+  }, 0.5 * 60 * 1000);
 }
 
 async function gsrun(sheet, client) {
