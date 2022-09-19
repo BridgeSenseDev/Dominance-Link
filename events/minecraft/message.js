@@ -101,6 +101,7 @@ module.exports = {
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages) VALUES (?, ?)').run(uuid, 0);
       db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
     } else if (msg.indexOf('From') !== -1) {
+      let waitlist;
       let [, , name] = msg.split(' ');
       name = name.slice(0, -1);
       let uuid = await nameToUUID(name);
@@ -109,7 +110,10 @@ module.exports = {
         name = name.slice(0, -1);
         uuid = await nameToUUID(name);
       }
-      const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
+      try {
+        waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
+      // eslint-disable-next-line no-empty
+      } catch (err) {}
       if (waitlist !== undefined) {
         await bot.chat(`/g invite ${name}`);
         const channel = client.channels.cache.get(waitlist.channel.toString());

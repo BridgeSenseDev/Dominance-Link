@@ -18,11 +18,11 @@ async function channelUpdate(client) {
 
     // Guild level
     const level = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.exp;
-    await levelChannel.setName(`🔰│Guild Level: ${getLevel(level)}`);
+    await levelChannel.setName(`📈│Guild Level: ${getLevel(level)}`);
 
     // Online members
     await sleep(10000);
-    await onlineChannel.setName(`🔰│Online Members: ${onlineMembers}`);
+    await onlineChannel.setName(`🎮│Online Members: ${onlineMembers}`);
   }, 6 * 60 * 1000);
 }
 
