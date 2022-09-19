@@ -26,6 +26,10 @@ async function database() {
   setInterval(async () => {
     const members = [];
     const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.members;
+    try {
+      db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[0].expHistory)[0]}" INTEGER`).run();
+    // eslint-disable-next-line no-empty
+    } catch (err) {}
     for (let i = 0; i < guild.length; i += 1) {
       members.push(guild[i].uuid);
       const tag = ranks[guild[i].rank];
@@ -34,7 +38,7 @@ async function database() {
         weeklyGexp += (Object.values(guild[i].expHistory)[j]);
       }
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, tag) VALUES (?, ?, ?)').run(guild[i].uuid, 0, tag);
-      db.prepare('UPDATE guildMembers SET (tag, weeklyGexp, dailyGexp, joined) = (?, ?, ?, ?) WHERE uuid = (?)').run(tag, weeklyGexp, Object.values(guild[i].expHistory)[0], guild[i].joined, guild[i].uuid);
+      db.prepare(`UPDATE guildMembers SET (tag, weeklyGexp, joined, "${Object.keys(guild[i].expHistory)[0]}") = (?, ?, ?, ?) WHERE uuid = (?)`).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
     }
     let placeholders = '?';
     for (let i = 0; i < members.length - 1; i += 1) {
@@ -42,16 +46,23 @@ async function database() {
     }
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
     db.prepare('DELETE FROM guildMembers WHERE uuid IS NULL').run();
-  }, 0.5 * 60 * 1000);
+  }, 5 * 60 * 1000);
 }
 
 async function gsrun(sheet, client) {
   setInterval(async () => {
     const gsapi = google.sheets({ version: 'v4', auth: sheet });
     const data = db.prepare('SELECT * FROM guildMembers').all();
+    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.members;
     const array = [];
-    await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:I126' });
+    await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:O126' });
     for (let i = 0; i < data.length; i += 1) {
+      for (let j = 0; j < Object.keys(data[i]).length; j += 1) {
+        if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) && Object.keys(guild[0].expHistory).indexOf(Object.keys(data[i])[j]) === -1) {
+          console.log(Object.keys(data[i])[j]);
+          delete data[i][Object.keys(data[i])[j]];
+        }
+      }
       // eslint-disable-next-line no-await-in-loop
       data[i].name = await UUIDtoName(data[i].uuid);
       if (data[i].discord) {
