@@ -62,9 +62,17 @@ module.exports = {
         )],
       });
     } else if (msg.indexOf('joined the guild!') !== -1) {
+      let funFact;
       const name = msg.substring(msg.search(/ (.*?) joined/g) + 1, msg.lastIndexOf(' joined'));
-      await bot.chat(`/gc Welcome to Matrix, ${name}! Join our discord using /g discord to learn more about our roles and rules. We are in code red and our current GEXP \
-      requirement is ${config.guild.gexpReq} per week.`);
+      const funFacts = await (await fetch('https://api.api-ninjas.com/v1/facts?limit=3', { method: 'GET', headers: { 'X-Api-Key': config.keys.apiNinjasKey } })).json();
+      for (let i = 0; i < funFacts.length; i += 1) {
+        if (funFacts[i].fact.length < 150) {
+          funFact = funFacts[i].fact;
+          break;
+        }
+      }
+      await bot.chat(`/gc Welcome to Matrix, ${name}! . Our current GEXP \
+      requirement is ${config.guild.gexpReq} per week. ${funFact}`);
       await gcWebhook.send({
         username: 'Matrix',
         avatarURL: config.guild.icon,
@@ -72,6 +80,10 @@ module.exports = {
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
         )],
       });
+      const uuid = nameToUUID(name);
+      const channelId = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').run(uuid);
+      await client.channels.cache.get(channelId).delete();
+      db.prepare('DELETE FROM waitlist WHERE uuid = ?').run(uuid);
     } else if (msg.indexOf('Guild >') !== -1) {
       await gcWebhook.send({
         username: 'Matrix',
