@@ -1,3 +1,4 @@
+const cron = require('node-cron');
 const db = require('better-sqlite3')('matrix.db');
 const { google } = require('googleapis');
 const keys = require('../keys.json');
@@ -21,6 +22,28 @@ sheet.authorize((err) => {
     console.log('Successfully connected to spreadsheet');
   }
 });
+
+async function weekly() {
+  cron.schedule('00 50 11 * * 0', async () => {
+    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.members;
+    for (let i = 0; i < guild.length; i += 1) {
+      let weeklyGexp = 0;
+      for (let j = 0; j < 7; j += 1) {
+        weeklyGexp += (Object.values(guild[i].expHistory)[j]);
+      }
+      const tag = ranks[guild[i].rank];
+      if (tag.indexOf(['[Active]', '[Crew]']) !== -1) {
+        if (weeklyGexp > 200000) {
+          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Active]', guild[i].uuid);
+        } else {
+          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Crew]', guild[i].uuid);
+        }
+      } else {
+        db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(tag, guild[i].uuid);
+      }
+    }
+  });
+}
 
 async function database() {
   setInterval(async () => {
@@ -55,7 +78,7 @@ async function gsrun(sheet, client) {
     const data = db.prepare('SELECT * FROM guildMembers').all();
     const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.members;
     const array = [];
-    await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:O126' });
+    await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:P126' });
     for (let i = 0; i < data.length; i += 1) {
       for (let j = 0; j < Object.keys(data[i]).length; j += 1) {
         if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) && Object.keys(guild[0].expHistory).indexOf(Object.keys(data[i])[j]) === -1) {
@@ -87,4 +110,5 @@ module.exports = {
   database,
   gsrun,
   sheet,
+  weekly,
 };

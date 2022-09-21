@@ -7,7 +7,9 @@ const config = require('./config.json');
 const gexpWatch = require('./helper/gexpWatch');
 const channelUpdate = require('./helper/channelUpdate');
 const { autoRejoin, startBot } = require('./helper/autoRejoin');
-const { database, gsrun, sheet } = require('./helper/database');
+const {
+  database, gsrun, sheet, weekly,
+} = require('./helper/database');
 // eslint-disable-next-line no-unused-vars
 const { notificationRoles, gamemodeRoles, applications } = require('./embeds/buttons');
 
@@ -72,6 +74,7 @@ client.on('ready', async () => {
   channelUpdate(client);
   autoRejoin();
   database();
+  weekly();
   gsrun(sheet, client);
   startBot(client);
   // notificationRoles(client, '583661446202785815');
