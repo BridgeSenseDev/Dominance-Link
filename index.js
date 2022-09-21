@@ -1,17 +1,11 @@
 const fs = require('fs');
+const { DisTube } = require('distube');
+const { SpotifyPlugin } = require('@distube/spotify');
 const { REST } = require('@discordjs/rest');
 const {
   Client, GatewayIntentBits, Collection, Routes,
 } = require('discord.js');
 const config = require('./config.json');
-const gexpWatch = require('./helper/gexpWatch');
-const channelUpdate = require('./helper/channelUpdate');
-const { autoRejoin, startBot } = require('./helper/autoRejoin');
-const {
-  database, gsrun, sheet, weekly,
-} = require('./helper/database');
-// eslint-disable-next-line no-unused-vars
-const { notificationRoles, gamemodeRoles, applications } = require('./embeds/buttons');
 
 const client = new Client({
   intents: [
@@ -19,8 +13,18 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildVoiceStates,
   ],
   rest: { rejectOnRateLimit: (rateLimitData) => rateLimitData },
+});
+
+client.distube = new DisTube(client, {
+  emitNewSongOnly: true,
+  leaveOnEmpty: false,
+  leaveOnFinish: false,
+  leaveOnStop: false,
+
+  plugins: [new SpotifyPlugin()],
 });
 
 client.commands = new Collection();
@@ -61,4 +65,6 @@ const rest = new REST({ version: '10' }).setToken(config.keys.discordBotToken);
 
 client.login(config.keys.discordBotToken);
 
-client.login(config.keys.discordBotToken);
+module.exports = {
+  client,
+};
