@@ -17,7 +17,7 @@ export async function execute(interaction) {
     playerData = (await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json()).player;
   } catch (e) {
     const embed = new EmbedBuilder()
-      .setColor(config.color.red)
+      .setColor(config.colors.red)
       .setTitle('Error')
       .setDescription(`<a:across:986170696512204820> **${ign}** is an invalid IGN`);
     await interaction.editReply({ embeds: [embed] });
