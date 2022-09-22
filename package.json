@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint --fix --ext .js,.jsx ."
@@ -17,6 +18,7 @@
     "@distube/spotify": "^1.4.2",
     "better-sqlite3": "^7.6.2",
     "canvas": "^2.10.1",
+    "cjs-to-es6": "^2.0.1",
     "discord.js": "^14.3.0",
     "distube": "^4.0.3",
     "dotenv": "^16.0.2",
@@ -30,6 +32,7 @@
     "ytdl-core": "^4.11.2"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.19.1",
     "eslint": "^8.23.1",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.26.0"

@@ -1,17 +1,19 @@
-const cron = require('node-cron');
-const db = require('better-sqlite3')('matrix.db');
-const { google } = require('googleapis');
-const keys = require('../keys.json');
-const config = require('../config.json');
-const { UUIDtoName } = require('./utils');
+import { schedule } from 'node-cron';
+import { google } from 'googleapis';
+import Database from 'better-sqlite3';
+import keys from '../keys.json' assert { type: "json" };
+import config from '../config.json' assert {type: "json"};
+import { UUIDtoName } from './utils.js';
+
+const db = new Database('matrix.db');
 
 const ranks = {
   GUILDMASTER: '[GM]', Owner: '[Owner]', Manager: '[MNG]', Officer: '[OFC]', Active: '[Active]', Crew: '[Crew]', 'Trial Member': '[Trial]',
 };
 const sheet = new google.auth.JWT(
-  keys.client_email,
+  keys.clientEmail,
   null,
-  keys.private_key,
+  keys.privateKey,
   ['https://www.googleapis.com/auth/spreadsheets'],
 );
 
@@ -24,7 +26,7 @@ sheet.authorize((err) => {
 });
 
 async function weekly() {
-  cron.schedule('00 50 11 * * 0', async () => {
+  schedule('00 50 11 * * 0', async () => {
     const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.members;
     for (let i = 0; i < guild.length; i += 1) {
       let weeklyGexp = 0;
@@ -51,8 +53,9 @@ async function database() {
     const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.members;
     try {
       db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[0].expHistory)[0]}" INTEGER`).run();
-    // eslint-disable-next-line no-empty
-    } catch (err) {}
+    } catch (err) {
+      // continue regardless of error
+    }
     for (let i = 0; i < guild.length; i += 1) {
       members.push(guild[i].uuid);
       const tag = ranks[guild[i].rank];
@@ -106,7 +109,7 @@ async function gsrun(sheet, client) {
   }, 10 * 60 * 1000);
 }
 
-module.exports = {
+export {
   database,
   gsrun,
   sheet,

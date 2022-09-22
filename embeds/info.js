@@ -1,8 +1,6 @@
-const {
-  Client, GatewayIntentBits, EmbedBuilder,
-} = require('discord.js');
-const config = require('../config.json');
-const { formatDate } = require('../helper/utils');
+import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
+import config from '../config.json' assert { type: "json" };
+import { formatDate } from '../helper/utils';
 
 const client = new Client({
   intents: [
@@ -17,7 +15,7 @@ const client = new Client({
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   const rulesEmbed = new EmbedBuilder()
-    .setColor(0x206694)
+    .setColor(config.color.yellow)
     .setAuthor({ name: 'Server Rules', iconURL: config.guild.icon })
     .setDescription('════ ⋆★⋆ ════\n\n**[General Rules]**\n• Discord alts are forbidden\n• Follow [Discord TOS](https://discord.com/terms) and \
     [Hypixel Rules](http://hypixel.net/rules)\n• No harassment or toxicity\n• No racism or politics\n• All kinds of NSFW are not allowed\n• No spamming / mass \
@@ -32,7 +30,7 @@ client.on('ready', async () => {
     });
 
   const guideEmbed = new EmbedBuilder()
-    .setColor(0x206694)
+    .setColor(config.color.yellow)
     .setAuthor({ name: 'Matrix Guide', iconURL: config.guild.icon })
     .setDescription(`════ ⋆★⋆ ════\n\n**[FAQ]**\n\`Q:\` **How many times can i rejoin the guild?**\n> There is no limit, but you have to wait before reapplying\n\n\
     \`Q:\` **Where can i apply?**\n> Discord / Google Forms, info in <#672129456575610900>\n\n\`Q:\` **How do i rankup once in the guild?**\n> Learn about guild ranks in \

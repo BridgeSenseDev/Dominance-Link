@@ -1,6 +1,6 @@
-const Canvas = require('canvas');
+import { registerFont, createCanvas } from 'canvas';
 
-Canvas.registerFont('./Uni Sans Heavy Regular.ttf', { family: 'Uni Sans' });
+registerFont('./Uni Sans Heavy Regular.ttf', { family: 'Uni Sans' });
 
 const RGBA_COLOR = {
   0: 'rgba(0,0,0,1)',
@@ -22,7 +22,7 @@ const RGBA_COLOR = {
 };
 
 function getHeight(message) {
-  const canvas = Canvas.createCanvas(1, 1);
+  const canvas = createCanvas(1, 1);
   const ctx = canvas.getContext('2d');
   const splitMessageSpace = message.split(' ');
   for (const [i, msg] of Object.entries(splitMessageSpace)) {
@@ -50,7 +50,7 @@ function getHeight(message) {
 
 function generateMessageImage(message) {
   const canvasHeight = getHeight(message);
-  const canvas = Canvas.createCanvas(1000, canvasHeight);
+  const canvas = createCanvas(1000, canvasHeight);
   const ctx = canvas.getContext('2d');
   const splitMessageSpace = message.split(' ');
   for (const [i, msg] of Object.entries(splitMessageSpace)) {
@@ -81,4 +81,4 @@ function generateMessageImage(message) {
   return canvas.toBuffer();
 }
 
-module.exports = generateMessageImage;
+export default generateMessageImage;

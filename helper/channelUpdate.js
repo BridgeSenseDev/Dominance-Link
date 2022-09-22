@@ -1,7 +1,6 @@
-const { ActivityType } = require('discord.js');
-const { getLevel } = require('./utils');
-const config = require('../config.json');
-const { sleep } = require('./utils');
+import { ActivityType } from 'discord.js';
+import { getLevel, sleep } from './utils.js';
+import config from '../config.json' assert {type: "json"};
 
 async function channelUpdate(client) {
   setInterval(async () => {
@@ -26,4 +25,4 @@ async function channelUpdate(client) {
   }, 6 * 60 * 1000);
 }
 
-module.exports = channelUpdate;
+export default channelUpdate;

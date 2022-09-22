@@ -1,6 +1,7 @@
-const {
+import {
   removeSectionSymbols, abbreviateNumber, formatNumber, UUIDtoName,
-} = require('./utils'); const config = require('../config.json');
+} from './utils.js';
+import config from '../config.json' assert {type: "json"};
 
 const validSkills = ['farming', 'mining', 'combat', 'foraging', 'fishing', 'enchanting', 'alchemy', 'taming'];
 
@@ -26,7 +27,7 @@ function weeklyGexp(members, uuid) {
   return weeklyGexp;
 }
 
-async function requirements(uuid, playerData) {
+export default async function requirements(uuid, playerData) {
   let guild; let bedwars; let duels; let skywars; let skyblock;
   const name = await UUIDtoName(uuid);
   const guildData = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&playerData=${uuid}`)).json()).guild;
@@ -248,7 +249,7 @@ async function requirements(uuid, playerData) {
     reqs = 'Yes';
   } else {
     author = `${name} does not meet Matrix requirements!`;
-    color = 0xe74d3c;
+    color = config.color.red;
     reqs = 'No';
   }
 
@@ -256,7 +257,3 @@ async function requirements(uuid, playerData) {
     requirements, guild, author, color, reqs,
   };
 }
-
-module.exports = {
-  requirements,
-};

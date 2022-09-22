@@ -1,8 +1,8 @@
-const {
+import {
   Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle,
-} = require('discord.js');
-const config = require('../config.json');
-const { formatDate } = require('../helper/utils');
+} from 'discord.js';
+import config from '../config.json' assert {type: "json"};
+import { formatDate } from '../helper/utils';
 
 const client = new Client({
   intents: [
@@ -17,7 +17,7 @@ const client = new Client({
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   const embed = new EmbedBuilder()
-    .setColor(0xfcdf30)
+    .setColor(config.color.yellow)
     .setAuthor({ name: 'Guild Requirements', iconURL: config.guild.icon })
     .setDescription(`**Our current GEXP requirement is \`${config.guild.gexpReq}\` per week\nClick the button below to check if you meet our requirements**\n\n════ ⋆★⋆ ════\n\n**\
     [Requirements]**\n**You must meet at least one of these requirements to join:**\n\`Achievement Points\`\n\`-\` 10k AP\n\`Arcade\`\n\`-\` 1.5k Wins\n\`Bedwars\`\n\`-\` \

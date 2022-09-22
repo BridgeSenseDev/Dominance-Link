@@ -1,11 +1,11 @@
 // eslint-disable-next-line no-unused-vars
-const { notificationRoles, gamemodeRoles, applications } = require('../../embeds/buttons');
-const {
+import { notificationRoles, gamemodeRoles, applications } from '../../embeds/buttons.js';
+import {
   database, gsrun, sheet, weekly,
-} = require('../../helper/database');
-const gexpWatch = require('../../helper/gexpWatch');
-const channelUpdate = require('../../helper/channelUpdate');
-const { autoRejoin, startBot } = require('../../helper/autoRejoin');
+} from '../../helper/database.js';
+import gexpWatch from '../../helper/gexpWatch.js';
+import channelUpdate from '../../helper/channelUpdate.js';
+import { autoRejoin, startBot } from '../../helper/autoRejoin.js';
 
 async function execute(client) {
   console.log(`[DISCORD] Logged in as ${client.user.tag}`);
@@ -30,6 +30,4 @@ async function execute(client) {
   // applications(client, '1017099269372657724');
 }
 
-module.exports = {
-  execute,
-};
+export default execute;

@@ -130,7 +130,7 @@ function abbreviateNumber(num) {
   }).format(num);
 }
 
-module.exports = {
+export {
   nameToUUID,
   UUIDtoName,
   formatMentions,

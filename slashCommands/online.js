@@ -1,5 +1,5 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const config = require('../config.json');
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import guild from '../config.json' assert {type: "json"};
 
 function formatMembers(msg) {
   let online = '';
@@ -23,29 +23,26 @@ function formatMembers(msg) {
   return online.slice(0, online.length - 2);
 }
 
-module.exports = {
-  data: new SlashCommandBuilder()
-    .setName('online')
-    .setDescription('List all online members in the guild'),
+export const data = new SlashCommandBuilder()
+  .setName('online')
+  .setDescription('List all online members in the guild');
+export async function execute(interaction) {
+  await interaction.deferReply();
+  let offlineMembers = 0;
+  let totalMembers = 0;
+  try {
+    [, offlineMembers] = guildOnline[guildOnline.length - 1].split('Offline Members: ');
+  } catch (e) {
+    await interaction.editReply('`/g online` timed out, try again in a few minutes');
+    return;
+  }
+  [, totalMembers] = guildOnline[guildOnline.length - 3].split('Total Members: ');
+  const online = formatMembers(guildOnline);
 
-  async execute(interaction) {
-    await interaction.deferReply();
-    let offlineMembers = 0;
-    let totalMembers = 0;
-    try {
-      [, offlineMembers] = guildOnline[guildOnline.length - 1].split('Offline Members: ');
-    } catch (e) {
-      await interaction.editReply('`/g online` timed out, try again in a few minutes');
-      return;
-    }
-    [, totalMembers] = guildOnline[guildOnline.length - 3].split('Total Members: ');
-    const online = formatMembers(guildOnline);
-
-    const embed = new EmbedBuilder()
-      .setColor(0x2f3136)
-      .setTitle('Online Members')
-      .setDescription(`${online}\n\nTotal Members: \`${totalMembers}\` / \`125\`\nOnline Members: \`${onlineMembers}\`\nOffline Members: \`${offlineMembers}\``)
-      .setThumbnail(config.guild.icon);
-    await interaction.editReply({ embeds: [embed] });
-  },
-};
+  const embed = new EmbedBuilder()
+    .setColor(3092790)
+    .setTitle('Online Members')
+    .setDescription(`${online}\n\nTotal Members: \`${totalMembers}\` / \`125\`\nOnline Members: \`${onlineMembers}\`\nOffline Members: \`${offlineMembers}\``)
+    .setThumbnail(guild.icon);
+  await interaction.editReply({ embeds: [embed] });
+}

@@ -1,11 +1,11 @@
-const fs = require('fs');
-const { DisTube } = require('distube');
-const { SpotifyPlugin } = require('@distube/spotify');
-const { REST } = require('@discordjs/rest');
-const {
+import fs from 'fs';
+import { DisTube } from 'distube';
+import { SpotifyPlugin } from '@distube/spotify';
+import { REST } from '@discordjs/rest';
+import {
   Client, GatewayIntentBits, Collection, Routes,
-} = require('discord.js');
-const config = require('./config.json');
+} from 'discord.js';
+import config from './config.json' assert { type: "json" };
 
 const client = new Client({
   intents: [
@@ -29,23 +29,23 @@ client.distube = new DisTube(client, {
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./slashCommands/');
-
 const commands = [];
+
 for (const file of commandFiles) {
-  const command = require(`./slashCommands/${file}`);
+  const command = await import(`./slashCommands/${file}`);
   commands.push(command.data.toJSON());
   if (command.data.name) {
     client.commands.set(command.data.name, command);
   }
 }
 
-fs.readdirSync('./events/discord')
-  .filter((file) => file.endsWith('.js'))
-  .forEach((file) => {
-    const event = require(`./events/discord/${file}`);
-    const name = file.split('.')[0];
-    client.on(name, event.execute.bind(null, client));
-  });
+const eventFiles = fs.readdirSync('./events/discord');
+
+for (const file of eventFiles) {
+  const event = await import(`./events/discord/${file}`);
+  const name = file.split('.')[0];
+  client.on(name, event.default.bind(null, client));
+}
 
 const clientId = '960769680765771806';
 const guildId = '242357942664429568';
@@ -65,6 +65,4 @@ const rest = new REST({ version: '10' }).setToken(config.keys.discordBotToken);
 
 client.login(config.keys.discordBotToken);
 
-module.exports = {
-  client,
-};
+export default client;

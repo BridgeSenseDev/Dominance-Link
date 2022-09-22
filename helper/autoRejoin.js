@@ -1,7 +1,7 @@
-const { EmbedBuilder } = require('discord.js');
-const fs = require('fs');
-const mineflayer = require('mineflayer');
-const config = require('../config.json');
+import { EmbedBuilder } from 'discord.js';
+import fs from 'fs';
+import mineflayer from 'mineflayer';
+import config from '../config.json' assert { type: "json" };
 
 const minecraftLoginOptions = {
   host: 'mc.hypixel.net',
@@ -15,17 +15,16 @@ const minecraftLoginOptions = {
   defaultChatPatterns: false,
 };
 
-function startBot(client) {
+async function startBot(client) {
   global.bot = mineflayer.createBot(minecraftLoginOptions);
   bot.on('error', console.error);
   bot.on('kicked', console.error);
-  fs.readdirSync('./events/minecraft')
-    .filter((file) => file.endsWith('.js'))
-    .forEach((file) => {
-      const event = require(`../events/minecraft/${file}`);
-      const name = file.split('.')[0];
-      bot.on(name, (...args) => event.execute(client, ...args));
-    });
+  const eventFiles = fs.readdirSync('./events/minecraft');
+  for (const file of eventFiles) {
+    const event = await import(`../events/minecraft/${file}`);
+    const name = file.split('.')[0];
+    bot.on(name, (...args) => event.default(client, ...args));
+  }
 }
 
 async function autoRejoin() {
@@ -34,7 +33,7 @@ async function autoRejoin() {
     if (!status) {
       console.log('Restarting bot');
       const embed = new EmbedBuilder()
-        .setColor(0xe74d3c)
+        .setColor(config.color.red)
         .setTitle('Disconnected')
         .setDescription('MatrixLink has been disconnected from hypixel. Trying to reconnect...')
         .addFields(
@@ -51,7 +50,7 @@ async function autoRejoin() {
   }, 60 * 1000);
 }
 
-module.exports = {
+export {
   startBot,
   autoRejoin,
 };

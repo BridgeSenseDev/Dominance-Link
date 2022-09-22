@@ -1,7 +1,5 @@
-const {
-  Client, GatewayIntentBits, EmbedBuilder,
-} = require('discord.js');
-const config = require('../config.json');
+import { Client, GatewayIntentBits, EmbedBuilder } from 'discord.js';
+import config from '../config.json' assert {type: "json"};
 
 const client = new Client({
   intents: [
@@ -16,7 +14,7 @@ const client = new Client({
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   const embed = new EmbedBuilder()
-    .setColor(0x206694)
+    .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Roles Info', iconURL: config.guild.icon })
     .addFields(
       {

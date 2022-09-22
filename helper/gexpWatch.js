@@ -1,7 +1,9 @@
-const cron = require('node-cron');
-const db = require('better-sqlite3')('matrix.db');
-const { EmbedBuilder } = require('discord.js');
-const config = require('../config.json');
+import { schedule } from 'node-cron';
+import { EmbedBuilder } from 'discord.js';
+import Database from 'better-sqlite3';
+import config from '../config.json' assert {type: "json"};
+
+const db = new Database('matrix.db');
 
 function gexpGained(gained) {
   let desc;
@@ -11,7 +13,7 @@ function gexpGained(gained) {
     color = 0x2ecc70;
   } else {
     desc = '<:down:969182381162500097> Lost';
-    color = 0xe74d3c;
+    color = config.color.red;
   }
   return [desc, color];
 }
@@ -24,7 +26,7 @@ function doubleDigits(number) {
 }
 
 async function gexpWatch(client) {
-  cron.schedule('00 50 11 * * 0-6', async () => {
+  schedule('00 50 11 * * 0-6', async () => {
     const rebelWatch = client.channels.cache.get('712590243949183036');
     const cronosWatch = client.channels.cache.get('932283305108340766');
     const dawnsWatch = client.channels.cache.get('932283336745959474');
@@ -110,4 +112,4 @@ async function gexpWatch(client) {
   });
 }
 
-module.exports = gexpWatch;
+export default gexpWatch;
