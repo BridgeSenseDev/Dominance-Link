@@ -18,7 +18,7 @@ export async function execute(interaction) {
     uuid = (await (await fetch(`https://api.mojang.com/users/profiles/minecraft/${ign}`)).json()).id;
   } catch (e) {
     const embed = new EmbedBuilder()
-      .setColor(config.color.red)
+      .setColor(config.colors.red)
       .setTitle('Error')
       .setDescription(`<a:across:986170696512204820> **${ign}** is an invalid IGN`);
     await interaction.editReply({ embeds: [embed] });
@@ -30,7 +30,7 @@ export async function execute(interaction) {
     disc = player.socialMedia.links.DISCORD;
   } catch (e) {
     const embed = new EmbedBuilder()
-      .setColor(config.color.red)
+      .setColor(config.colors.red)
       .setTitle('Error')
       .setDescription(`<a:across:986170696512204820> **${name}** doesn't have a discord linked on hypixel\nPlease link your social media\
                  following [this](https://www.youtube.com/watch?v=gqUPbkxxKLI&feature=emb_title) tutorial`);
@@ -44,7 +44,7 @@ export async function execute(interaction) {
     if (guild === null) {
       db.prepare('INSERT OR IGNORE INTO members (uuid, discord) VALUES (?, ?)').run(uuid, interaction.user.id);
       const embed = new EmbedBuilder()
-        .setColor(config.color.green)
+        .setColor(config.colors.green)
         .setTitle('Successful')
         .setDescription(`<a:atick:986173414723162113> Verification successful, **${name}** is not in Matrix\n<:plus:925735955837636648>\
                   Added: <@&445669382539051008>\n<:minus:926070848593494047> Removed: <@&907911526118223912>`)
@@ -54,7 +54,7 @@ export async function execute(interaction) {
       await interaction.member.roles.add(interaction.guild.roles.cache.get('753172820133150772'));
       db.prepare('INSERT OR IGNORE INTO members (uuid, discord) VALUES (?, ?)').run(uuid, interaction.user.id);
       const embed = new EmbedBuilder()
-        .setColor(config.color.green)
+        .setColor(config.colors.green)
         .setTitle('Successful')
         .setDescription(`<a:atick:986173414723162113> Verification successful, **${name}** is in Matrix\n<:plus:925735955837636648> Added: \
                     <@&445669382539051008>, <@&753172820133150772>\n<:minus:926070848593494047> Removed: <@&907911526118223912>`)
@@ -63,7 +63,7 @@ export async function execute(interaction) {
     } else {
       db.prepare('INSERT OR IGNORE INTO members (uuid, discord) VALUES (?, ?)').run(uuid, interaction.user.id);
       const embed = new EmbedBuilder()
-        .setColor(config.color.green)
+        .setColor(config.colors.green)
         .setTitle('Successful')
         .setDescription(`<a:atick:986173414723162113> Verification successful, **${name}** is not in Matrix\n<:plus:925735955837636648>\
                     Added: <@&445669382539051008>\n<:minus:926070848593494047> Removed: <@&907911526118223912>`)
@@ -72,7 +72,7 @@ export async function execute(interaction) {
     }
   } else {
     const embed = new EmbedBuilder()
-      .setColor(config.color.red)
+      .setColor(config.colors.red)
       .setTitle('Error')
       .setDescription(`<a:across:986170696512204820>${name} has a different discord account linked on hypixel\nThe discord tag **${disc}**\
                      linked on hypixel does not match your discord tag **${interaction.user.tag}**`);

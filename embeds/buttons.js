@@ -64,7 +64,7 @@ async function notificationRoles(client, channelId) {
     );
 
   const embed = new EmbedBuilder()
-    .setColor(config.color.discordGray)
+    .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Notification Roles', iconURL: 'https://cdn.discordapp.com/attachments/986281342457237624/1005133447712473108/notification-bell_1.png' })
     .setDescription('Use the buttons below to select notification pings\nRed buttons are for guild members');
   await channel.send({ components: [row, row2], embeds: [embed] });
@@ -159,7 +159,7 @@ async function gamemodeRoles(client, channelId) {
         .setEmoji(':megawalls:1006054180093448273'),
     );
   const embed = new EmbedBuilder()
-    .setColor(config.color.yellow)
+    .setColor(config.colors.yellow)
     .setAuthor({ name: 'Gamemode Roles', iconURL: 'https://cdn.discordapp.com/attachments/986281342457237624/1006054852381651034/DdNypQdN_400x400.png' })
     .setDescription('Use the buttons below to select what gamemodes you like to play\nThese roles can be mentioned!');
   await channel.send({ components: [row, row2, row3], embeds: [embed] });
@@ -177,7 +177,7 @@ async function applications(client, channelId) {
     );
 
   const embed = new EmbedBuilder()
-    .setColor(config.color.yellow)
+    .setColor(config.colors.yellow)
     .setAuthor({ name: 'Applications', iconURL: config.guild.icon })
     .setDescription('**Click the button below to apply**\nYou **WILL NOT** get a response if you\'re rejected and your dm\'s are closed\n\n════ ⋆★⋆ ════\n\n**[Rejoining]**\n\
     `-` If your application gets rejected wait **3 weeks** before reapplying\n`-` Wait **1 month** before reapplying if you get kicked / leave\n`-` Wait **2 months** before \

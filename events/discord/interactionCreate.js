@@ -29,7 +29,7 @@ async function execute(client, interaction) {
     await interaction.deferUpdate({ ephemeral: true });
     const user = await client.users.fetch(interaction.customId);
     const embed = new EmbedBuilder()
-      .setColor(config.color.red)
+      .setColor(config.colors.red)
       .setTitle('Your Matrix application has been denied')
       .setDescription(`**Reason:** ${interaction.values}`);
     await user.send({ embeds: [embed] });
@@ -44,7 +44,7 @@ async function execute(client, interaction) {
       } catch (e) {
         await interaction.member.roles.add(interaction.guild.roles.cache.get('907911526118223912'));
         const embed = new EmbedBuilder()
-          .setColor(config.color.red)
+          .setColor(config.colors.red)
           .setTitle('Error')
           .setDescription('Please verify first in <#907911357582704640>');
         await interaction.editReply({ embeds: [embed] });
@@ -61,7 +61,7 @@ async function execute(client, interaction) {
       if (db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id) === undefined) {
         await interaction.member.roles.add(interaction.guild.roles.cache.get('907911526118223912'));
         const embed = new EmbedBuilder()
-          .setColor(config.color.red)
+          .setColor(config.colors.red)
           .setTitle('Error')
           .setDescription('Please verify first in <#907911357582704640>');
         await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -104,7 +104,7 @@ async function execute(client, interaction) {
           ReadMessageHistory: true,
         });
         const embed = new EmbedBuilder()
-          .setColor(config.color.green)
+          .setColor(config.colors.green)
           .setTitle(`Congrats ${name}, your application has been accepted!`)
           .setDescription('**How to get started:**\n`1.` **Join The Guild**\nYou can get invited to the guild at anytime without staff. Just type `/msg MatrixLink .` \
             or if you are muted, type `/immuted MatrixLink`\n\n`2.` **Familiarize Yourself**\nHang out with other guild members in <#1016840866322714684> or talk in-game \

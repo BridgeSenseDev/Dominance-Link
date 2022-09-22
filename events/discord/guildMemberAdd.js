@@ -4,7 +4,7 @@ import config from '../../config.json' assert {type: "json"};
 async function execute(client, member) {
   if (member.guild.id !== '242357942664429568') return;
   const embed = new EmbedBuilder()
-    .setColor(config.color.yellow)
+    .setColor(config.colors.yellow)
     .setTitle(':wave: Welcome to Matrix!')
     .setDescription(`Welcome to the Matrix Community **${member.displayName}**!\n\n**Here's a list of things to help you \
       get started:**\n\n**<:rules:969478807927021599> | Community Info**\n\`•\`Learn about our community and rules in \

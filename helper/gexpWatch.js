@@ -13,7 +13,7 @@ function gexpGained(gained) {
     color = 0x2ecc70;
   } else {
     desc = '<:down:969182381162500097> Lost';
-    color = config.color.red;
+    color = config.colors.red;
   }
   return [desc, color];
 }

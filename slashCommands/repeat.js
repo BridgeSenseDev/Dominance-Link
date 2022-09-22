@@ -15,7 +15,7 @@ export const data = new SlashCommandBuilder()
     .setDescription('Repeat the current song'));
 export async function execute(interaction) {
   await interaction.deferReply();
-  const { client } = require('../index');
+  const client = (await import('../index.js')).default;
   const queue = client.distube.getQueue(interaction.guild);
   switch (interaction.options.getSubcommand()) {
     case 'off':

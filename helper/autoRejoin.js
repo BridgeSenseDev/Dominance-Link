@@ -33,7 +33,7 @@ async function autoRejoin() {
     if (!status) {
       console.log('Restarting bot');
       const embed = new EmbedBuilder()
-        .setColor(config.color.red)
+        .setColor(config.colors.red)
         .setTitle('Disconnected')
         .setDescription('MatrixLink has been disconnected from hypixel. Trying to reconnect...')
         .addFields(

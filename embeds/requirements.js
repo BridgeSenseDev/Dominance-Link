@@ -17,7 +17,7 @@ const client = new Client({
 client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
   const embed = new EmbedBuilder()
-    .setColor(config.color.yellow)
+    .setColor(config.colors.yellow)
     .setAuthor({ name: 'Guild Requirements', iconURL: config.guild.icon })
     .setDescription(`**Our current GEXP requirement is \`${config.guild.gexpReq}\` per week\nClick the button below to check if you meet our requirements**\n\n════ ⋆★⋆ ════\n\n**\
     [Requirements]**\n**You must meet at least one of these requirements to join:**\n\`Achievement Points\`\n\`-\` 10k AP\n\`Arcade\`\n\`-\` 1.5k Wins\n\`Bedwars\`\n\`-\` \

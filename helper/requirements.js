@@ -40,6 +40,9 @@ export default async function requirements(uuid, playerData) {
   } catch (e) {
     skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
   }
+  if (skyblock[0] === undefined) {
+    skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
+  }
 
   try {
     bedwars = [playerData.achievements.bedwars_level, Math.round((
@@ -199,7 +202,7 @@ export default async function requirements(uuid, playerData) {
     if (skywars[0].slice(0, -1) >= 13) {
       requirements += `<a:atick:986173414723162113> **Skywars Stars:** \`${skywars[0]}\`\n`;
     } else {
-      requirements += `<a:across:986170696512204820> **Skywars Stars:** \`${skywars[0]} / 12☆\`\n`;
+      requirements += `<a:across:986170696512204820> **Skywars Stars:** \`${skywars[0]} / 13⁕\`\n`;
     }
     if (skywars[1] >= 1.5) {
       requirements += `<a:atick:986173414723162113> **Skywars KDR:** \`${skywars[1]}\`\n\n`;
@@ -249,7 +252,7 @@ export default async function requirements(uuid, playerData) {
     reqs = 'Yes';
   } else {
     author = `${name} does not meet Matrix requirements!`;
-    color = config.color.red;
+    color = config.colors.red;
     reqs = 'No';
   }
 

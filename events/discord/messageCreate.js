@@ -18,7 +18,7 @@ async function execute(client, message) {
       } catch (err) {
         await message.member.roles.add(message.guild.roles.cache.get('907911526118223912'));
         const embed = new EmbedBuilder()
-          .setColor(config.color.red)
+          .setColor(config.colors.red)
           .setTitle('Error')
           .setDescription(`<a:across:986170696512204820> <@${message.author.id}> Please verify first in <#907911357582704640>`);
         message.reply({ embeds: [embed] });
@@ -43,7 +43,7 @@ async function execute(client, message) {
       if (uuid === undefined) {
         await message.author.roles.add(message.guild.roles.cache.get('907911526118223912'));
         const embed = new EmbedBuilder()
-          .setColor(config.color.red)
+          .setColor(config.colors.red)
           .setTitle('Error')
           .setDescription(`<a:across:986170696512204820> <@${message.author.id}> Please verify first in <#907911357582704640>`);
         message.reply({ embeds: [embed] });

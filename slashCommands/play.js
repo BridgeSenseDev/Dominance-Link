@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
-import colors from '../config.json' assert {type: "json"};
+import config from '../config.json' assert {type: "json"};
 
 export const data = new SlashCommandBuilder()
   .setName('play')
@@ -9,13 +9,13 @@ export const data = new SlashCommandBuilder()
     .setRequired(true));
 export async function execute(interaction) {
   await interaction.deferReply();
-  const { client } = require('../index');
+  const client = (await import('../index.js')).default;
   const voiceChannel = client.channels.cache.get('1021832811835052122');
   try {
     await client.distube.play(voiceChannel, interaction.options.getString('link-or-query'), { textChannel: interaction.channel, member: interaction.member });
   } catch (err) {
     const embed = new EmbedBuilder()
-      .setColor(colors.red)
+      .setColor(config.colors.red)
       .setDescription('<:cross_mark_3d:1022156671671357550> Unknown song / playlist');
     await interaction.editReply({ embeds: [embed] });
     return;
@@ -23,7 +23,7 @@ export async function execute(interaction) {
   const { songs } = client.distube.getQueue(interaction.guild);
   if (songs[songs.length - 1].playlist) {
     const embed = new EmbedBuilder()
-      .setColor(colors.yellow)
+      .setColor(config.colors.yellow)
       .setAuthor({ name: 'Added to queue', iconURL: interaction.user.displayAvatarURL() })
       .setDescription(`**Playlist:** [${songs[songs.length - 1].playlist.name}](${songs[songs.length - 1].playlist.url})`)
       .setThumbnail(songs[songs.length - 1].playlist.thumbnail)
@@ -43,7 +43,7 @@ export async function execute(interaction) {
     return;
   }
   const embed = new EmbedBuilder()
-    .setColor(colors.yellow)
+    .setColor(config.colors.yellow)
     .setAuthor({ name: 'Added to queue', iconURL: interaction.user.displayAvatarURL() })
     .setDescription(`[${songs[songs.length - 1].name}](${songs[songs.length - 1].url})`)
     .setThumbnail(songs[songs.length - 1].thumbnail)
