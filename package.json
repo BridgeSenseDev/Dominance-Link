@@ -20,7 +20,7 @@
     "canvas": "^2.10.1",
     "cjs-to-es6": "^2.0.1",
     "discord.js": "^14.3.0",
-    "distube": "^4.0.3",
+    "distube": "^4.0.4",
     "dotenv": "^16.0.2",
     "ffmpeg-static": "^5.1.0",
     "googleapis": "^108.0.0",
