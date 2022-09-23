@@ -69,8 +69,8 @@ export default async function execute(client, message, messagePosition) {
         break;
       }
     }
-    await bot.chat(`/gc Welcome to Matrix, ${name}! . Our current GEXP \
-      requirement is ${config.guild.gexpReq} per week. ${funFact}`);
+    await bot.chat(`/gc Welcome to Matrix, ${name}! . Our current GEXP
+ requirement is ${config.guild.gexpReq} per week. ${funFact}`);
     await gcWebhook.send({
       username: 'Matrix',
       avatarURL: config.guild.icon,

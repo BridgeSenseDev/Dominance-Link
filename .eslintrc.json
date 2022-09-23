@@ -32,7 +32,8 @@
         "linebreak-style": "off",
         "no-case-declarations": "off",
         "import/extensions": "off",
-        "no-await-in-loop": "off"
+        "no-await-in-loop": "off",
+        "no-new": "off"
     },
     "globals": {
         "bot": true,
