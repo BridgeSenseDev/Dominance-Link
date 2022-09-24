@@ -1,6 +1,7 @@
 node_modules
-config.json
-matrix.db
+src/config.json
+src/matrix.db
 test.js
 Matrix Link.code-workspace
-keys.json
+src/keys.json
+dist
