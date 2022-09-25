@@ -17,19 +17,18 @@ async function startBot() {
   });
 
   const eventFiles = fs.readdirSync('./events/minecraft');
-  Object.values(eventFiles).forEach(async (file) => {
+  for (const file of eventFiles) {
     const event = await import(`../events/minecraft/${file}`);
     const name = file.split('.')[0];
     global.bot.on(name, (...args) => event.default(global.bot, ...args));
-  });
+  }
 }
 
 async function autoRejoin() {
   setInterval(async () => {
     const status = (await (await fetch(`https://api.hypixel.net/status?key=${config.keys.hypixelApiKey}&uuid=5760aae2-d977-467c-bf62-048469d5f507`)).json()).session.online;
     if (!status) {
-      // eslint-disable-next-line no-console
-      console.log('[Minecraft] Restarting bot');
+      console.log('[MINECRAFT] Restarting bot');
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle('Disconnected')

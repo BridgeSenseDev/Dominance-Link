@@ -30,21 +30,21 @@ client.commands = new Collection();
 const commandFiles = fs.readdirSync('./slashCommands/');
 const commands = [];
 
-Object.values(commandFiles).forEach(async (file) => {
+for (const file of commandFiles) {
   const command = await import(`./slashCommands/${file}`);
   commands.push(command.data.toJSON());
   if (command.data.name) {
     client.commands.set(command.data.name, command);
   }
-});
+}
 
 const eventFiles = fs.readdirSync('./events/discord');
 
-Object.values(eventFiles).forEach(async (file) => {
+for (const file of eventFiles) {
   const event = await import(`./events/discord/${file}`);
   const name = file.split('.')[0];
   client.on(name, event.default.bind(null, client));
-});
+}
 
 const clientId = '960769680765771806';
 const guildId = '242357942664429568';

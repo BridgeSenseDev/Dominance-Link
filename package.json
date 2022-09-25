@@ -7,7 +7,7 @@
   "scripts": {
     "start": "cd ./src && ts-node --esm --files ./index.ts",
     "start:dev": "ts-node-dev src/index.ts",
-    "copy-files": "copyfiles -u 1 src/matrix.db src/Uni Sans Heavy Regular.ttf dist/",
+    "copy-files": "copyfiles -u 1 src/matrix.db dist/",
     "build": "tsc -p tsconfig.json && npm run copy-files ",
     "lint": "eslint . --ext .ts"
   },
