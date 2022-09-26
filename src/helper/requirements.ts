@@ -30,7 +30,7 @@ function weeklyGexp(members, uuid) {
 export default async function requirements(uuid, playerData) {
   let guild; let bedwars; let duels; let skywars; let skyblock;
   const name = await UUIDtoName(uuid);
-  const guildData = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&playerData=${uuid}`)).json()).guild;
+  const guildData = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json()).guild;
 
   // Get gamemode data
   let skyblockData;

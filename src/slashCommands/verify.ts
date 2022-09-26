@@ -12,7 +12,7 @@ export const data = new SlashCommandBuilder()
     .setRequired(true));
 export async function execute(interaction) {
   await interaction.deferReply({ ephemeral: true });
-  let uuid; let disc;
+  let uuid; let disc; let name;
   const ign = interaction.options.getString('ign');
   try {
     uuid = (await (await fetch(`https://api.mojang.com/users/profiles/minecraft/${ign}`)).json()).id;
@@ -25,10 +25,18 @@ export async function execute(interaction) {
     return;
   }
   const { player } = (await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json());
-  const name = player.displayname;
   try {
+    name = player.displayname;
     disc = player.socialMedia.links.DISCORD;
   } catch (e) {
+    if (name === undefined) {
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.red)
+        .setTitle('Error')
+        .setDescription(`<a:across:986170696512204820> **${ign}** is an invalid IGN`);
+      await interaction.editReply({ embeds: [embed] });
+      return;
+    }
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
