@@ -13,7 +13,7 @@ async function execute(client) {
   global.logChannel = client.channels.cache.get(config.channels.logChannel);
   global.guildChat = client.channels.cache.get(config.channels.guildChat);
   global.onlineChannel = client.channels.cache.get(config.channels.onlineChannel);
-  global.membersChannel = client.channels.cache.get(config.channels.memberschannel);
+  global.membersChannel = client.channels.cache.get(config.channels.membersChannel);
   global.levelChannel = client.channels.cache.get(config.channels.levelChannel);
   global.applicationsChannel = client.channels.cache.get(config.channels.applicationsChannel);
   global.officerChat = client.channels.cache.get(config.channels.officerChat);
