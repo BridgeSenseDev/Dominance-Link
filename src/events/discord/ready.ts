@@ -7,18 +7,19 @@ import {
 import gexpWatch from '../../helper/gexpWatch.js';
 import channelUpdate from '../../helper/channelUpdate.js';
 import { autoRejoin, startBot } from '../../helper/autoRejoin.js';
+import config from '../../config.json' assert {type: 'json'};
 
 async function execute(client) {
   // eslint-disable-next-line no-console
   console.log(`[DISCORD] Logged in as ${client.user.tag}`);
-  global.statusChannel = client.channels.cache.get('1001465850555027477');
-  global.logChannel = client.channels.cache.get('1011845953826857030');
-  global.guildChat = client.channels.cache.get('1016734361472729088');
-  global.onlineChannel = client.channels.cache.get('995685430420852766');
-  global.membersChannel = client.channels.cache.get('995685323818410004');
-  global.levelChannel = client.channels.cache.get('995685400700006520');
-  global.applicationsChannel = client.channels.cache.get('1018079280443424898');
-  global.officerChat = client.channels.cache.get('1016735077385912360');
+  global.statusChannel = client.channels.cache.get(config.channels.statusChannel);
+  global.logChannel = client.channels.cache.get(config.channels.logChannel);
+  global.guildChat = client.channels.cache.get(config.channels.guildChat);
+  global.onlineChannel = client.channels.cache.get(config.channels.onlineChannel);
+  global.membersChannel = client.channels.cache.get(config.channels.memberschannel);
+  global.levelChannel = client.channels.cache.get(config.channels.levelChannel);
+  global.applicationsChannel = client.channels.cache.get(config.channels.applicationsChannel);
+  global.officerChat = client.channels.cache.get(config.channels.officerChat);
   global.onlineMembers = 0;
   gexpWatch(client);
   channelUpdate(client);

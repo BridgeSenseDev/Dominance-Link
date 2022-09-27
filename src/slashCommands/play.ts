@@ -10,7 +10,7 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction) {
   await interaction.deferReply();
   const client = (await import('../index.js')).default;
-  const voiceChannel = client.channels.cache.get('1021832811835052122');
+  const voiceChannel = client.channels.cache.get(config.channels.musicChannel);
   try {
     await client.distube.play(voiceChannel, interaction.options.getString('link-or-query'), { textChannel: interaction.channel, member: interaction.member });
   } catch (err) {
