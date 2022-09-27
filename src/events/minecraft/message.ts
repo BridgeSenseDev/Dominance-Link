@@ -76,7 +76,7 @@ export default async function execute(client, message, messagePosition) {
         `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
       )],
     });
-    const uuid = nameToUUID(name);
+    const uuid = await nameToUUID(name);
     const channelId = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').run(uuid);
     await client.channels.cache.get(channelId).delete();
     db.prepare('DELETE FROM waitlist WHERE uuid = ?').run(uuid);
