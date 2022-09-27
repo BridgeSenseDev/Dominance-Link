@@ -1,6 +1,3 @@
-/* eslint-disable no-unused-vars */
-import { notificationRoles, gamemodeRoles, applications } from '../../embeds/buttons.js';
-import requirements from '../../embeds/requirements.js';
 import {
   database, gsrun, sheet, weekly,
 } from '../../helper/database.js';
@@ -28,10 +25,6 @@ async function execute(client) {
   weekly();
   gsrun(sheet, client);
   startBot();
-  // notificationRoles(client, '583661446202785815');
-  // gamemodeRoles(client, '583661446202785815');
-  // applications(client, '1017099269372657724');
-  // requirements(client, '1017099269372657724');
 }
 
 export default execute;
