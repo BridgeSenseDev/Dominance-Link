@@ -16,11 +16,12 @@ async function startBot() {
     defaultChatPatterns: false,
   });
 
+  const client = (await import('../index.js')).default;
   const eventFiles = fs.readdirSync('./events/minecraft');
   for (const file of eventFiles) {
     const event = await import(`../events/minecraft/${file}`);
     const name = file.split('.')[0];
-    global.bot.on(name, (...args) => event.default(global.bot, ...args));
+    global.bot.on(name, (...args) => event.default(client, ...args));
   }
 }
 
@@ -28,6 +29,7 @@ async function autoRejoin() {
   setInterval(async () => {
     const status = (await (await fetch(`https://api.hypixel.net/status?key=${config.keys.hypixelApiKey}&uuid=5760aae2-d977-467c-bf62-048469d5f507`)).json()).session.online;
     if (!status) {
+      // eslint-disable-next-line no-console
       console.log('[MINECRAFT] Restarting bot');
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
