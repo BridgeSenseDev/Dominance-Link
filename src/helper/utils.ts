@@ -113,10 +113,11 @@ function formatDate(dateObj) {
 
 function removeSectionSymbols(message) {
   let msg = message;
-  const pos = msg.indexOf('\u00A7');
+  let pos = msg.indexOf('\u00A7');
   while (pos !== -1) {
     msg = msg.slice(0, pos) + msg.slice(pos + 1);
     msg = msg.slice(0, pos) + msg.slice(pos + 1);
+    pos = msg.indexOf('\u00A7');
   }
   return msg;
 }

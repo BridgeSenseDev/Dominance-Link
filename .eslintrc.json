@@ -25,7 +25,8 @@
         "linebreak-style": "off",
         "import/no-unresolved": "off",
         "no-restricted-syntax": "off",
-        "no-await-in-loop": "off"
+        "no-await-in-loop": "off",
+        "consistent-return": "off"
     },
     "globals": {
         "bot": true,

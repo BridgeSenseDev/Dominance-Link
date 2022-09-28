@@ -1,17 +1,36 @@
+import { getNetworth } from 'skyhelper-networth';
 import {
   removeSectionSymbols, abbreviateNumber, formatNumber, UUIDtoName,
 } from './utils.js';
 import config from '../config.json' assert {type: 'json'};
 
-const validSkills = ['farming', 'mining', 'combat', 'foraging', 'fishing', 'enchanting', 'alchemy', 'taming'];
+const { levelingXp } = (await import('./constants.js')).default;
 
-function skillAverage(skills) {
-  let levels = 0;
-  Object.keys(skills).forEach((skill) => {
-    if (validSkills.includes(skill)) {
-      levels += skills[skill].level;
+async function xpToLevel(exp, cap) {
+  let xp = exp;
+  for (let i = 0; i < cap; i += 1) {
+    if (xp - levelingXp[i] > 0) {
+      xp -= levelingXp[i];
+    } else {
+      return i + xp / levelingXp[i];
     }
-  });
+  }
+  return cap;
+}
+
+async function skillAverage(player) {
+  let levels = 0;
+  levels += await xpToLevel(player.experience_skill_farming, 60);
+  levels += await xpToLevel(player.experience_skill_mining, 60);
+  levels += await xpToLevel(player.experience_skill_combat, 60);
+  levels += await xpToLevel(player.experience_skill_foraging, 50);
+  levels += await xpToLevel(player.experience_skill_fishing, 50);
+  levels += await xpToLevel(player.experience_skill_enchanting, 60);
+  levels += await xpToLevel(player.experience_skill_alchemy, 50);
+  levels += await xpToLevel(player.experience_skill_taming, 50);
+  if (Number.isNaN(levels)) {
+    return 'No Skyblock Data / API Disabled';
+  }
   return levels / 8;
 }
 
@@ -33,21 +52,37 @@ export default async function requirements(uuid, playerData) {
   const guildData = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json()).guild;
 
   // Get gamemode data
-  let skyblockData;
-  try {
-    [skyblockData] = (await (await fetch(`http://192.168.1.119:3000/v1/profiles/${name}?key=matrixlink`)).json()).data;
-    skyblock = [skyblockData.networth.total_networth, skillAverage(skyblockData.skills)];
-  } catch (e) {
+  let profileData; let bankBalance;
+  const { profiles } = (await (await fetch(`https://api.hypixel.net/skyblock/profiles?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json());
+  if (profiles === null) {
     skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
-  }
-  if (skyblock[0] === undefined) {
-    skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
+  } else {
+    let lastSave = 0;
+    profiles.forEach((i) => {
+      if (i.members[uuid].last_save > lastSave) {
+        lastSave = i.members[uuid].last_save;
+        profileData = i.members[uuid];
+        bankBalance = i.banking?.balance;
+      }
+    });
+    if (profileData === undefined) {
+      skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
+    } else {
+      const { networth } = await getNetworth(profileData, bankBalance);
+      skyblock = [networth, await skillAverage(profileData)];
+    }
   }
 
   try {
-    bedwars = [playerData.achievements.bedwars_level, Math.round((
-      playerData.stats.Bedwars.final_kills_bedwars / playerData.stats.Bedwars.final_deaths_bedwars)
-      * 100) / 100];
+    const fkdr = Math.round((playerData.stats.Bedwars.final_kills_bedwars
+      / playerData.stats.Bedwars.final_deaths_bedwars) * 100) / 100;
+    if (Number.isNaN(fkdr)) {
+      bedwars = [playerData.achievements.bedwars_level, 0];
+    } else {
+      bedwars = [playerData.achievements.bedwars_level, Math.round((
+        playerData.stats.Bedwars.final_kills_bedwars
+        / playerData.stats.Bedwars.final_deaths_bedwars) * 100) / 100];
+    }
   } catch (e) {
     bedwars = ['No Bedwars Data', 'No Bedwars Data'];
   }
@@ -66,8 +101,14 @@ export default async function requirements(uuid, playerData) {
   }
 
   try {
-    skywars = [removeSectionSymbols(playerData.stats.SkyWars.levelFormatted),
-      Math.round((playerData.stats.SkyWars.kills / playerData.stats.SkyWars.deaths) * 100) / 100];
+    const kdr = Math.round((playerData.stats.SkyWars.kills / playerData.stats.SkyWars.deaths) * 100)
+    / 100;
+    if (Number.isNaN(kdr)) {
+      skywars = [removeSectionSymbols(playerData.stats.SkyWars.levelFormatted), 0];
+    } else {
+      skywars = [removeSectionSymbols(playerData.stats.SkyWars.levelFormatted),
+        Math.round((playerData.stats.SkyWars.kills / playerData.stats.SkyWars.deaths) * 100) / 100];
+    }
   } catch (e) {
     skywars = ['No SkyWars Data', 'No SkyWars Data'];
   }
@@ -107,7 +148,6 @@ export default async function requirements(uuid, playerData) {
       requirementEmbed += '<a:across:986170696512204820> **Arcade Wins:** `No Arcade Games Data`\n\n';
     }
   }
-
   if (bedwars[0] >= 200 && bedwars[1] >= 3 && bedwars[0] !== 'No Bedwars Data') {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Bedwars**\n';
@@ -164,17 +204,21 @@ export default async function requirements(uuid, playerData) {
     }
   }
 
-  if (playerData.stats.MurderMystery.wins >= 2000) {
-    meetingReqs = true;
-    requirementEmbed += ':green_circle: **Murder Mystery**\n';
-    requirementEmbed += `<a:atick:986173414723162113> **Murder Mystery Wins:** \`${playerData.stats.MurderMystery.wins}\`\n\n`;
-  } else {
-    requirementEmbed += ':red_circle: **Murder Mystery**\n';
-    try {
-      requirementEmbed += `<a:across:986170696512204820> **Murder Mystery Wins:** \`${formatNumber(playerData.stats.MurderMystery.wins)} / 20,000\`\n\n`;
-    } catch (e) {
-      requirementEmbed += '<a:across:986170696512204820> **Arcade Wins:** `No Murder Mystery Data`\n\n';
+  try {
+    if (playerData.stats.MurderMystery.wins >= 2000) {
+      meetingReqs = true;
+      requirementEmbed += ':green_circle: **Murder Mystery**\n';
+      requirementEmbed += `<a:atick:986173414723162113> **Murder Mystery Wins:** \`${playerData.stats.MurderMystery.wins}\`\n\n`;
+    } else {
+      requirementEmbed += ':red_circle: **Murder Mystery**\n';
+      try {
+        requirementEmbed += `<a:across:986170696512204820> **Murder Mystery Wins:** \`${formatNumber(playerData.stats.MurderMystery.wins)} / 20,000\`\n\n`;
+      } catch (e) {
+        requirementEmbed += '<a:across:986170696512204820> **Murder Mystery Wins:** `No Murder Mystery Data`\n\n';
+      }
     }
+  } catch (e) {
+    requirementEmbed += ':red_circle: **Murder Mystery**\n<a:across:986170696512204820> **Murder Mystery Wins:** `No Murder Mystery Data`\n\n';
   }
 
   if (playerData.achievements.pit_prestiges >= 2000) {
@@ -226,7 +270,9 @@ export default async function requirements(uuid, playerData) {
     } else {
       requirementEmbed += `<a:across:986170696512204820> **Skyblock Networth:** \`${abbreviateNumber(Math.round(skyblock[0] * 100) / 100)} / 500m\`\n`;
     }
-    if (skyblock[1] >= 30) {
+    if (skyblock[1] === 'No Skyblock Data / API Disabled') {
+      requirementEmbed += '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
+    } else if (skyblock[1] >= 30) {
       requirementEmbed += `<a:atick:986173414723162113> **Skyblock Skill Average:** \`${skyblock[1]}\`\n\n`;
     } else {
       requirementEmbed += `<a:across:986170696512204820> **Skyblock Skill Average:** \`${skyblock[1]} / 30\`\n\n`;
@@ -255,7 +301,6 @@ export default async function requirements(uuid, playerData) {
     color = config.colors.red;
     reqs = 'No';
   }
-
   return {
     requirementEmbed, guild, author, color, reqs,
   };
