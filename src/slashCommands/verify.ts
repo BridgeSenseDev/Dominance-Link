@@ -15,7 +15,7 @@ export async function execute(interaction) {
   let uuid; let disc; let name;
   const ign = interaction.options.getString('ign');
   try {
-    uuid = (await (await fetch(`https://api.mojang.com/users/profiles/minecraft/${ign}`)).json()).id;
+    uuid = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player.raw_id;
   } catch (e) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)

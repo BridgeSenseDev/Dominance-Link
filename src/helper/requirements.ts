@@ -57,10 +57,8 @@ export default async function requirements(uuid, playerData) {
   if (profiles === null) {
     skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
   } else {
-    let lastSave = 0;
     profiles.forEach((i) => {
-      if (i.members[uuid].last_save > lastSave) {
-        lastSave = i.members[uuid].last_save;
+      if (i.selected === true) {
         profileData = i.members[uuid];
         bankBalance = i.banking?.balance;
       }
@@ -273,9 +271,9 @@ export default async function requirements(uuid, playerData) {
     if (skyblock[1] === 'No Skyblock Data / API Disabled') {
       requirementEmbed += '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
     } else if (skyblock[1] >= 30) {
-      requirementEmbed += `<a:atick:986173414723162113> **Skyblock Skill Average:** \`${skyblock[1]}\`\n\n`;
+      requirementEmbed += `<a:atick:986173414723162113> **Skyblock Skill Average:** \`${Math.round(skyblock[1] * 10) / 10}\`\n\n`;
     } else {
-      requirementEmbed += `<a:across:986170696512204820> **Skyblock Skill Average:** \`${skyblock[1]} / 30\`\n\n`;
+      requirementEmbed += `<a:across:986170696512204820> **Skyblock Skill Average:** \`${Math.round(skyblock[1] * 10) / 10} / 30\`\n\n`;
     }
   }
 

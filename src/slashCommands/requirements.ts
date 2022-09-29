@@ -13,7 +13,7 @@ export async function execute(interaction) {
   let uuid; let playerData;
   const ign = interaction.options.getString('ign');
   try {
-    uuid = (await (await fetch(`https://api.mojang.com/users/profiles/minecraft/${ign}`)).json()).id;
+    uuid = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player.raw_id;
     playerData = (await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json()).player;
     if (playerData.displayname === undefined) {
       const embed = new EmbedBuilder()
