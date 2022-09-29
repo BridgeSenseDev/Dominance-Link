@@ -7,8 +7,11 @@ const db = new Database('matrix.db');
 
 async function execute(client, message) {
   const msg = message;
-  let uuid;
   if (msg.author.bot) return;
+  let uuid;
+  if (msg.content.toLowerCase().includes('matrix')) {
+    await msg.react(':Matrix:1017274754387947561');
+  }
   if (msg.channel.id === global.logChannel.id) {
     await global.bot.chat(msg.content);
   } else if (msg.channel.id === global.guildChat.id) {
