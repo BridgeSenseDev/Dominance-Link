@@ -1,4 +1,4 @@
-import { WebhookClient } from 'discord.js';
+import { EmbedBuilder, WebhookClient } from 'discord.js';
 import Database from 'better-sqlite3';
 import { nameToUUID } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
@@ -77,9 +77,13 @@ export default async function execute(client, message, messagePosition) {
       )],
     });
     const uuid = await nameToUUID(name);
-    const channelId = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').run(uuid);
-    await client.channels.cache.get(channelId).delete();
-    db.prepare('DELETE FROM waitlist WHERE uuid = ?').run(uuid);
+    try {
+      const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid);
+      await client.channels.cache.get(channel).delete();
+      db.prepare('DELETE FROM waitlist WHERE uuid = ?').run(uuid);
+    } catch (e) {
+      // Continue regardless of error
+    }
   } else if (msg.indexOf('Guild >') !== -1) {
     await gcWebhook.send({
       username: 'Matrix',
@@ -126,8 +130,12 @@ export default async function execute(client, message, messagePosition) {
     if (waitlist !== undefined) {
       await global.bot.chat(`/g invite ${name}`);
       const channel = client.channels.cache.get(waitlist.channel.toString());
-      await channel.send(`<@${waitlist.discord.toString()}> has been invited to the guild.
-If you did not receive an invite make sure you are not in a guild`);
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.discordGray)
+        .setTitle(`${name} has been invited to the guild`)
+        .setDescription('If you did not receive an invite:\n`-` Make sure you are not in a guild\n`-` The guild may be currently '
+          + 'full, check using the </online:1023548883332255765> command\nIf the guild is full, ping <@&1016513036313448579> here');
+      await channel.send({ embed: [embed] });
     }
   }
 }
