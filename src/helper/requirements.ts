@@ -167,20 +167,6 @@ export default async function requirements(uuid, playerData) {
     }
   }
 
-  try {
-    if (playerData.stats.BuildBattle.score >= 20000) {
-      meetingReqs = true;
-      requirementEmbed += ':green_circle: **Build Battle**\n';
-      requirementEmbed += `<a:atick:986173414723162113> **Build Battle Score:** \`${playerData.stats.BuildBattle.score}\`\n\n`;
-    } else {
-      requirementEmbed += ':red_circle: **Build Battle**\n';
-      requirementEmbed += `<a:across:986170696512204820> **Build Battle Score:** \`${formatNumber(playerData.stats.BuildBattle.score)} / 20,000\`\n\n`;
-    }
-  } catch (e) {
-    requirementEmbed += ':red_circle: **Build Battle**\n';
-    requirementEmbed += '<a:across:986170696512204820> **Build Battle Score:** `No Build Battle Data`\n\n';
-  }
-
   if (duels[0] >= 10000 && duels[1] >= 2 && duels[0] !== 'No Duels Data') {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Duels**\n';
@@ -217,19 +203,6 @@ export default async function requirements(uuid, playerData) {
     }
   } catch (e) {
     requirementEmbed += ':red_circle: **Murder Mystery**\n<a:across:986170696512204820> **Murder Mystery Wins:** `No Murder Mystery Data`\n\n';
-  }
-
-  if (playerData.achievements.pit_prestiges >= 2000) {
-    meetingReqs = true;
-    requirementEmbed += ':green_circle: **Pit**\n';
-    requirementEmbed += `<a:atick:986173414723162113> **Pit Prestige:** \`${playerData.achievements.pit_prestiges}\`\n\n`;
-  } else {
-    requirementEmbed += ':red_circle: **Pit**\n';
-    try {
-      requirementEmbed += `<a:across:986170696512204820> **Pit Prestige:** \`${formatNumber(playerData.achievements.pit_prestiges)} / 15\`\n\n`;
-    } catch (e) {
-      requirementEmbed += '<a:across:986170696512204820> **Arcade Wins:** `No Pit Data`\n\n';
-    }
   }
 
   if (skywars[0].slice(0, -1) >= 13 && skywars[1] >= 1.5 && skywars[0] !== 'No SkyWars Data') {
