@@ -9,6 +9,7 @@ const db = new Database('matrix.db');
 const logWebhook = new WebhookClient({ url: config.keys.logWebhookUrl });
 const gcWebhook = new WebhookClient({ url: config.keys.gcWebhookUrl });
 const ocWebhook = new WebhookClient({ url: config.keys.ocWebhookUrl });
+const playtime = {};
 global.messageCache = [];
 db.defaultSafeIntegers(true);
 
@@ -31,7 +32,28 @@ export default async function execute(client, message, messagePosition) {
   global.messageCache.push(msg);
 
   // Guild Chat
-  if (msg.indexOf('Offline Members:') !== -1) {
+  if (msg.indexOf('joined.') !== -1) {
+    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
+    let uuid = await nameToUUID(name);
+    if (uuid === null) {
+      [name] = msg.replace(/Guild > |:/g, '').split(' ');
+      uuid = await nameToUUID(name);
+    }
+    playtime[name] = Math.floor(Date.now() / 1000);
+  } else if (msg.indexOf('left.') !== -1) {
+    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
+    let uuid = await nameToUUID(name);
+    if (uuid === null) {
+      [name] = msg.replace(/Guild > |:/g, '').split(' ');
+      uuid = await nameToUUID(name);
+    }
+    const time = Math.floor(Date.now() / 1000) - playtime[name];
+    if (!Number.isNaN(time)) {
+      delete playtime[name];
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+      db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
+    }
+  } else if (msg.indexOf('Offline Members:') !== -1) {
     let includes = 0;
     for (let i = global.messageCache.length - 1; i >= 0; i -= 1) {
       if (global.messageCache[i].includes('Guild Name:') || global.messageCache[i].includes('Total Members:') || global.messageCache[i].includes('Online Members:') || global.messageCache[i].includes('Offline Members:')) includes += 1;
@@ -77,6 +99,7 @@ export default async function execute(client, message, messagePosition) {
       )],
     });
     const uuid = await nameToUUID(name);
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     try {
       const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid);
       await client.channels.cache.get(channel).delete();
@@ -96,7 +119,7 @@ export default async function execute(client, message, messagePosition) {
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUUID(name);
     }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages) VALUES (?, ?)').run(uuid, 0);
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
   } else if (msg.indexOf('Officer >') !== -1) {
     await ocWebhook.send({
@@ -110,7 +133,7 @@ export default async function execute(client, message, messagePosition) {
       [name] = msg.replace(/Officer > |:/g, '').split(' ');
       uuid = await nameToUUID(name);
     }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages) VALUES (?, ?)').run(uuid, 0);
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
   } else if (msg.indexOf('From') !== -1) {
     let waitlist;

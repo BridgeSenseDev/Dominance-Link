@@ -36,7 +36,7 @@ async function weekly() {
         weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
       }
       const tag = ranks[guild[i].rank];
-      if (tag.indexOf(['[Active]', '[Crew]']) !== -1) {
+      if (['[Active]', '[Crew]'].indexOf(tag) !== -1) {
         if (weeklyGexp > 200000) {
           db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Active]', guild[i].uuid);
         } else {
@@ -65,7 +65,7 @@ async function database() {
       for (let j = 0; j < 7; j += 1) {
         weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
       }
-      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, tag) VALUES (?, ?, ?)').run(guild[i].uuid, 0, tag);
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime, tag) VALUES (?, ?, ?, ?)').run(guild[i].uuid, 0, 0, tag);
       db.prepare(`UPDATE guildMembers SET (tag, weeklyGexp, joined, "${Object.keys(guild[i].expHistory)[0]}") = (?, ?, ?, ?) WHERE uuid = (?)`).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
     }
     let placeholders = '?';
