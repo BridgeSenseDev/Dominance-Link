@@ -75,26 +75,24 @@ export default async function requirements(uuid, playerData) {
     const fkdr = Math.round((playerData.stats.Bedwars.final_kills_bedwars
       / playerData.stats.Bedwars.final_deaths_bedwars) * 100) / 100;
     if (Number.isNaN(fkdr)) {
-      bedwars = [playerData.achievements.bedwars_level, 0];
+      bedwars = [playerData.achievements.bedwars_level, 0, playerData.stats.Bedwars.wins_bedwars];
     } else {
-      bedwars = [playerData.achievements.bedwars_level, Math.round((
-        playerData.stats.Bedwars.final_kills_bedwars
-        / playerData.stats.Bedwars.final_deaths_bedwars) * 100) / 100];
+      bedwars = [playerData.achievements.bedwars_level,
+        Math.round((playerData.stats.Bedwars.final_kills_bedwars
+        / playerData.stats.Bedwars.final_deaths_bedwars) * 100) / 100,
+        playerData.stats.Bedwars.wins_bedwars];
     }
   } catch (e) {
-    bedwars = ['No Bedwars Data', 'No Bedwars Data'];
+    bedwars = ['No Bedwars Data', 'No Bedwars Data', 'No Bedwars Data'];
   }
-  if (bedwars[0] === undefined) {
-    bedwars = ['No Bedwars Data', 'No Bedwars Data'];
+  if (bedwars[2] === undefined) {
+    bedwars = ['No Bedwars Data', 'No Bedwars Data', 'No Bedwars Data'];
   }
 
   try {
     duels = [playerData.stats.Duels.wins, Math.round((playerData.stats.Duels.wins
       / playerData.stats.Duels.losses) * 100) / 100];
   } catch (e) {
-    duels = ['No Duels Data', 'No Duels Data'];
-  }
-  if (duels[0] === undefined) {
     duels = ['No Duels Data', 'No Duels Data'];
   }
 
@@ -110,9 +108,6 @@ export default async function requirements(uuid, playerData) {
   } catch (e) {
     skywars = ['No SkyWars Data', 'No SkyWars Data'];
   }
-  if (skywars[0] === undefined) {
-    skywars = ['No SkyWars Data', 'No SkyWars Data'];
-  }
 
   try {
     guild = [guildData.name, weeklyGexp(guildData.members, uuid)];
@@ -125,57 +120,56 @@ export default async function requirements(uuid, playerData) {
   let meetingReqs = false;
   let author; let color; let reqs;
 
-  if (playerData.achievementPoints >= 10000) {
+  if (playerData.achievementPoints === undefined) {
+    requirementEmbed += ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `No Achivements Data`\n\n';
+  } else if (playerData.achievementPoints >= 15000) {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Achievements**\n';
-    requirementEmbed += `<a:atick:986173414723162113> **Achievement Points:** \`${playerData.achievementPoints}\`\n\n`;
+    requirementEmbed += `<a:atick:986173414723162113> **Achievement Points:** \`${formatNumber(playerData.achievementPoints)}\`\n\n`;
   } else {
     requirementEmbed += ':red_circle: **Achievements**\n';
-    requirementEmbed += `<a:across:986170696512204820> **Achievement Points:** \`${formatNumber(playerData.achievementPoints)} / 10,000\`\n\n`;
+    requirementEmbed += `<a:across:986170696512204820> **Achievement Points:** \`${formatNumber(playerData.achievementPoints)} / 15,000\`\n\n`;
   }
 
-  if (playerData.achievements.arcade_arcade_winner >= 1500) {
-    meetingReqs = true;
-    requirementEmbed += ':green_circle: **Arcade**\n';
-    requirementEmbed += `<a:atick:986173414723162113> **Arcade Wins:** \`${playerData.achievements.arcade_arcade_winner}\`\n\n`;
-  } else {
-    requirementEmbed += ':red_circle: **Arcade**\n';
-    try {
-      requirementEmbed += `<a:across:986170696512204820> **Arcade Wins:** \`${formatNumber(playerData.achievements.arcade_arcade_winner)} / 1,500\`\n\n`;
-    } catch (e) {
-      requirementEmbed += '<a:across:986170696512204820> **Arcade Wins:** `No Arcade Games Data`\n\n';
-    }
-  }
-  if (bedwars[0] >= 200 && bedwars[1] >= 3 && bedwars[0] !== 'No Bedwars Data') {
-    meetingReqs = true;
-    requirementEmbed += ':green_circle: **Bedwars**\n';
-  } else {
-    requirementEmbed += ':red_circle: **Bedwars**\n';
-  }
-  if (bedwars[0] === 'No Bedwars Data') {
-    requirementEmbed += '<a:across:986170696512204820> **Bedwars Stars:** `No Bedwars Data`\n<a:across:986170696512204820> **Bedwars FKDR:** `No Bedwars Data`\n\n';
-  } else {
-    if (bedwars[0] >= 200) {
-      requirementEmbed += `<a:atick:986173414723162113> **Bedwars Stars:** \`${bedwars[0]}\`\n`;
+  if (bedwars[0] !== 'No Bedwars Data') {
+    if (bedwars[2] >= 2000 && bedwars[1] >= 3 && bedwars[0] !== 'No Bedwars Data') {
+      meetingReqs = true;
+      requirementEmbed += ':green_circle: **Bedwars 1**\n';
     } else {
-      requirementEmbed += `<a:across:986170696512204820> **Bedwars Stars:** \`${bedwars[0]} / 300\`\n`;
+      requirementEmbed += ':red_circle: **Bedwars 1**\n';
+    }
+    if (bedwars[0] >= 200) {
+      requirementEmbed += `<a:atick:986173414723162113> **Bedwars Wins:** \`${bedwars[2]}\`\n`;
+    } else {
+      requirementEmbed += `<a:across:986170696512204820> **Bedwars Wins:** \`${bedwars[2]} / 2000\`\n`;
     }
     if (bedwars[1] >= 3) {
       requirementEmbed += `<a:atick:986173414723162113> **Bedwars FKDR:** \`${bedwars[1]}\`\n\n`;
     } else {
       requirementEmbed += `<a:across:986170696512204820> **Bedwars FKDR:** \`${bedwars[1]} / 3\`\n\n`;
     }
+  } else {
+    requirementEmbed += ':red_circle: **Bedwars 1**\n<a:across:986170696512204820> **Bedwars Wins:** `No Bedwars Data`\n<a:across:986170696512204820> **Bedwars FKDR:** `No Bedwars Data`\n\n';
   }
 
-  if (duels[0] >= 10000 && duels[1] >= 2 && duels[0] !== 'No Duels Data') {
-    meetingReqs = true;
-    requirementEmbed += ':green_circle: **Duels**\n';
+  if (bedwars[0] !== 'No Bedwars Data') {
+    if (bedwars[0] >= 500) {
+      meetingReqs = true;
+      requirementEmbed += `:green_circle: **Bedwars 2**\n<a:atick:986173414723162113> **Bedwars Stars:** \`${bedwars[0]}\`\n\n`;
+    } else {
+      requirementEmbed += `:red_circle: **Bedwars 2**\n<a:across:986170696512204820> **Bedwars Stars:** \`${bedwars[0]} / 500\`\n\n`;
+    }
   } else {
-    requirementEmbed += ':red_circle: **Duels**\n';
+    requirementEmbed += ':red_circle: **Bedwars 2**\n<a:across:986170696512204820> **Bedwars Stars:** `No Bedwars Data`\n\n';
   }
-  if (duels[0] === 'No Duels Data') {
-    requirementEmbed += '<a:across:986170696512204820> **Duels Wins:** `No Duels Data`\n<a:across:986170696512204820> **Duels WLR:** `No Duels Data`\n\n';
-  } else {
+
+  if (duels[0] !== 'No Duels Data') {
+    if (duels[0] >= 10000 && duels[1] >= 2) {
+      meetingReqs = true;
+      requirementEmbed += ':green_circle: **Duels 1**\n';
+    } else {
+      requirementEmbed += ':red_circle: **Duels 1**\n';
+    }
     if (duels[0] >= 10000) {
       requirementEmbed += `<a:atick:986173414723162113> **Duels Wins:** \`${formatNumber(duels[0])}\`\n`;
     } else {
@@ -186,60 +180,84 @@ export default async function requirements(uuid, playerData) {
     } else {
       requirementEmbed += `<a:across:986170696512204820> **Duels WLR:** \`${duels[1]} / 2\`\n\n`;
     }
+  } else {
+    requirementEmbed += ':red_circle: **Duels 1**\n<a:across:986170696512204820> **Duels Wins:** `No Duels Data`\n<a:across:986170696512204820> **Duels WLR:** `No Duels Data`\n\n';
   }
 
-  try {
-    if (playerData.stats.MurderMystery.wins >= 2000) {
+  if (duels[0] !== 'No Duels Data') {
+    if (duels[0] >= 5000 && duels[1] >= 5) {
       meetingReqs = true;
-      requirementEmbed += ':green_circle: **Murder Mystery**\n';
-      requirementEmbed += `<a:atick:986173414723162113> **Murder Mystery Wins:** \`${playerData.stats.MurderMystery.wins}\`\n\n`;
+      requirementEmbed += ':green_circle: **Duels 2**\n';
     } else {
-      requirementEmbed += ':red_circle: **Murder Mystery**\n';
-      try {
-        requirementEmbed += `<a:across:986170696512204820> **Murder Mystery Wins:** \`${formatNumber(playerData.stats.MurderMystery.wins)} / 20,000\`\n\n`;
-      } catch (e) {
-        requirementEmbed += '<a:across:986170696512204820> **Murder Mystery Wins:** `No Murder Mystery Data`\n\n';
-      }
+      requirementEmbed += ':red_circle: **Duels 2**\n';
     }
-  } catch (e) {
-    requirementEmbed += ':red_circle: **Murder Mystery**\n<a:across:986170696512204820> **Murder Mystery Wins:** `No Murder Mystery Data`\n\n';
+    if (duels[0] >= 5000) {
+      requirementEmbed += `<a:atick:986173414723162113> **Duels Wins:** \`${formatNumber(duels[0])}\`\n`;
+    } else {
+      requirementEmbed += `<a:across:986170696512204820> **Duels Wins:** \`${formatNumber(duels[0])} / 5,000\`\n`;
+    }
+    if (duels[1] >= 5) {
+      requirementEmbed += `<a:atick:986173414723162113> **Duels WLR:** \`${duels[1]}\`\n\n`;
+    } else {
+      requirementEmbed += `<a:across:986170696512204820> **Duels WLR:** \`${duels[1]} / 5\`\n\n`;
+    }
+  } else {
+    requirementEmbed += ':red_circle: **Duels 2**\n<a:across:986170696512204820> **Duels Wins:** `No Duels Data`\n<a:across:986170696512204820> **Duels WLR:** `No Duels Data`\n\n';
   }
 
-  if (skywars[0].slice(0, -1) >= 13 && skywars[1] >= 1.5 && skywars[0] !== 'No SkyWars Data') {
-    meetingReqs = true;
-    requirementEmbed += ':green_circle: **Skywars**\n';
-  } else {
-    requirementEmbed += ':red_circle: **Skywars**\n';
-  }
-  if (skywars[0] === 'No SkyWars Data') {
-    requirementEmbed += '<a:across:986170696512204820> **Skywars Stars:** `No Skywars Data`\n<a:across:986170696512204820> **Skywars KDR:** `No Skywars Data`\n\n';
-  } else {
-    if (skywars[0].slice(0, -1) >= 13) {
+  if (skywars[0] !== 'No SkyWars Data') {
+    if (skywars[0].slice(0, -1) >= 15 && skywars[1] >= 1) {
+      meetingReqs = true;
+      requirementEmbed += ':green_circle: **Skywars 1**\n';
+    } else {
+      requirementEmbed += ':red_circle: **Skywars 1**\n';
+    }
+    if (skywars[0].slice(0, -1) >= 15) {
       requirementEmbed += `<a:atick:986173414723162113> **Skywars Stars:** \`${skywars[0]}\`\n`;
     } else {
-      requirementEmbed += `<a:across:986170696512204820> **Skywars Stars:** \`${skywars[0]} / 13⁕\`\n`;
+      requirementEmbed += `<a:across:986170696512204820> **Skywars Stars:** \`${skywars[0]} / 15⁕\`\n`;
+    }
+    if (skywars[1] >= 1) {
+      requirementEmbed += `<a:atick:986173414723162113> **Skywars KDR:** \`${skywars[1]}\`\n\n`;
+    } else {
+      requirementEmbed += `<a:across:986170696512204820> **Skywars KDR:** \`${skywars[1]} / 1\`\n\n`;
+    }
+  } else {
+    requirementEmbed += ':red_circle: **Skywars 1**\n<a:across:986170696512204820> **Skywars Stars:** `No Skywars Data`\n<a:across:986170696512204820> **Skywars KDR:** `No Skywars Data`\n\n';
+  }
+
+  if (skywars[0] !== 'No SkyWars Data') {
+    if (skywars[0].slice(0, -1) >= 10 && skywars[1] >= 1.5) {
+      meetingReqs = true;
+      requirementEmbed += ':green_circle: **Skywars 2**\n';
+    } else {
+      requirementEmbed += ':red_circle: **Skywars 2**\n';
+    }
+    if (skywars[0].slice(0, -1) >= 10) {
+      requirementEmbed += `<a:atick:986173414723162113> **Skywars Stars:** \`${skywars[0]}\`\n`;
+    } else {
+      requirementEmbed += `<a:across:986170696512204820> **Skywars Stars:** \`${skywars[0]} / 10❤\`\n`;
     }
     if (skywars[1] >= 1.5) {
       requirementEmbed += `<a:atick:986173414723162113> **Skywars KDR:** \`${skywars[1]}\`\n\n`;
     } else {
       requirementEmbed += `<a:across:986170696512204820> **Skywars KDR:** \`${skywars[1]} / 1.5\`\n\n`;
     }
+  } else {
+    requirementEmbed += ':red_circle: **Skywars 2**\n<a:across:986170696512204820> **Skywars Stars:** `No Skywars Data`\n<a:across:986170696512204820> **Skywars KDR:** `No Skywars Data`\n\n';
   }
 
-  if (skyblock[0] >= 500000000 && skyblock[1] >= 30 && skyblock[0] !== 'No Skyblock Data / API Disabled') {
-    meetingReqs = true;
-    requirementEmbed += ':green_circle: **Skyblock**\n';
-  } else {
-    requirementEmbed += ':red_circle: **Skyblock**\n';
-  }
-  if (skyblock[0] === 'No Skyblock Data / API Disabled') {
-    requirementEmbed += '<a:across:986170696512204820> **Skyblock Networth:** `No Skyblock Data / API Disabled`\n'
-      + '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
-  } else {
-    if (skyblock[0] >= 500000000) {
+  if (skyblock[0] !== 'No Skyblock Data / API Disabled') {
+    if (skyblock[0] >= 750000000 && skyblock[1] >= 30) {
+      meetingReqs = true;
+      requirementEmbed += ':green_circle: **Skyblock**\n';
+    } else {
+      requirementEmbed += ':red_circle: **Skyblock**\n';
+    }
+    if (skyblock[0] >= 750000000) {
       requirementEmbed += `<a:atick:986173414723162113> **Skyblock Networth:** \`${abbreviateNumber(Math.round(skyblock[0] * 100) / 100)}\`\n`;
     } else {
-      requirementEmbed += `<a:across:986170696512204820> **Skyblock Networth:** \`${abbreviateNumber(Math.round(skyblock[0] * 100) / 100)} / 500m\`\n`;
+      requirementEmbed += `<a:across:986170696512204820> **Skyblock Networth:** \`${abbreviateNumber(Math.round(skyblock[0] * 100) / 100)} / 750m\`\n`;
     }
     if (skyblock[1] === 'No Skyblock Data / API Disabled') {
       requirementEmbed += '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
@@ -248,19 +266,9 @@ export default async function requirements(uuid, playerData) {
     } else {
       requirementEmbed += `<a:across:986170696512204820> **Skyblock Skill Average:** \`${Math.round(skyblock[1] * 10) / 10} / 30\`\n\n`;
     }
-  }
-
-  if (playerData.stats.TNTGames.wins >= 800) {
-    meetingReqs = true;
-    requirementEmbed += ':green_circle: **Tnt Games**\n';
-    requirementEmbed += `<a:atick:986173414723162113> **Tnt Games Wins:** \`${playerData.stats.TNTGames.wins}\``;
   } else {
-    requirementEmbed += ':red_circle: **Tnt Games**\n';
-    try {
-      requirementEmbed += `<a:across:986170696512204820> **Tnt Games Wins:** \`${formatNumber(playerData.stats.TNTGames.wins)} / 800\``;
-    } catch (e) {
-      requirementEmbed += '<a:across:986170696512204820> **Arcade Wins:** `No Tnt Games Data`\n\n';
-    }
+    requirementEmbed += '<a:across:986170696512204820> **Skyblock Networth:** `No Skyblock Data / API Disabled`\n'
+    + '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
   }
 
   if (meetingReqs) {
