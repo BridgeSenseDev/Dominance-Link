@@ -33,7 +33,12 @@ async function execute(client, message) {
     }
     msg.content = await formatMentions(client, msg);
     msg.content = msg.content.replace(/\n/g, '');
-    const { length } = `/gc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`;
+    let length;
+    try {
+      ({ length } = `/gc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
+    } catch (e) {
+      return;
+    }
     if (length > 256) {
       await global.guildChat.send(`Character limit exceeded (${length})`);
       return;
