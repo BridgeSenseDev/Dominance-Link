@@ -36,7 +36,7 @@ async function weekly() {
         weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
       }
       const tag = ranks[guild[i].rank];
-      if (['[Active]', '[Crew]'].indexOf(tag) !== -1) {
+      if (['[Active]', '[Crew]'].includes(tag)) {
         if (weeklyGexp > 200000) {
           db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Active]', guild[i].uuid);
         } else {
@@ -86,7 +86,7 @@ async function gsrun(sheets, client) {
     await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:Q126' });
     for (let i = data.length - 1; i >= 0; i -= 1) {
       for (let j = Object.keys(data[i]).length; j >= 0; j -= 1) {
-        if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) && Object.keys(guild[0].expHistory).indexOf(Object.keys(data[i])[j]) === -1) {
+        if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) && !Object.keys(guild[0].expHistory).includes(Object.keys(data[i])[j])) {
           delete data[i][Object.keys(data[i])[j]];
         }
       }

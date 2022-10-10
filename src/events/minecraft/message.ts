@@ -18,7 +18,7 @@ export default async function execute(client, message, messagePosition) {
   const msg = message.toString();
   if (msg.trim() === '') return;
   // Limbo Check
-  if (msg.indexOf('"server"') !== -1) {
+  if (msg.includes('"server"')) {
     const parsedMessage = JSON.parse(msg);
     if (parsedMessage.server !== 'limbo') {
       await global.bot.chat('\u00a7');
@@ -32,7 +32,7 @@ export default async function execute(client, message, messagePosition) {
   global.messageCache.push(msg);
 
   // Guild Chat
-  if (msg.indexOf('joined.') !== -1) {
+  if (msg.includes('joined.')) {
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUUID(name);
     if (uuid === null) {
@@ -40,7 +40,7 @@ export default async function execute(client, message, messagePosition) {
       uuid = await nameToUUID(name);
     }
     playtime[name] = Math.floor(Date.now() / 1000);
-  } else if (msg.indexOf('left.') !== -1) {
+  } else if (msg.includes('left.')) {
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUUID(name);
     if (uuid === null) {
@@ -53,7 +53,7 @@ export default async function execute(client, message, messagePosition) {
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
       db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
     }
-  } else if (msg.indexOf('Offline Members:') !== -1) {
+  } else if (msg.includes('Offline Members:')) {
     let includes = 0;
     for (let i = global.messageCache.length - 1; i >= 0; i -= 1) {
       if (global.messageCache[i].includes('Guild Name:') || global.messageCache[i].includes('Total Members:') || global.messageCache[i].includes('Online Members:') || global.messageCache[i].includes('Offline Members:')) includes += 1;
@@ -62,9 +62,9 @@ export default async function execute(client, message, messagePosition) {
         break;
       }
     }
-  } else if (msg.indexOf('Online Members:') !== -1) {
+  } else if (msg.includes('Online Members:')) {
     [, global.onlineMembers] = msg.split('Online Members: ');
-  } else if (msg.indexOf('cannot say the same message') !== -1) {
+  } else if (msg.includes('cannot say the same message')) {
     await gcWebhook.send({
       username: 'Matrix',
       avatarURL: config.guild.icon,
@@ -72,7 +72,7 @@ export default async function execute(client, message, messagePosition) {
         '§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------',
       )],
     });
-  } else if (msg.indexOf('left the guild!') !== -1 || msg.indexOf('was promoted') !== -1 || msg.indexOf('was kicked') !== -1) {
+  } else if (msg.includes('left the guild!') || msg.includes('was promoted') || msg.includes('was kicked')) {
     await gcWebhook.send({
       username: 'Matrix',
       avatarURL: config.guild.icon,
@@ -80,7 +80,7 @@ export default async function execute(client, message, messagePosition) {
         `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
       )],
     });
-  } else if (msg.indexOf('joined the guild!') !== -1) {
+  } else if (msg.includes('joined the guild!')) {
     let funFact;
     const name = msg.substring(msg.search(/ (.*?) joined/g) + 1, msg.lastIndexOf(' joined'));
     const funFacts = await (await fetch('https://api.api-ninjas.com/v1/facts?limit=3', { method: 'GET', headers: { 'X-Api-Key': config.keys.apiNinjasKey } })).json();
@@ -107,7 +107,7 @@ export default async function execute(client, message, messagePosition) {
     } catch (e) {
       // Continue regardless of error
     }
-  } else if (msg.indexOf('Guild >') !== -1) {
+  } else if (msg.includes('Guild >')) {
     await gcWebhook.send({
       username: 'Matrix',
       avatarURL: config.guild.icon,
@@ -121,7 +121,7 @@ export default async function execute(client, message, messagePosition) {
     }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-  } else if (msg.indexOf('Officer >') !== -1) {
+  } else if (msg.includes('Officer >')) {
     await ocWebhook.send({
       username: 'Matrix',
       avatarURL: config.guild.icon,
@@ -135,7 +135,7 @@ export default async function execute(client, message, messagePosition) {
     }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-  } else if (msg.indexOf('From') !== -1) {
+  } else if (msg.includes('From')) {
     let waitlist;
     let [, , name] = msg.split(' ');
     name = name.slice(0, -1);
@@ -158,7 +158,7 @@ export default async function execute(client, message, messagePosition) {
         .setTitle(`${name} has been invited to the guild`)
         .setDescription('If you did not receive an invite:\n`-` Make sure you are not in a guild\n`-` The guild may be currently '
           + 'full, check using the </online:1023548883332255765> command\nIf the guild is full, ping <@&1016513036313448579> here');
-      await channel.send({ embed: [embed] });
+      await channel.send({ embeds: [embed] });
     }
   }
 }

@@ -5,17 +5,17 @@ function formatMembers(msg) {
   const message = msg;
   let online = '';
   for (let i = 1; i < message.length - 3; i += 1) {
-    if (message[i].indexOf('-- ') !== -1) {
+    if (message[i].includes('-- ')) {
       message[i] = message[i].trim();
       if (i === 1) online += `**${message[i].slice(3, -3)}**\n`;
       else {
         online = online.slice(0, online.length - 2);
         online += `\n\n**${message[i].slice(3, -3)}**\n`;
       }
-    } else if (message[i].indexOf('●')) {
+    } else if (message[i].includes('●')) {
       message[i] = message[i].split(/\s+/);
       for (let j = 0; j < message[i].length; j += 1) {
-        if (!(message[i][j].indexOf('●') !== -1 || message[i][j].indexOf('[') !== -1 || message[i][j] === '')) {
+        if (!(message[i][j].includes('●') || message[i][j].includes('[') || message[i][j] === '')) {
           online += `\`${message[i][j]}\`, `;
         }
       }
