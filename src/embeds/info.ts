@@ -29,9 +29,9 @@ client.on('ready', async () => {
   const guideEmbed = new EmbedBuilder()
     .setColor(config.colors.yellow)
     .setAuthor({ name: 'Matrix Guide', iconURL: config.guild.icon })
-    .setDescription(`════ ⋆★⋆ ════\n\n**[FAQ]**\n\`Q:\` **How many times can i rejoin the guild?**\n> There is no limit, but you have \
-    to wait before reapplying\n\n\`Q:\` **Where can i apply?**\n> <#1017099269372657724>\n\n\`Q:\` **How do i rankup once in the \
-    guild?**\n> Learn about guild ranks in <#660448787147390977>\n\n\`Q:\` **How much GEXP do i need to get every week?**\n> \
+    .setDescription(`════ ⋆★⋆ ════\n\n**[FAQ]**\n\`Q:\` **How many times can I rejoin the guild?**\n> There is no limit, but you have \
+    to wait before reapplying\n\n\`Q:\` **Where can I apply?**\n> <#1017099269372657724>\n\n\`Q:\` **How do I rankup once in the \
+    guild?**\n> Learn about guild ranks in <#660448787147390977>\n\n\`Q:\` **How much GEXP do I need to get every week?**\n> \
     ${config.guild.gexpReq} GEXP per week\n\n\`Q:\` **Can public members participate in events**?\n> Yes\n\n════ ⋆★⋆ ════\n\n**\
     [Socials]**\n<:discord:963609407390883860> [Discord Invite](https://bit.ly/DiscordMatrix)\n<:twitter:968021865064988742> \
     [Twitter](https://twitter.com/MatrixHypixel)\n<:twitch:968022010498273280> [Twitch Channel](https://www.twitch.tv/matrix_guild)\n\

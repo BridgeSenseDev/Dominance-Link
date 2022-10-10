@@ -105,6 +105,11 @@ client.on('ready', async () => {
     .setAuthor({ name: 'Gamemode Roles', iconURL: 'https://cdn.discordapp.com/attachments/986281342457237624/1006054852381651034/DdNypQdN_400x400.png' })
     .setDescription('Use the buttons below to select what gamemodes you like to play\nThese roles can be mentioned!');
 
+  const notableMembersEmbed = new EmbedBuilder()
+    .setColor(config.colors.discordGray)
+    .setAuthor({ name: 'Notable Members', iconURL: 'https://cdn.discordapp.com/attachments/986281342457237624/1029053550715744367/3503-role-manager.png' })
+    .setDescription('**Requirements**\n`-` Top 10 in any Hypixel lifetime leaderboard\n**OR**\n`-` Owner of a top 25 Hypixel Guild');
+
   const channel = client.channels.cache.get('583661446202785815');
   if (channel?.type === ChannelType.GuildText) {
     await channel.send({ embeds: [rolesEmbed] });
@@ -115,6 +120,9 @@ client.on('ready', async () => {
     await channel.send({
       components: [gamemodesRow],
       embeds: [gamemodesEmbed],
+    });
+    await channel.send({
+      embeds: [notableMembersEmbed],
     });
   }
 });
