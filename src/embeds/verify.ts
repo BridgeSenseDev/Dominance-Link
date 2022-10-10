@@ -7,9 +7,6 @@ import { formatDate } from '../helper/utils.js';
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
-    // GatewayIntentBits.GuildMessages,
-    // GatewayIntentBits.MessageContent,
-    // GatewayIntentBits.GuildMembers,
   ],
 });
 

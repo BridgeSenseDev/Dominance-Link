@@ -35,10 +35,11 @@ client.on('ready', async () => {
     ${config.guild.gexpReq} GEXP per week\n\n\`Q:\` **Can public members participate in events**?\n> Yes\n\n════ ⋆★⋆ ════\n\n**\
     [Socials]**\n<:discord:963609407390883860> [Discord Invite](https://bit.ly/DiscordMatrix)\n<:twitter:968021865064988742> \
     [Twitter](https://twitter.com/MatrixHypixel)\n<:twitch:968022010498273280> [Twitch Channel](https://www.twitch.tv/matrix_guild)\n\
-    <:hypixel:968022561940209664> [Hypixel Forum Post](https://bit.ly/MatrixForums)\n\n════ ⋆★⋆ ════\n\n**[Guild Capes]**\n\
+    <:hypixel:968022561940209664> [Hypixel Forum Post](https://bit.ly/MatrixForums)\n\n════ ⋆★⋆ ════\n\n**[Guild Art]**\n\
     :white_large_square: [Light Background Cape](https://bit.ly/3Klyt79)\n:black_large_square: [Dark Background Cape](https://bit.ly/3ueDmte)\
     \n:purple_square: [Pink Cape](https://bit.ly/3jb0nXz)\n:yellow_square: [Yellow Cape White Background](https://bit.ly/3udsd) \
-    (By @Lennos#3244)\n:yellow_square: [Yellow Cape Black Background](https://bit.ly/3Jdkajx) (By @Lennos#3244)\n\n════ ⋆★⋆ ════`)
+    (By @Lennos#3244)\n:yellow_square: [Yellow Cape Black Background](https://bit.ly/3Jdkajx) (By @Lennos#3244)\n:frame_photo: \
+    [Matrix Pack 16x](https://pvprp.com/pack?p=10795&or=profile) (By <@818468511612403772>)\n\n════ ⋆★⋆ ════`)
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,
       iconURL: config.guild.icon,
