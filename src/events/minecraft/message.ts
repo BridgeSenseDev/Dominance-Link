@@ -82,6 +82,12 @@ export default async function execute(client, message, messagePosition) {
         `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
       )],
     });
+  } else if (msg.includes(' has unmuted ')) {
+    await global.guildLogsChannel.send({
+      files: [messageToImage(
+        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
+      )],
+    });
   } else if (msg.includes('left the guild!') || msg.includes('was promoted') || msg.includes('was kicked')) {
     await gcWebhook.send({
       username: 'Matrix',
