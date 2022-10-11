@@ -27,7 +27,11 @@ export default async function execute(client, message, messagePosition) {
     }
   }
   const rawMsg = message.toMotd();
-  await logWebhook.send({ content: msg, username: 'Matrix Link', avatarURL: config.guild.icon });
+  if (msg.includes('@everyone') || msg.includes('@here')) {
+    await logWebhook.send({ content: msg.replace('@', ''), username: 'Matrix Link', avatarURL: config.guild.icon });
+  } else {
+    await logWebhook.send({ content: msg, username: 'Matrix Link', avatarURL: config.guild.icon });
+  }
   if (global.messageCache.length >= 20) global.messageCache.shift();
   global.messageCache.push(msg);
 
