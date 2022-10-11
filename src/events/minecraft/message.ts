@@ -76,10 +76,21 @@ export default async function execute(client, message, messagePosition) {
         '§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------',
       )],
     });
+  } else if (msg.includes(' has muted ')) {
+    await global.guildLogsChannel.send({
+      files: [messageToImage(
+        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
+      )],
+    });
   } else if (msg.includes('left the guild!') || msg.includes('was promoted') || msg.includes('was kicked')) {
     await gcWebhook.send({
       username: 'Matrix',
       avatarURL: config.guild.icon,
+      files: [messageToImage(
+        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
+      )],
+    });
+    await global.guildLogsChannel.send({
       files: [messageToImage(
         `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
       )],
@@ -98,6 +109,11 @@ export default async function execute(client, message, messagePosition) {
     await gcWebhook.send({
       username: 'Matrix',
       avatarURL: config.guild.icon,
+      files: [messageToImage(
+        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
+      )],
+    });
+    await global.guildLogsChannel.send({
       files: [messageToImage(
         `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
       )],
