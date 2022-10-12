@@ -178,15 +178,16 @@ async function execute(client, interaction) {
       .setColor(requirementData.color)
       .setTitle(`${interaction.user.tag}'s Application`)
       .setThumbnail(`https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`)
-      .setDescription(`:one: **What games do you mainly play?**\n${q1}\n\n:two: **Why should we accept you? (4 sentences)**\n${q2}\n\n:three: \
+      .setDescription(`<:keycap_1_3d:1029711346297737277> **What games do you mainly play?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> \
+      **Why should we accept you? (4 sentences)**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> 
         **Do you know anyone from the guild?**\n${q3}\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n${requirementData.requirementEmbed}`)
       .addFields(
-        { name: '<:name:1011937788851138585> IGN: ', value: name, inline: true },
-        { name: ':pencil: Meeting Requirements: ', value: requirementData.reqs, inline: true },
+        { name: '<:user:1029703318924165120> IGN: ', value: name, inline: true },
+        { name: '<:page_with_curl_3d:1029706324881199126> Meeting Requirements: ', value: requirementData.reqs, inline: true },
         { name: ':shield: Guild: ', value: requirementData.guild[0], inline: true },
         { name: '<:mention:913408059425058817> Discord: ', value: `<@${interaction.user.id}>`, inline: true },
-        { name: '<:month:982237517581537350> Discord Member Since: ', value: `<t:${Math.floor(interaction.member.joinedTimestamp / 1000)}:R>`, inline: true },
-        { name: '<:clock_:969185417712775168> Created: ', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
+        { name: '<:calendar_3d:1029713106550657055> Discord Member Since: ', value: `<t:${Math.floor(interaction.member.joinedTimestamp / 1000)}:R>`, inline: true },
+        { name: '<:three_oclock_3d:1029704628310388796> Created: ', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true },
       );
 
     const row = new ActionRowBuilder()

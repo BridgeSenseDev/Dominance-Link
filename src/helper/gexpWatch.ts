@@ -69,7 +69,7 @@ async function gexpWatch(client) {
       .setDescription(`${gexpGained(gained)[0]} **${Math.abs(gained).toLocaleString()}** GEXP\n<:clock_:969185417712775168> Recorded <t:${unix}:R>`)
       .addFields(
         { name: '<:week:982237517233414194> Weekly', value: `${gexpGained(difference - weekly)[0]} **${(Math.abs(difference - weekly)).toLocaleString()}** GEXP`, inline: true },
-        { name: '<:month:982237517581537350> Monthly', value: `${gexpGained(difference - monthly)[0]} **${(Math.abs(difference - monthly)).toLocaleString()}** GEXP`, inline: true },
+        { name: '<:calendar_3d:1029713106550657055> Monthly', value: `${gexpGained(difference - monthly)[0]} **${(Math.abs(difference - monthly)).toLocaleString()}** GEXP`, inline: true },
       )
       .setThumbnail('https://cdn.discordapp.com/attachments/986281342457237624/1001705614264778803/a_96a019775f60ebe70d0e5ea3d762ff57.webp');
     await rebelWatch.send({ embeds: [embed] });
@@ -87,7 +87,7 @@ async function gexpWatch(client) {
       .setDescription(`${gexpGained(gained)[0]} **${Math.abs(gained).toLocaleString()}** GEXP\n<:clock_:969185417712775168> Recorded <t:${unix}:R>`)
       .addFields(
         { name: '<:week:982237517233414194> Weekly', value: `${gexpGained(difference - weekly)[0]} **${(Math.abs(difference - weekly)).toLocaleString()}** GEXP`, inline: true },
-        { name: '<:month:982237517581537350> Monthly', value: `${gexpGained(difference - monthly)[0]} **${(Math.abs(difference - monthly)).toLocaleString()}** GEXP`, inline: true },
+        { name: '<:calendar_3d:1029713106550657055> Monthly', value: `${gexpGained(difference - monthly)[0]} **${(Math.abs(difference - monthly)).toLocaleString()}** GEXP`, inline: true },
       )
       .setThumbnail('https://cdn.discordapp.com/attachments/986281342457237624/1001839326033879080/ezgif-1-9402e80289.png');
     await cronosWatch.send({ embeds: [embed] });
@@ -105,7 +105,7 @@ async function gexpWatch(client) {
       .setDescription(`${gexpGained(gained)[0]} **${Math.abs(gained).toLocaleString()}** GEXP\n<:clock_:969185417712775168> Recorded <t:${unix}:R>`)
       .addFields(
         { name: '<:week:982237517233414194> Weekly', value: `${gexpGained(difference - weekly)[0]} **${(Math.abs(difference - weekly)).toLocaleString()}** GEXP`, inline: true },
-        { name: '<:month:982237517581537350> Monthly', value: `${gexpGained(difference - monthly)[0]} **${(Math.abs(difference - monthly)).toLocaleString()}** GEXP`, inline: true },
+        { name: '<:calendar_3d:1029713106550657055> Monthly', value: `${gexpGained(difference - monthly)[0]} **${(Math.abs(difference - monthly)).toLocaleString()}** GEXP`, inline: true },
       )
       .setThumbnail('https://cdn.discordapp.com/attachments/986281342457237624/1001839294165561505/9faa8886a380dbea8e35c053df43799e.webp');
     await dawnsWatch.send({ embeds: [embed] });
