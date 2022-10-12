@@ -50,7 +50,8 @@ export async function execute(interaction) {
     await interaction.member.roles.add(interaction.guild.roles.cache.get('445669382539051008'));
     const { guild } = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json());
     if (guild === null) {
-      db.prepare('INSERT OR IGNORE INTO members (uuid, discord) VALUES (?, ?)').run(uuid, interaction.user.id);
+      db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
+      db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
       const embed = new EmbedBuilder()
         .setColor(config.colors.green)
         .setTitle('Successful')
@@ -60,7 +61,8 @@ export async function execute(interaction) {
       await interaction.editReply({ embeds: [embed] });
     } else if (guild.name_lower === 'matrix') {
       await interaction.member.roles.add(interaction.guild.roles.cache.get('753172820133150772'));
-      db.prepare('INSERT OR IGNORE INTO members (uuid, discord) VALUES (?, ?)').run(uuid, interaction.user.id);
+      db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
+      db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
       const embed = new EmbedBuilder()
         .setColor(config.colors.green)
         .setTitle('Successful')
@@ -69,7 +71,8 @@ export async function execute(interaction) {
         .setThumbnail(`https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`);
       await interaction.editReply({ embeds: [embed] });
     } else {
-      db.prepare('INSERT OR IGNORE INTO members (uuid, discord) VALUES (?, ?)').run(uuid, interaction.user.id);
+      db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
+      db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
       const embed = new EmbedBuilder()
         .setColor(config.colors.green)
         .setTitle('Successful')
