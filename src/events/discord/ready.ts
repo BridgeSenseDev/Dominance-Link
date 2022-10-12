@@ -17,6 +17,7 @@ async function execute(client) {
   global.levelChannel = client.channels.cache.get(config.channels.levelChannel);
   global.applicationsChannel = client.channels.cache.get(config.channels.applicationsChannel);
   global.guildLogsChannel = client.channels.cache.get(config.channels.guildLogsChannel);
+  global.applicationLogsChannel = client.channels.cache.get(config.channels.applicationLogsChannel);
   global.officerChat = client.channels.cache.get(config.channels.officerChat);
   global.welcomeChannel = client.channels.cache.get(config.channels.welcomeChannel);
   global.onlineMembers = 0;

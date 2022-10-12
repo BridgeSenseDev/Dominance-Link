@@ -115,11 +115,22 @@ async function execute(client, interaction) {
           .setThumbnail(`https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`);
         db.prepare('INSERT INTO waitlist (uuid, discord, time, channel) VALUES (?, ?, ?, ?)').run(uuid, discordId, Math.floor(Date.now() / 1000), channel.id);
         await channel.send({ content: user.toString(), embeds: [embed] });
+        const applicationEmbed = new EmbedBuilder()
+          .setColor(config.colors.green)
+          .setTitle(`${name}'s application has been accepted`)
+          .setDescription(interaction.message.embeds[0].data.description)
+          .addFields(
+            { name: '<:user:1029703318924165120> Accepted By', value: interaction.user.toString(), inline: true },
+            { name: '<:page_with_curl_3d:1029706324881199126> Meeting Reqs', value: interaction.message.embeds[0].data.fields[1].value, inline: true },
+            { name: '<:three_oclock_3d:1029704628310388796> Application Made', value: interaction.message.embeds[0].data.fields[5].value, inline: true },
+          );
+        await global.applicationLogsChannel.send({ embeds: [applicationEmbed] });
         await interaction.editReply('Application accepted');
         await interaction.message.delete();
       });
     } else if (interaction.customId === 'deny') {
       const discordId = await interaction.message.embeds[0].data.fields[3].value.slice(2, -1);
+      const name = await interaction.message.embeds[0].data.fields[0].value;
       const row = new ActionRowBuilder()
         .addComponents(
           new SelectMenuBuilder()
@@ -149,6 +160,16 @@ async function execute(client, interaction) {
             ),
         );
       await interaction.reply({ components: [row], ephemeral: true });
+      const applicationEmbed = new EmbedBuilder()
+        .setColor(config.colors.red)
+        .setTitle(`${name}'s application has been denied`)
+        .setDescription(interaction.message.embeds[0].data.description)
+        .addFields(
+          { name: '<:user:1029703318924165120> Denied By', value: interaction.user.toString(), inline: true },
+          { name: '<:page_with_curl_3d:1029706324881199126> Meeting Reqs', value: interaction.message.embeds[0].data.fields[1].value, inline: true },
+          { name: '<:three_oclock_3d:1029704628310388796> Application Made', value: interaction.message.embeds[0].data.fields[5].value, inline: true },
+        );
+      await global.applicationLogsChannel.send({ embeds: [applicationEmbed] });
       await interaction.message.delete();
     } else if (interaction.customId in roles) {
       const roleId = roles[interaction.customId];
@@ -180,7 +201,7 @@ async function execute(client, interaction) {
       .setThumbnail(`https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`)
       .setDescription(`<:keycap_1_3d:1029711346297737277> **What games do you mainly play?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> \
       **Why should we accept you? (4 sentences)**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> 
-        **Do you know anyone from the guild?**\n${q3}\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n${requirementData.requirementEmbed}`)
+      **Do you know anyone from the guild?**\n${q3}\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n${requirementData.requirementEmbed}`)
       .addFields(
         { name: '<:user:1029703318924165120> IGN: ', value: name, inline: true },
         { name: '<:page_with_curl_3d:1029706324881199126> Meeting Requirements: ', value: requirementData.reqs, inline: true },
