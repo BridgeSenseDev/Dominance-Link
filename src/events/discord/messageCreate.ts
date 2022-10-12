@@ -48,8 +48,9 @@ async function execute(client, message) {
   } else if (msg.channel.id === global.officerChat.id) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(msg.author.id);
     if (user === undefined) {
-      uuid = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(msg.author.id);
-      if (uuid === undefined) {
+      try {
+        ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(msg.author.id));
+      } catch (e) {
         await msg.author.roles.add(msg.guild.roles.cache.get('907911526118223912'));
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
@@ -63,7 +64,12 @@ async function execute(client, message) {
     }
     msg.content = await formatMentions(client, msg);
     msg.content = msg.content.replace(/\n/g, '');
-    const { length } = `/oc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`;
+    let length;
+    try {
+      ({ length } = `/oc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
+    } catch (e) {
+      return;
+    }
     if (length > 256) {
       await global.guildChat.send(`Character limit exceeded (${length})`);
       return;
