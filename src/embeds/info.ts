@@ -46,7 +46,7 @@ client.on('ready', async () => {
     })
     .setImage('https://cdn.discordapp.com/attachments/986281342457237624/1001507558357471242/Screenshot_2022-04-29_152830.png');
 
-  const channel = client.channels.cache.get('741305186441494548');
+  const channel = client.channels.cache.get('1031245971662835834');
   if (channel?.type === ChannelType.GuildText) {
     await channel.send({ embeds: [rulesEmbed, guideEmbed] });
   }

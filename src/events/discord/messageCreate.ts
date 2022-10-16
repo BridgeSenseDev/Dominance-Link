@@ -10,7 +10,7 @@ async function execute(client, message) {
   if (msg.author.bot) return;
   let uuid;
   if (msg.content.toLowerCase().includes('matrix')) {
-    await msg.react(':Matrix:1017274754387947561');
+    await msg.react(':matrix:1031249417438756884');
   }
   if (msg.channel.id === global.logChannel.id) {
     await global.bot.chat(msg.content);
