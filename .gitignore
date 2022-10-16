@@ -1,4 +1,5 @@
 node_modules
+src/embeds/staff
 src/config.json
 src/matrix.db
 test.js
