@@ -8,7 +8,7 @@ import { UUIDtoName } from './utils.js';
 const db = new Database('matrix.db');
 
 const ranks = {
-  GUILDMASTER: '[GM]', Master: '[Master]', Leader: '[Leader]', Staff: '[Staff]', Legion: '[Legion]', Rookie: '[Rookie]',
+  GUILDMASTER: '[GM]', Leader: '[Leader]', Staff: '[Staff]', Member: '[Member]',
 };
 const sheet = new google.auth.JWT(
   keys.clientEmail,
@@ -29,7 +29,7 @@ sheet.authorize((err) => {
 
 async function weekly() {
   schedule('00 50 11 * * 0', async () => {
-    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.members;
+    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.members;
     for (let i = 0; i < guild.length; i += 1) {
       let weeklyGexp = 0;
       for (let j = 0; j < 7; j += 1) {
@@ -52,7 +52,7 @@ async function weekly() {
 async function database() {
   setInterval(async () => {
     const members = [];
-    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.members;
+    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.members;
     try {
       db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[0].expHistory)[0]}" INTEGER`).run();
     } catch (err) {
@@ -81,7 +81,7 @@ async function gsrun(sheets, client) {
   setInterval(async () => {
     const gsapi = google.sheets({ version: 'v4', auth: sheets });
     const data = db.prepare('SELECT * FROM guildMembers').all();
-    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.members;
+    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.members;
     const array = [];
     await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:Q126' });
     for (let i = data.length - 1; i >= 0; i -= 1) {
@@ -90,13 +90,26 @@ async function gsrun(sheets, client) {
           delete data[i][Object.keys(data[i])[j]];
         }
       }
-      // eslint-disable-next-line no-await-in-loop
       data[i].name = await UUIDtoName(data[i].uuid);
       if (data[i].discord) {
-        // eslint-disable-next-line no-await-in-loop
-        data[i].discordTag = (await client.users.fetch(data[i].discord)).tag;
+        try {
+          data[i].discordTag = (await client.users.fetch(data[i].discord)).tag;
+        } catch (e) {
+          data[i].discordTag = null;
+        }
       } else {
-        data[i].discordTag = null;
+        const discordId = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(data[i].uuid);
+        if (discordId !== undefined) {
+          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId.discord, data[i].uuid);
+          data[i].discord = discordId.discord;
+          try {
+            data[i].discordTag = (await client.users.fetch(data[i].discord)).tag;
+          } catch (e) {
+            data[i].discordTag = null;
+          }
+        } else {
+          data[i].discordTag = null;
+        }
       }
       array.push((Object.values(data[i])));
     }

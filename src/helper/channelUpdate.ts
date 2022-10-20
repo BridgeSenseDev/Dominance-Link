@@ -16,7 +16,7 @@ async function channelUpdate(client) {
     await global.membersChannel.setName(`🧑│All members: ${global.membersChannel.guild.memberCount}`);
 
     // Guild level
-    const level = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Matrix`)).json()).guild.exp;
+    const level = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.exp;
     await global.levelChannel.setName(`📈│Guild Level: ${getLevel(level)}`);
 
     // Online members

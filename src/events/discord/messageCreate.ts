@@ -9,7 +9,7 @@ async function execute(client, message) {
   const msg = message;
   if (msg.author.bot) return;
   let uuid;
-  if (msg.content.toLowerCase().includes('matrix')) {
+  if (msg.content.toLowerCase().includes('dominance')) {
     await msg.react(':matrix:1031249417438756884');
   }
   if (msg.channel.id === global.logChannel.id) {

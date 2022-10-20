@@ -28,9 +28,9 @@ export default async function execute(client, message, messagePosition) {
   }
   const rawMsg = message.toMotd();
   if (msg.includes('@everyone') || msg.includes('@here')) {
-    await logWebhook.send({ content: msg.replace('@', ''), username: 'Matrix Link', avatarURL: config.guild.icon });
+    await logWebhook.send({ content: msg.replace('@', ''), username: 'Dominance', avatarURL: config.guild.icon });
   } else {
-    await logWebhook.send({ content: msg, username: 'Matrix Link', avatarURL: config.guild.icon });
+    await logWebhook.send({ content: msg, username: 'Dominance', avatarURL: config.guild.icon });
   }
   if (global.messageCache.length >= 20) global.messageCache.shift();
   global.messageCache.push(msg);
@@ -70,7 +70,7 @@ export default async function execute(client, message, messagePosition) {
     [, global.onlineMembers] = msg.split('Online Members: ');
   } else if (msg.includes('cannot say the same message')) {
     await gcWebhook.send({
-      username: 'Matrix',
+      username: 'Dominance',
       avatarURL: config.guild.icon,
       files: [messageToImage(
         '§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------',
@@ -90,7 +90,7 @@ export default async function execute(client, message, messagePosition) {
     });
   } else if (msg.includes('left the guild!') || msg.includes('was promoted') || msg.includes('was kicked')) {
     await gcWebhook.send({
-      username: 'Matrix',
+      username: 'Dominance',
       avatarURL: config.guild.icon,
       files: [messageToImage(
         `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
@@ -111,9 +111,9 @@ export default async function execute(client, message, messagePosition) {
         break;
       }
     }
-    await global.bot.chat(`/gc Welcome to Matrix, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`);
+    await global.bot.chat(`/gc Welcome to Dominance, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`);
     await gcWebhook.send({
-      username: 'Matrix',
+      username: 'Dominance',
       avatarURL: config.guild.icon,
       files: [messageToImage(
         `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
@@ -135,7 +135,7 @@ export default async function execute(client, message, messagePosition) {
     }
   } else if (msg.includes('Guild >')) {
     await gcWebhook.send({
-      username: 'Matrix',
+      username: 'Dominance',
       avatarURL: config.guild.icon,
       files: [messageToImage(rawMsg)],
     });
@@ -149,7 +149,7 @@ export default async function execute(client, message, messagePosition) {
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
   } else if (msg.includes('Officer >')) {
     await ocWebhook.send({
-      username: 'Matrix',
+      username: 'Dominance',
       avatarURL: config.guild.icon,
       files: [messageToImage(rawMsg)],
     });

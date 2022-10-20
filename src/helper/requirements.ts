@@ -272,11 +272,11 @@ export default async function requirements(uuid, playerData) {
   }
 
   if (meetingReqs) {
-    author = `${name} meets Matrix requirements!`;
+    author = `${name} meets Dominance requirements!`;
     color = 0x2ecc70;
     reqs = 'Yes';
   } else {
-    author = `${name} does not meet Matrix requirements!`;
+    author = `${name} does not meet Dominance requirements!`;
     color = config.colors.red;
     reqs = 'No';
   }

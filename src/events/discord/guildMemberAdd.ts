@@ -4,17 +4,16 @@ import config from '../../config.json' assert {type: 'json'};
 async function execute(client, member) {
   if (member.guild.id !== '242357942664429568') return;
   const embed = new EmbedBuilder()
-    .setColor(config.colors.yellow)
-    .setTitle(':wave: Welcome to Matrix!')
-    .setDescription(`Welcome to the Matrix Community **${member.displayName}**!\n\n**Here's a list of things to help you \
+    .setColor(config.colors.discordGray)
+    .setTitle(':wave: Welcome to Dominance!')
+    .setDescription(`Welcome to the Dominance Community **${member.displayName}**!\n\n**Here's a list of things to help you \
       get started:**\n\n**<:rules:969478807927021599> | Community Info**\n\`•\`Learn about our community and rules in \
-      <#741305186441494548>\n\n**:ballot_box_with_check: | Verification**\n\`•\` Verify using the </verify:1023548883332255771> command \
-      in <#907911357582704640>\n\n**:loudspeaker: | Announcements**\n\`•\` Stay up to date by checking out \
-      <#628973562618707991>\n\n**:pencil: | Want to join us?**\n\`•\`Learn how to in <#498179573847031824>\n\n**:question: \
+      <#1031245971662835834>\n\n**:ballot_box_with_check: | Verification**\n\`•\` Verify by clicking the verify button \
+      in <#1031568019522072677>\n\n**:loudspeaker: | Announcements**\n\`•\` Stay up to date by checking out \
+      <#1031257076065914930>\n\n**:pencil: | Want to join us?**\n\`•\`Learn how to in <#498179573847031824>\n\n**:question: \
       | Need help?**\n \`•\` Feel free to open a ticket in <#867160066704146482>\n\n<:hypixel:968022561940209664> [Hypixel \
       Forum Post](https://bit.ly/MatrixForums) ㅤㅤ<:twitter:968021865064988742> [Twitter Page](https://twitter.com/MatrixHypixel)\
-      ㅤㅤ<:twitch:968022010498273280> [Twitch Channel](https://www.twitch.tv/matrix_guild)`)
-    .setImage('https://cdn.discordapp.com/attachments/986281342457237624/1001507558357471242/Screenshot_2022-04-29_152830.png');
+      ㅤㅤ<:twitch:968022010498273280> [Twitch Channel](https://www.twitch.tv/matrix_guild)`);
   await global.welcomeChannel.send({ content: member.toString(), embeds: [embed] });
 }
 

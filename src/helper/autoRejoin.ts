@@ -7,7 +7,7 @@ async function startBot() {
   global.bot = mineflayer.createBot({
     host: 'mc.hypixel.net',
     auth: 'microsoft',
-    username: 'MatrixLink',
+    username: 'DominanceLink',
     version: '1.8.9',
     hideErrors: false,
     checkTimeoutInterval: 60000,
@@ -34,7 +34,7 @@ async function autoRejoin() {
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle('Disconnected')
-        .setDescription('MatrixLink has been disconnected from hypixel. Trying to reconnect...')
+        .setDescription(`${config.minecraft.ign} has been disconnected from hypixel. Trying to reconnect...`)
         .addFields(
           { name: '<:clock_:969185417712775168> Time', value: `<t:${Math.floor(Date.now() / 1000)}:R>` },
         );
