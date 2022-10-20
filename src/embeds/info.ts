@@ -14,7 +14,7 @@ client.on('ready', async () => {
   // eslint-disable-next-line no-console
   console.log(`[DISCORD] Logged in as ${client.user.tag}`);
   const rulesEmbed = new EmbedBuilder()
-    .setColor(config.colors.yellow)
+    .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Server Rules', iconURL: config.guild.icon })
     .setDescription('════ ⋆★⋆ ════\n\n**[General Rules]**\n• Discord alts are forbidden\n• Follow [Discord TOS](https://discord.com/terms)'
       + ' and [Hypixel Rules](http://hypixel.net/rules)\n• No harassment or toxicity\n• No racism or politics\n• All kinds of NSFW '
@@ -27,8 +27,8 @@ client.on('ready', async () => {
     });
 
   const guideEmbed = new EmbedBuilder()
-    .setColor(config.colors.yellow)
-    .setAuthor({ name: 'Matrix Guide', iconURL: config.guild.icon })
+    .setColor(config.colors.discordGray)
+    .setAuthor({ name: 'Dominance Guide', iconURL: config.guild.icon })
     .setDescription(`════ ⋆★⋆ ════\n\n**[FAQ]**\n\`Q:\` **How many times can I rejoin the guild?**\n> There is no limit, but you have \
     to wait before reapplying\n\n\`Q:\` **Where can I apply?**\n> <#1017099269372657724>\n\n\`Q:\` **How do I rankup once in the \
     guild?**\n> Learn about guild ranks in <#660448787147390977>\n\n\`Q:\` **How much GEXP do I need to get every week?**\n> \
@@ -44,7 +44,7 @@ client.on('ready', async () => {
       text: `Updated ${formatDate(new Date())}`,
       iconURL: config.guild.icon,
     })
-    .setImage('https://cdn.discordapp.com/attachments/986281342457237624/1001507558357471242/Screenshot_2022-04-29_152830.png');
+    .setImage('https://cdn.discordapp.com/attachments/986281342457237624/1032299536162492426/Dominace_Banner.png');
 
   const channel = client.channels.cache.get('1031245971662835834');
   if (channel?.type === ChannelType.GuildText) {
