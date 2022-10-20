@@ -12,7 +12,7 @@ async function execute(client, member) {
       in <#1031568019522072677>\n\n**:loudspeaker: | Announcements**\n\`•\` Stay up to date by checking out \
       <#1031257076065914930>\n\n**:pencil: | Want to join us?**\n\`•\`Learn how to in <#498179573847031824>\n\n**:question: \
       | Need help?**\n \`•\` Feel free to open a ticket in <#867160066704146482>\n\n<:hypixel:968022561940209664> [Hypixel \
-      Forum Post](https://bit.ly/MatrixForums) ㅤㅤ<:twitter:968021865064988742> [Twitter Page](https://twitter.com/MatrixHypixel)\
+      Forum Post](https://dominance.cf/forums) ㅤㅤ<:twitter:968021865064988742> [Twitter Page](https://twitter.com/MatrixHypixel)\
       ㅤㅤ<:twitch:968022010498273280> [Twitch Channel](https://www.twitch.tv/matrix_guild)`);
   await global.welcomeChannel.send({ content: member.toString(), embeds: [embed] });
 }
