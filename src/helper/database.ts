@@ -83,7 +83,6 @@ async function gsrun(sheets, client) {
     const data = db.prepare('SELECT * FROM guildMembers').all();
     const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.members;
     const array = [];
-    await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:Q126' });
     for (let i = data.length - 1; i >= 0; i -= 1) {
       for (let j = Object.keys(data[i]).length; j >= 0; j -= 1) {
         if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) && !Object.keys(guild[0].expHistory).includes(Object.keys(data[i])[j])) {

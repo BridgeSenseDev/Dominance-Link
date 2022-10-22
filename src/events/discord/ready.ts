@@ -2,6 +2,7 @@ import {
   database, gsrun, sheet, weekly,
 } from '../../helper/database.js';
 import gexpWatch from '../../helper/gexpWatch.js';
+import unverified from '../../helper/unverified.js';
 import channelUpdate from '../../helper/channelUpdate.js';
 import { autoRejoin, startBot } from '../../helper/autoRejoin.js';
 import config from '../../config.json' assert {type: 'json'};
@@ -20,6 +21,9 @@ async function execute(client) {
   global.applicationLogsChannel = client.channels.cache.get(config.channels.applicationLogsChannel);
   global.officerChat = client.channels.cache.get(config.channels.officerChat);
   global.welcomeChannel = client.channels.cache.get(config.channels.welcomeChannel);
+  global.unverifiedChannel = client.channels.cache.get(config.channels.unverifiedChannel);
+  global.unverifiedMessage = await global.unverifiedChannel.messages
+    .fetch(config.channels.unverifiedMessage);
   global.onlineMembers = 0;
   gexpWatch(client);
   channelUpdate(client);
@@ -28,6 +32,7 @@ async function execute(client) {
   weekly();
   gsrun(sheet, client);
   startBot();
+  unverified();
 }
 
 export default execute;
