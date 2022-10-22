@@ -39,7 +39,7 @@ client.on('ready', async () => {
     :white_large_square: [Light Background Cape](https://bit.ly/3Klyt79)\n:black_large_square: [Dark Background Cape](https://bit.ly/3ueDmte)\
     \n:purple_square: [Pink Cape](https://bit.ly/3jb0nXz)\n:yellow_square: [Yellow Cape White Background](https://bit.ly/3udsd) \
     (By @Lennos#3244)\n:yellow_square: [Yellow Cape Black Background](https://bit.ly/3Jdkajx) (By @Lennos#3244)\n:frame_photo: \
-    [Matrix Pack 16x](https://pvprp.com/pack?p=10795&or=profile) (By <@818468511612403772>)\n\n════ ⋆★⋆ ════`)
+    [Dominance Pack 16x](https://pvprp.com/pack?p=10795&or=profile) (By <@818468511612403772>)\n\n════ ⋆★⋆ ════`)
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,
       iconURL: config.guild.icon,

@@ -3,7 +3,7 @@ import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert {type: 'json'};
 
-const db = new Database('matrix.db');
+const db = new Database('guild.db');
 
 function gexpGained(gained) {
   let desc;
@@ -50,9 +50,9 @@ async function gexpWatch(client) {
     const unix = Math.floor(Date.now() / 1000);
 
     // Dominance
-    let result = db.prepare('SELECT gexp FROM matrixWatch WHERE date=?').get(previous).gexp;
+    let result = db.prepare('SELECT gexp FROM dominanceWatch WHERE date=?').get(previous).gexp;
     let gained = guildGexp[0] - result;
-    db.prepare('INSERT INTO matrixWatch (date, gexp, gained) VALUES (?, ?, ?)').run(today, guildGexp[2], gained);
+    db.prepare('INSERT INTO dominanceWatch (date, gexp, gained) VALUES (?, ?, ?)').run(today, guildGexp[2], gained);
 
     // Rebel
     result = db.prepare('SELECT separation FROM rebelWatch WHERE date=?').get(previous).separation;

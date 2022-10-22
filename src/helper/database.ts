@@ -1,19 +1,18 @@
 import { schedule } from 'node-cron';
 import { google } from 'googleapis';
 import Database from 'better-sqlite3';
-import keys from '../keys.json' assert {type: 'json'};
 import config from '../config.json' assert {type: 'json'};
 import { UUIDtoName } from './utils.js';
 
-const db = new Database('matrix.db');
+const db = new Database('guild.db');
 
 const ranks = {
   GUILDMASTER: '[GM]', Leader: '[Leader]', Staff: '[Staff]', Member: '[Member]',
 };
 const sheet = new google.auth.JWT(
-  keys.clientEmail,
+  config.sheets.clientEmail,
   null,
-  keys.privateKey,
+  config.sheets.privateKey,
   ['https://www.googleapis.com/auth/spreadsheets'],
 );
 

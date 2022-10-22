@@ -3,7 +3,7 @@ import { EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { UUIDtoName } from './utils.js';
 import config from '../config.json' assert {type: 'json'};
 
-const db = new Database('matrix.db');
+const db = new Database('guild.db');
 
 export default async function unverified() {
   setInterval(async () => {

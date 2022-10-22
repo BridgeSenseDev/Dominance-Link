@@ -3,14 +3,14 @@ import Database from 'better-sqlite3';
 import { formatMentions, UUIDtoName } from '../../helper/utils.js';
 import config from '../../config.json' assert {type: 'json'};
 
-const db = new Database('matrix.db');
+const db = new Database('guild.db');
 
 async function execute(client, message) {
   const msg = message;
   if (msg.author.bot) return;
   let uuid;
   if (msg.content.toLowerCase().includes('dominance')) {
-    await msg.react(':matrix:1031249417438756884');
+    await msg.react(':dominance:1033300891597557830');
   }
   if (msg.channel.id === global.logChannel.id) {
     await global.bot.chat(msg.content);

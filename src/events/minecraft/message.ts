@@ -4,7 +4,7 @@ import { nameToUUID } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert {type: 'json'};
 
-const db = new Database('matrix.db');
+const db = new Database('guild.db');
 
 const logWebhook = new WebhookClient({ url: config.keys.logWebhookUrl });
 const gcWebhook = new WebhookClient({ url: config.keys.gcWebhookUrl });

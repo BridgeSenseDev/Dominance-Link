@@ -1,8 +1,7 @@
 node_modules
 src/embeds/staff
 src/config.json
-src/matrix.db
-test.js
-Matrix Link.code-workspace
+src/guild.db
+Dominance Link.code-workspace
 src/keys.json
 dist
