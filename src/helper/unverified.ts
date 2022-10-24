@@ -8,16 +8,16 @@ const db = new Database('guild.db');
 export default async function unverified() {
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers').all();
-    let description = 'List of guild members who are **unverified** / **not in the discord**\n';
+    let description = 'List of guild members who are unverified / not in the discord\n';
     for (let i = data.length - 1; i >= 0; i -= 1) {
       if (data[i].discord === null) {
-        description += `\n${escapeMarkdown(await UUIDtoName(data[i].uuid))}`;
+        description += `\n${await UUIDtoName(data[i].uuid)}`;
       }
     }
     const embed = new EmbedBuilder()
       .setColor(config.colors.discordGray)
       .setTitle('Unlinked Members')
-      .setDescription(description);
+      .setDescription(escapeMarkdown(description));
     await global.unverifiedMessage.edit({ embeds: [embed] });
   }, 30 * 1000);
 }
