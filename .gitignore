@@ -3,5 +3,4 @@ src/embeds/staff
 src/config.json
 src/guild.db
 Dominance Link.code-workspace
-src/keys.json
 dist
