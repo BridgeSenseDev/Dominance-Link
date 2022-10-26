@@ -7,7 +7,7 @@ import { UUIDtoName } from './utils.js';
 const db = new Database('guild.db');
 
 const ranks = {
-  GUILDMASTER: '[GM]', Leader: '[Leader]', Staff: '[Staff]', Member: '[Member]',
+  GUILDMASTER: '[GM]', Leader: '[Leader]', Staff: '[Staff]', Pro: '[Pro]', Active: '[Active]', Member: '[Member]',
 };
 const sheet = new google.auth.JWT(
   config.sheets.clientEmail,
@@ -117,6 +117,7 @@ async function gsrun(sheets, client) {
       valueInputOption: 'USER_ENTERED',
       resource: { values: array },
     };
+    await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:Q126' });
     await gsapi.spreadsheets.values.update(options);
   }, 6 * 60 * 1000);
 }
