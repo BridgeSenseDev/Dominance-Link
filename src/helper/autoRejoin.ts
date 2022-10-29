@@ -10,7 +10,6 @@ async function startBot() {
     username: 'DominanceLink',
     version: '1.8.9',
     hideErrors: false,
-    checkTimeoutInterval: 60000,
     viewDistance: 'tiny',
     chatLengthLimit: 256,
     defaultChatPatterns: false,
