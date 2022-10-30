@@ -12,7 +12,7 @@ async function execute(client) {
   console.log(`[DISCORD] Logged in as ${client.user.tag}`);
   global.statusChannel = client.channels.cache.get(config.channels.statusChannel);
   global.logChannel = client.channels.cache.get(config.channels.logChannel);
-  global.guildChat = client.channels.cache.get(config.channels.guildChat);
+  global.minecraftLinkChannel = client.channels.cache.get(config.channels.minecraftLinkChannel);
   global.onlineChannel = client.channels.cache.get(config.channels.onlineChannel);
   global.membersChannel = client.channels.cache.get(config.channels.membersChannel);
   global.levelChannel = client.channels.cache.get(config.channels.levelChannel);
@@ -21,6 +21,7 @@ async function execute(client) {
   global.applicationLogsChannel = client.channels.cache.get(config.channels.applicationLogsChannel);
   global.officerChat = client.channels.cache.get(config.channels.officerChat);
   global.welcomeChannel = client.channels.cache.get(config.channels.welcomeChannel);
+  global.guildChatChannel = client.channels.cache.get(config.channels.guildChatChannel);
   global.unverifiedChannel = client.channels.cache.get(config.channels.unverifiedChannel);
   global.unverifiedMessage = await global.unverifiedChannel.messages
     .fetch(config.channels.unverifiedMessage);

@@ -14,7 +14,7 @@ async function execute(client, message) {
   }
   if (msg.channel.id === global.logChannel.id) {
     await global.bot.chat(msg.content);
-  } else if (msg.channel.id === global.guildChat.id) {
+  } else if (msg.channel.id === global.minecraftLinkChannel.id) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(msg.author.id);
     if (user === undefined) {
       try {
@@ -40,7 +40,7 @@ async function execute(client, message) {
       return;
     }
     if (length > 256) {
-      await global.guildChat.send(`Character limit exceeded (${length})`);
+      await global.minecraftLinkChannel.send(`Character limit exceeded (${length})`);
       return;
     }
     await global.bot.chat(`/gc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
@@ -71,7 +71,7 @@ async function execute(client, message) {
       return;
     }
     if (length > 256) {
-      await global.guildChat.send(`Character limit exceeded (${length})`);
+      await global.minecraftLinkChannel.send(`Character limit exceeded (${length})`);
       return;
     }
     await global.bot.chat(`/oc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
