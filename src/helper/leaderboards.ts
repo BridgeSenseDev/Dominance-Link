@@ -79,5 +79,6 @@ export default async function leaderboards() {
   setInterval(async () => {
     generateLeaderboard(global.dailyGexpMessage, Object.keys(db.prepare('SELECT * FROM guildMembers').get())[Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1]);
     generateLeaderboard(global.playtimeMessage, 'playtime');
+    generateLeaderboard(global.guildMessagesMessage, 'messages');
   }, 5 * 60 * 1000);
 }
