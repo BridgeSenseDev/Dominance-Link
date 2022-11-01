@@ -53,7 +53,7 @@ async function generateLeaderboard(message, order) {
 
   if (order === 'playtime') {
     for (let i = 0; i < data.length; i += 1) {
-      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(2)}`);
+      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)} H`);
     }
   } else {
     for (let i = 0; i < data.length; i += 1) {
