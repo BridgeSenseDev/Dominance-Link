@@ -11,28 +11,18 @@ import leaderboards from '../../helper/leaderboards.js';
 async function execute(client) {
   // eslint-disable-next-line no-console
   console.log(`[DISCORD] Logged in as ${client.user.tag}`);
-  global.statusChannel = client.channels.cache.get(config.channels.statusChannel);
-  global.logChannel = client.channels.cache.get(config.channels.logChannel);
-  global.minecraftLinkChannel = client.channels.cache.get(config.channels.minecraftLinkChannel);
-  global.onlineChannel = client.channels.cache.get(config.channels.onlineChannel);
-  global.membersChannel = client.channels.cache.get(config.channels.membersChannel);
-  global.levelChannel = client.channels.cache.get(config.channels.levelChannel);
-  global.applicationsChannel = client.channels.cache.get(config.channels.applicationsChannel);
-  global.guildLogsChannel = client.channels.cache.get(config.channels.guildLogsChannel);
-  global.applicationLogsChannel = client.channels.cache.get(config.channels.applicationLogsChannel);
-  global.officerChat = client.channels.cache.get(config.channels.officerChat);
-  global.welcomeChannel = client.channels.cache.get(config.channels.welcomeChannel);
-  global.guildChatChannel = client.channels.cache.get(config.channels.guildChatChannel);
-  global.unverifiedChannel = client.channels.cache.get(config.channels.unverifiedChannel);
-  global.unverifiedMessage = await global.unverifiedChannel.messages
-    .fetch(config.channels.unverifiedMessage);
-  global.dailyGexpChannel = client.channels.cache.get(config.leaderboards.dailyGexpChannel);
-  global.dailyGexpMessage = await global.dailyGexpChannel.messages
-    .fetch(config.leaderboards.dailyGexpMessage);
-  global.playtimeChannel = client.channels.cache.get(config.leaderboards.playtimeChannel);
-  global.playtimeMessage = await global.playtimeChannel.messages
-    .fetch(config.leaderboards.playtimeMessage);
+
+  for (let i = 0; i < Object.keys(config.messages).length; i += 1) {
+    const channel = client.channels.cache.get(Object.values(config.messages)[i][0]);
+    global[Object.keys(config.messages)[i]] = await channel.messages
+      .fetch(Object.values(config.messages)[i][1]);
+  }
+  for (let i = 0; i < Object.keys(config.channels).length; i += 1) {
+    global[Object.keys(config.channels)[i]] = client.channels.cache
+      .get(Object.values(config.channels)[i]);
+  }
   global.onlineMembers = 0;
+
   gexpWatch(client);
   channelUpdate(client);
   autoRejoin();

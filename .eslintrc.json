@@ -28,20 +28,5 @@
         "no-await-in-loop": "off",
         "consistent-return": "off",
         "no-continue": "off"
-    },
-    "globals": {
-        "bot": true,
-        "logChannel": true,
-        "guildChannel": true,
-        "statusChannel": true,
-        "onlineMembers": true,
-        "guildChat": true,
-        "onlineChannel": true,
-        "membersChannel": true,
-        "levelChannel": true,
-        "messageCache": true,
-        "guildOnline": true,
-        "applicationsChannel": true,
-        "officerChat": true
     }
 }

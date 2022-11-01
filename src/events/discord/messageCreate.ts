@@ -45,7 +45,7 @@ async function execute(client, message) {
     }
     await global.bot.chat(`/gc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
     await msg.delete();
-  } else if (msg.channel.id === global.officerChat.id) {
+  } else if (msg.channel.id === global.officerChannel.id) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(msg.author.id);
     if (user === undefined) {
       try {
