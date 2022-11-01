@@ -9,7 +9,7 @@ const db = new Database('guild.db');
 const ranks = {
   GUILDMASTER: '[GM]', Leader: '[Leader]', Staff: '[Staff]', Pro: '[Pro]', Active: '[Active]', Member: '[Member]',
 };
-const sheet = new google.auth.JWT(
+export const sheet = new google.auth.JWT(
   config.sheets.clientEmail,
   null,
   config.sheets.privateKey,

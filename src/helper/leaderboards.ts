@@ -51,8 +51,14 @@ async function generateLeaderboard(message, order) {
   const leaderboard = [];
   const images = [];
 
-  for (let i = 0; i < data.length; i += 1) {
-    leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
+  if (order === 'playtime') {
+    for (let i = 0; i < data.length; i += 1) {
+      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(2)}`);
+    }
+  } else {
+    for (let i = 0; i < data.length; i += 1) {
+      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
+    }
   }
   for (let i = 12; i < 130; i += 13) {
     images.push(generateLeaderboardImage(leaderboard.slice(i - 12, i + 1)));
@@ -72,5 +78,6 @@ async function generateLeaderboard(message, order) {
 export default async function leaderboards() {
   setInterval(async () => {
     generateLeaderboard(global.dailyGexpMessage, Object.keys(db.prepare('SELECT * FROM guildMembers').get())[Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1]);
+    generateLeaderboard(global.playtimeMessage, 'playtime');
   }, 5 * 60 * 1000);
 }

@@ -140,7 +140,7 @@ export function nameColor(player) {
     return player;
   }
   if (player.monthlyPackageRank && player.monthlyPackageRank !== 'NONE') {
-    let monthlyPlusColor = rankColor[player.monthlyPlusColor];
+    let monthlyPlusColor = rankColor[player.rankPlusColor];
     if (monthlyPlusColor === undefined) {
       monthlyPlusColor = '§c';
     }
@@ -152,7 +152,7 @@ export function nameColor(player) {
     }
   }
   if (player.newPackageRank === 'MVP_PLUS') {
-    let monthlyPlusColor = rankColor[player.monthlyPlusColor];
+    let monthlyPlusColor = rankColor[player.rankPlusColor];
     if (monthlyPlusColor === undefined) {
       monthlyPlusColor = '§c';
     }

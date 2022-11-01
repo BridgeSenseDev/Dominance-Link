@@ -29,6 +29,9 @@ async function execute(client) {
   global.dailyGexpChannel = client.channels.cache.get(config.leaderboards.dailyGexpChannel);
   global.dailyGexpMessage = await global.dailyGexpChannel.messages
     .fetch(config.leaderboards.dailyGexpMessage);
+  global.playtimeChannel = client.channels.cache.get(config.leaderboards.playtimeChannel);
+  global.playtimeMessage = await global.playtimeChannel.messages
+    .fetch(config.leaderboards.playtimeMessage);
   global.onlineMembers = 0;
   gexpWatch(client);
   channelUpdate(client);
