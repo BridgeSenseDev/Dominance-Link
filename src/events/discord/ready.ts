@@ -1,11 +1,12 @@
 import {
-  database, gsrun, sheet, weekly,
+  database, gsrun, players, sheet, weekly,
 } from '../../helper/database.js';
 import gexpWatch from '../../helper/gexpWatch.js';
 import unverified from '../../helper/unverified.js';
 import channelUpdate from '../../helper/channelUpdate.js';
 import { autoRejoin, startBot } from '../../helper/autoRejoin.js';
 import config from '../../config.json' assert {type: 'json'};
+import leaderboards from '../../helper/leaderboards.js';
 
 async function execute(client) {
   // eslint-disable-next-line no-console
@@ -25,6 +26,9 @@ async function execute(client) {
   global.unverifiedChannel = client.channels.cache.get(config.channels.unverifiedChannel);
   global.unverifiedMessage = await global.unverifiedChannel.messages
     .fetch(config.channels.unverifiedMessage);
+  global.dailyGexpChannel = client.channels.cache.get(config.leaderboards.dailyGexpChannel);
+  global.dailyGexpMessage = await global.dailyGexpChannel.messages
+    .fetch(config.leaderboards.dailyGexpMessage);
   global.onlineMembers = 0;
   gexpWatch(client);
   channelUpdate(client);
@@ -34,6 +38,8 @@ async function execute(client) {
   gsrun(sheet, client);
   startBot();
   unverified();
+  players();
+  leaderboards();
 }
 
 export default execute;

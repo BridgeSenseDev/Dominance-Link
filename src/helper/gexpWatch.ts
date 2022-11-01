@@ -25,7 +25,7 @@ function doubleDigits(number) {
   return number;
 }
 
-async function gexpWatch(client) {
+export default async function gexpWatch(client) {
   schedule('00 50 11 * * 0-6', async () => {
     const watchChannel = client.channels.cache.get(config.channels.watchChannel);
     const urls = [
@@ -107,5 +107,3 @@ async function gexpWatch(client) {
     await watchChannel.send({ embeds: [rebelEmbed, cronosEmbed, dawnsEmbed] });
   });
 }
-
-export default gexpWatch;

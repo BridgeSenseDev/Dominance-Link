@@ -1,3 +1,5 @@
+import { rankColor } from './constants.js';
+
 async function nameToUUID(name) {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${name}`)).json()).data.player.raw_id;
@@ -133,6 +135,41 @@ function abbreviateNumber(num) {
   }).format(num);
 }
 
+function nameColor(player) {
+  if (player.rank) {
+    return player;
+  }
+  if (player.monthlyPackageRank && player.monthlyPackageRank !== 'NONE') {
+    let monthlyPlusColor = rankColor[player.monthlyPlusColor];
+    if (monthlyPlusColor === undefined) {
+      monthlyPlusColor = '§c';
+    }
+    if (player.monthlyRankColor === 'GOLD') {
+      return `§6[MVP${monthlyPlusColor}++§6] ${player.displayname}`;
+    }
+    if (player.monthlyRankColor === 'AQUA') {
+      return `§b[MVP${monthlyPlusColor}++§b] ${player.displayname}`;
+    }
+  }
+  if (player.newPackageRank === 'MVP_PLUS') {
+    let monthlyPlusColor = rankColor[player.monthlyPlusColor];
+    if (monthlyPlusColor === undefined) {
+      monthlyPlusColor = '§c';
+    }
+    return `§b[MVP${monthlyPlusColor}+§b] ${player.displayname}`;
+  }
+  if (player.newPackageRank === 'MVP') {
+    return `§b[MVP] ${player.displayname}`;
+  }
+  if (player.newPackageRank === 'VIP_PLUS') {
+    return `§a[VIP§6+§a] ${player.displayname}`;
+  }
+  if (player.newPackageRank === 'VIP') {
+    return `§a[VIP] ${player.displayname}`;
+  }
+  return `§7${player.displayname}`;
+}
+
 export {
   nameToUUID,
   UUIDtoName,
@@ -143,4 +180,5 @@ export {
   removeSectionSymbols,
   formatNumber,
   abbreviateNumber,
+  nameColor,
 };

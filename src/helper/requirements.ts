@@ -3,8 +3,7 @@ import {
   removeSectionSymbols, abbreviateNumber, formatNumber, UUIDtoName,
 } from './utils.js';
 import config from '../config.json' assert {type: 'json'};
-
-const { levelingXp } = (await import('./constants.js')).default;
+import { levelingXp } from './constants.js';
 
 async function xpToLevel(exp, cap) {
   let xp = exp;
@@ -121,7 +120,7 @@ export default async function requirements(uuid, playerData) {
   let author; let color; let reqs;
 
   if (playerData.achievementPoints === undefined) {
-    requirementEmbed += ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `No Achivements Data`\n\n';
+    requirementEmbed += ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `No Achievements Data`\n\n';
   } else if (playerData.achievementPoints >= 12500) {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Achievements**\n';

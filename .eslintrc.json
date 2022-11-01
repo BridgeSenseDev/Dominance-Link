@@ -26,7 +26,8 @@
         "import/no-unresolved": "off",
         "no-restricted-syntax": "off",
         "no-await-in-loop": "off",
-        "consistent-return": "off"
+        "consistent-return": "off",
+        "no-continue": "off"
     },
     "globals": {
         "bot": true,

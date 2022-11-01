@@ -2,7 +2,7 @@ import { schedule } from 'node-cron';
 import { google } from 'googleapis';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert {type: 'json'};
-import { UUIDtoName } from './utils.js';
+import { nameColor, UUIDtoName } from './utils.js';
 
 const db = new Database('guild.db');
 
@@ -122,9 +122,22 @@ async function gsrun(sheets, client) {
   }, 6 * 60 * 1000);
 }
 
+async function players() {
+  let count = 0;
+  setInterval(async () => {
+    const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
+    if (data !== undefined) {
+      const { player } = (await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${data.uuid}`)).json());
+      db.prepare('UPDATE guildMembers SET nameColor = ? WHERE uuid = ?').run(nameColor(player), data.uuid);
+    }
+    count += 1;
+  }, 2 * 1000);
+}
+
 export {
   database,
   gsrun,
   sheet,
   weekly,
+  players,
 };
