@@ -1,6 +1,6 @@
 import { rankColor } from './constants.js';
 
-async function nameToUUID(name) {
+export async function nameToUUID(name) {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${name}`)).json()).data.player.raw_id;
   } catch (e) {
@@ -8,7 +8,7 @@ async function nameToUUID(name) {
   }
 }
 
-async function UUIDtoName(uuid) {
+export async function UUIDtoName(uuid) {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${uuid}`)).json()).data.player.username;
   } catch (e) {
@@ -16,7 +16,7 @@ async function UUIDtoName(uuid) {
   }
 }
 
-async function formatMentions(client, message) {
+export async function formatMentions(client, message) {
   let msg = message.content;
   if (msg.includes('<@') && msg.includes('>') && !msg.includes('<@&')) {
     const guildId = message.guild.id;
@@ -64,7 +64,7 @@ async function formatMentions(client, message) {
   return msg;
 }
 
-function getLevel(experience) {
+export function getLevel(experience) {
   const EXP_NEEDED = [100000, 150000, 250000, 500000, 750000, 1000000, 1250000,
     1500000, 2000000, 2500000, 2500000, 2500000, 2500000, 2500000, 3000000];
   let exp = experience;
@@ -88,12 +88,12 @@ function getLevel(experience) {
   return 1000;
 }
 
-async function sleep(ms) {
+export async function sleep(ms) {
   // eslint-disable-next-line no-promise-executor-return
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function formatDate(dateObj) {
+export function formatDate(dateObj) {
   let suffix;
   const date = dateObj.getDate();
   if (date > 3 && date < 21) suffix = 'th';
@@ -113,7 +113,7 @@ function formatDate(dateObj) {
   return `${date + suffix} ${month} ${dateObj.getFullYear()}`;
 }
 
-function removeSectionSymbols(message) {
+export function removeSectionSymbols(message) {
   let msg = message;
   let pos = msg.indexOf('\u00A7');
   while (pos !== -1) {
@@ -124,18 +124,18 @@ function removeSectionSymbols(message) {
   return msg;
 }
 
-function formatNumber(num) {
+export function formatNumber(num) {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-function abbreviateNumber(num) {
+export function abbreviateNumber(num) {
   return Intl.NumberFormat('en-US', {
     notation: 'compact',
     maximumFractionDigits: 1,
   }).format(num);
 }
 
-function nameColor(player) {
+export function nameColor(player) {
   if (player.rank) {
     return player;
   }
@@ -169,16 +169,3 @@ function nameColor(player) {
   }
   return `§7${player.displayname}`;
 }
-
-export {
-  nameToUUID,
-  UUIDtoName,
-  formatMentions,
-  getLevel,
-  sleep,
-  formatDate,
-  removeSectionSymbols,
-  formatNumber,
-  abbreviateNumber,
-  nameColor,
-};

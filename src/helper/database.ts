@@ -26,7 +26,7 @@ sheet.authorize((err) => {
   }
 });
 
-async function weekly() {
+export async function weekly() {
   schedule('00 50 11 * * 0', async () => {
     const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.members;
     for (let i = 0; i < guild.length; i += 1) {
@@ -48,7 +48,7 @@ async function weekly() {
   });
 }
 
-async function database() {
+export async function database() {
   setInterval(async () => {
     const members = [];
     const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.members;
@@ -76,7 +76,7 @@ async function database() {
   }, 5 * 60 * 1000);
 }
 
-async function gsrun(sheets, client) {
+export async function gsrun(sheets, client) {
   setInterval(async () => {
     const gsapi = google.sheets({ version: 'v4', auth: sheets });
     const data = db.prepare('SELECT * FROM guildMembers').all();
@@ -122,7 +122,7 @@ async function gsrun(sheets, client) {
   }, 6 * 60 * 1000);
 }
 
-async function players() {
+export async function players() {
   let count = 0;
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
@@ -133,11 +133,3 @@ async function players() {
     count += 1;
   }, 2 * 1000);
 }
-
-export {
-  database,
-  gsrun,
-  sheet,
-  weekly,
-  players,
-};

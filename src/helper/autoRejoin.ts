@@ -3,7 +3,7 @@ import fs from 'fs';
 import mineflayer from 'mineflayer';
 import config from '../config.json' assert {type: 'json'};
 
-async function startBot() {
+export async function startBot() {
   global.bot = mineflayer.createBot({
     host: 'mc.hypixel.net',
     auth: 'microsoft',
@@ -24,7 +24,7 @@ async function startBot() {
   }
 }
 
-async function autoRejoin() {
+export async function autoRejoin() {
   setInterval(async () => {
     const status = (await (await fetch(`https://api.hypixel.net/status?key=${config.keys.hypixelApiKey}&uuid=5760aae2-d977-467c-bf62-048469d5f507`)).json()).session.online;
     if (!status) {
@@ -47,8 +47,3 @@ async function autoRejoin() {
     }
   }, 60 * 1000);
 }
-
-export {
-  startBot,
-  autoRejoin,
-};
