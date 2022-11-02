@@ -128,8 +128,43 @@ export async function players() {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
     if (data !== undefined) {
       const { player } = (await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${data.uuid}`)).json());
-      db.prepare('UPDATE guildMembers SET nameColor = ? WHERE uuid = ?').run(nameColor(player), data.uuid);
+      const { stats } = player;
+      let bwStars; let bwFkdr; let duelsWins; let duelsWlr;
+      try {
+        bwStars = player.achievements.bedwars_level;
+      } catch (e) {
+        bwStars = 0;
+      }
+      try {
+        bwFkdr = (stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars)
+          .toFixed(1);
+      } catch (e) {
+        bwFkdr = 0;
+      }
+      if (Number.isNaN(Number(bwFkdr))) {
+        bwFkdr = 0;
+      }
+      try {
+        duelsWins = stats.Duels.wins;
+      } catch (e) {
+        duelsWins = 0;
+      }
+      if (duelsWins === undefined) {
+        duelsWins = 0;
+      }
+      try {
+        duelsWlr = (stats.Duels.wins / stats.Duels.losses).toFixed(1);
+      } catch (e) {
+        duelsWlr = 0;
+      }
+      if (Number.isNaN(Number(duelsWlr))) {
+        duelsWlr = 0;
+      }
+      db.prepare('UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?').run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
     }
     count += 1;
+    if (count === 126) {
+      count = 0;
+    }
   }, 2 * 1000);
 }

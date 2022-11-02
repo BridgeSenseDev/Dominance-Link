@@ -77,8 +77,13 @@ async function generateLeaderboard(message, order) {
 
 export default async function leaderboards() {
   setInterval(async () => {
+    generateLeaderboard(global.weeklyGexpMessage, 'weeklyGexp');
     generateLeaderboard(global.dailyGexpMessage, Object.keys(db.prepare('SELECT * FROM guildMembers').get())[Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1]);
     generateLeaderboard(global.playtimeMessage, 'playtime');
     generateLeaderboard(global.guildMessagesMessage, 'messages');
-  }, 5 * 60 * 1000);
+    generateLeaderboard(global.bwStarsMessage, 'bwStars');
+    generateLeaderboard(global.bwFkdrMessage, 'bwFkdr');
+    generateLeaderboard(global.duelsWinsMessage, 'duelsWins');
+    generateLeaderboard(global.duelsWlrMessage, 'duelsWlr');
+  }, 1 * 60 * 1000);
 }
