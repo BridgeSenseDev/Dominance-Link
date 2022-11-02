@@ -85,5 +85,5 @@ export default async function leaderboards() {
     generateLeaderboard(global.bwFkdrMessage, 'bwFkdr');
     generateLeaderboard(global.duelsWinsMessage, 'duelsWins');
     generateLeaderboard(global.duelsWlrMessage, 'duelsWlr');
-  }, 1 * 60 * 1000);
+  }, 5 * 60 * 1000);
 }
