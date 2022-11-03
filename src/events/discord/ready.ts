@@ -8,6 +8,7 @@ import unverified from '../../helper/unverified.js';
 import channelUpdate from '../../helper/channelUpdate.js';
 import { autoRejoin, startBot } from '../../helper/workerHandler.js';
 import config from '../../config.json' assert {type: 'json'};
+import leaderboards from '../../helper/leaderboards.js';
 
 if (fileURLToPath(import.meta.url).slice(-2) === 'js') {
   global.worker = new Worker('./helper/worker.js');
@@ -41,4 +42,5 @@ export default async function execute(client) {
   startBot();
   unverified();
   players();
+  leaderboards();
 }
