@@ -3,6 +3,7 @@ import Database from 'better-sqlite3';
 import { nameToUUID } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert {type: 'json'};
+import { chat } from '../../helper/workerHandler.js';
 
 const db = new Database('guild.db');
 
@@ -13,20 +14,18 @@ const playtime = {};
 global.messageCache = [];
 db.defaultSafeIntegers(true);
 
-export default async function execute(client, message, messagePosition) {
+export default async function execute(client, msg, rawMsg, messagePosition) {
   if (messagePosition !== 'chat') return;
-  const msg = message.toString();
   if (msg.trim() === '') return;
   // Limbo Check
   if (msg.includes('"server"')) {
     const parsedMessage = JSON.parse(msg);
     if (parsedMessage.server !== 'limbo') {
-      await global.bot.chat('\u00a7');
+      await chat('\u00a7');
     } else {
       return;
     }
   }
-  const rawMsg = message.toMotd();
   if (msg.includes('@everyone') || msg.includes('@here')) {
     await logWebhook.send({ content: msg.replace('@', ''), username: 'Dominance', avatarURL: config.guild.icon });
   } else {
@@ -111,7 +110,7 @@ export default async function execute(client, message, messagePosition) {
         break;
       }
     }
-    await global.bot.chat(`/gc Welcome to Dominance, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`);
+    await chat(`/gc Welcome to Dominance, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`);
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
@@ -135,9 +134,9 @@ export default async function execute(client, message, messagePosition) {
     }
     try {
       const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
-      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFact[2]}`);
+      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2]}`);
     } catch (e) {
-      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${name}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFact[2]}`);
+      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${name}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2]}`);
     }
   } else if (msg.includes('Guild >')) {
     await gcWebhook.send({
@@ -183,7 +182,7 @@ export default async function execute(client, message, messagePosition) {
       // Continue regardless of error
     }
     if (waitlist !== undefined) {
-      await global.bot.chat(`/g invite ${name}`);
+      await chat(`/g invite ${name}`);
       const channel = client.channels.cache.get(waitlist.channel.toString());
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)

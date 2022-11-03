@@ -2,6 +2,7 @@ import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import { formatMentions, UUIDtoName } from '../../helper/utils.js';
 import config from '../../config.json' assert {type: 'json'};
+import { chat } from '../../helper/workerHandler.js';
 
 const db = new Database('guild.db');
 
@@ -13,7 +14,7 @@ async function execute(client, message) {
     await msg.react(':dominance:1033300891597557830');
   }
   if (msg.channel.id === global.logChannel.id) {
-    await global.bot.chat(msg.content);
+    await chat(msg.content);
   } else if (msg.channel.id === global.minecraftLinkChannel.id) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(msg.author.id);
     if (user === undefined) {
@@ -43,7 +44,7 @@ async function execute(client, message) {
       await global.minecraftLinkChannel.send(`Character limit exceeded (${length})`);
       return;
     }
-    await global.bot.chat(`/gc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
+    await chat(`/gc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
     await msg.delete();
   } else if (msg.channel.id === global.officerChannel.id) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(msg.author.id);
@@ -74,7 +75,7 @@ async function execute(client, message) {
       await global.minecraftLinkChannel.send(`Character limit exceeded (${length})`);
       return;
     }
-    await global.bot.chat(`/oc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
+    await chat(`/oc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
     await msg.delete();
   }
 }

@@ -1,10 +1,11 @@
 import { ActivityType } from 'discord.js';
 import { getLevel, sleep } from './utils.js';
 import config from '../config.json' assert {type: 'json'};
+import { chat } from '../helper/workerHandler.js';
 
 async function channelUpdate(client) {
   setInterval(async () => {
-    await global.bot.chat('/g online');
+    await chat('/g online');
     // Presence
     let members = 0;
     for (let i = 0; i < client.guilds.cache.size; i += 1) {

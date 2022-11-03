@@ -1,27 +1,28 @@
 import { EmbedBuilder } from 'discord.js';
-import fs from 'fs';
-import mineflayer from 'mineflayer';
 import config from '../config.json' assert {type: 'json'};
 
 export async function startBot() {
-  global.bot = mineflayer.createBot({
-    host: 'mc.hypixel.net',
-    auth: 'microsoft',
-    username: 'DominanceLink',
-    version: '1.8.9',
-    hideErrors: false,
-    viewDistance: 'tiny',
-    chatLengthLimit: 256,
-    defaultChatPatterns: false,
-  });
-
   const client = (await import('../index.js')).default;
-  const eventFiles = fs.readdirSync('./events/minecraft');
-  for (const file of eventFiles) {
-    const event = await import(`../events/minecraft/${file}`);
-    const name = file.split('.')[0];
-    global.bot.on(name, (...args) => event.default(client, ...args));
-  }
+
+  global.worker.on('message', async (msg) => {
+    if (msg.type === 'message') {
+      const event = await import('../events/minecraft/message.js');
+      event.default(client, msg.string, msg.motd, msg.messagePosition);
+    }
+
+    if (msg.type === 'login') {
+      const event = await import('../events/minecraft/login.js');
+      event.default();
+    }
+  });
+}
+
+export async function chat(message) {
+  global.worker.postMessage({ type: 'send', content: message });
+}
+
+export async function quit() {
+  global.worker.postMessage({ type: 'quit' });
 }
 
 export async function autoRejoin() {
@@ -39,7 +40,7 @@ export async function autoRejoin() {
         );
       await global.statusChannel.send({ embeds: [embed] });
       try {
-        global.bot.quit();
+        quit();
       } catch (err) {
         // Continue regardless of error
       }

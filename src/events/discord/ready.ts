@@ -1,14 +1,21 @@
+import { Worker } from 'worker_threads';
+import { fileURLToPath } from 'url';
 import {
   database, gsrun, players, sheet, weekly,
 } from '../../helper/database.js';
 import gexpWatch from '../../helper/gexpWatch.js';
 import unverified from '../../helper/unverified.js';
 import channelUpdate from '../../helper/channelUpdate.js';
-import { autoRejoin, startBot } from '../../helper/autoRejoin.js';
+import { autoRejoin, startBot } from '../../helper/workerHandler.js';
 import config from '../../config.json' assert {type: 'json'};
-import leaderboards from '../../helper/leaderboards.js';
 
-async function execute(client) {
+if (fileURLToPath(import.meta.url).slice(-2) === 'js') {
+  global.worker = new Worker('./helper/worker.js');
+} else {
+  global.worker = new Worker(new URL('../../helper/worker.ts', import.meta.url));
+}
+
+export default async function execute(client) {
   // eslint-disable-next-line no-console
   console.log(`[DISCORD] Logged in as ${client.user.tag}`);
 
@@ -23,6 +30,8 @@ async function execute(client) {
   }
   global.onlineMembers = 0;
 
+  global.worker.postMessage({ type: 'startBot' });
+
   gexpWatch(client);
   channelUpdate(client);
   autoRejoin();
@@ -32,7 +41,4 @@ async function execute(client) {
   startBot();
   unverified();
   players();
-  leaderboards();
 }
-
-export default execute;
