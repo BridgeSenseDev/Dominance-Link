@@ -3,6 +3,7 @@ import config from '../config.json' assert {type: 'json'};
 
 export async function startBot() {
   const client = (await import('../index.js')).default;
+  global.worker.postMessage({ type: 'startBot' });
 
   global.worker.on('message', async (msg) => {
     if (msg.type === 'message') {

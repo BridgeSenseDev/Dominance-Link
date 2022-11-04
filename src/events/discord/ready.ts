@@ -31,8 +31,6 @@ export default async function execute(client) {
   }
   global.onlineMembers = 0;
 
-  global.worker.postMessage({ type: 'startBot' });
-
   gexpWatch(client);
   channelUpdate(client);
   autoRejoin();
