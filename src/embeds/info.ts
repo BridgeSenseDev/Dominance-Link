@@ -17,7 +17,7 @@ client.on('ready', async () => {
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Server Rules', iconURL: config.guild.icon })
     .setDescription('════ ⋆★⋆ ════\n\n**[General Rules]**\n• Discord alts are forbidden\n• Follow [Discord TOS](https://discord.com/terms)'
-      + ' and [Hypixel Rules](http://hypixel.net/rules)\n• No harassment or toxicity\n• No racism or politics\n• All kinds of NSFW '
+      + ' and [Hypixel Rules](https://hypixel.net/rules)\n• No harassment or toxicity\n• No racism or politics\n• All kinds of NSFW '
       + 'are not allowed\n• No spamming / mass pinging\n• No DDoSing / doxing\n\n════ ⋆★⋆ ════\n\n**[Chat Rules]**\n• No unsolicited '
       + 'chat advertising\n• Chat in the correct channels\n• No overuse of bad language\n• No discussion of inappropriate topics\n• No '
       + 'talking about self-harm, or other deeply negative experiences\n• No pinging staff members without valid reason\n\n════ ⋆★⋆ ════')
