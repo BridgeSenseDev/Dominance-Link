@@ -134,9 +134,9 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
     }
     try {
       const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
-      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2]}`);
+      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`);
     } catch (e) {
-      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${name}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2]}`);
+      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`);
     }
   } else if (msg.includes('Guild >')) {
     await gcWebhook.send({
