@@ -3,7 +3,7 @@ import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import Database from 'better-sqlite3';
 import { ButtonStyle } from 'discord.js';
 import { rgbaColor } from './constants.js';
-import { formatNumber } from './utils.js';
+import { formatNumber, sleep } from './utils.js';
 
 const db = new Database('guild.db');
 registerFont('./MinecraftRegular-Bmg3.ttf', { family: 'Minecraft' });
@@ -78,12 +78,19 @@ async function generateLeaderboard(message, order) {
 export default async function leaderboards() {
   setInterval(async () => {
     generateLeaderboard(global.weeklyGexpMessage, 'weeklyGexp');
+    await sleep(1000);
     generateLeaderboard(global.dailyGexpMessage, Object.keys(db.prepare('SELECT * FROM guildMembers').get())[Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1]);
+    await sleep(1000);
     generateLeaderboard(global.playtimeMessage, 'playtime');
+    await sleep(1000);
     generateLeaderboard(global.guildMessagesMessage, 'messages');
+    await sleep(1000);
     generateLeaderboard(global.bwStarsMessage, 'bwStars');
+    await sleep(1000);
     generateLeaderboard(global.bwFkdrMessage, 'bwFkdr');
+    await sleep(1000);
     generateLeaderboard(global.duelsWinsMessage, 'duelsWins');
+    await sleep(1000);
     generateLeaderboard(global.duelsWlrMessage, 'duelsWlr');
-  }, 5 * 60 * 1000);
+  }, 1 * 60 * 1000);
 }
