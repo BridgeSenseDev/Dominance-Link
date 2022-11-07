@@ -92,5 +92,5 @@ export default async function leaderboards() {
     generateLeaderboard(global.duelsWinsMessage, 'duelsWins');
     await sleep(1000);
     generateLeaderboard(global.duelsWlrMessage, 'duelsWlr');
-  }, 1 * 60 * 1000);
+  }, 5 * 60 * 1000);
 }
