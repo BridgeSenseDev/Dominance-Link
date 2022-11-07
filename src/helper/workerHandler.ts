@@ -45,7 +45,7 @@ export async function autoRejoin() {
       } catch (err) {
         // Continue regardless of error
       }
-      startBot();
+      global.worker.postMessage({ type: 'restartBot' });
     }
   }, 60 * 1000);
 }
