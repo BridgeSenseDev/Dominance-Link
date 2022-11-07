@@ -36,8 +36,19 @@ async function execute(client, interaction) {
     await user.send({ embeds: [embed] });
     await interaction.editReply({ content: 'Successfully denied', components: [] });
   } else if (interaction.isButton()) {
-    if (interaction.customId === 'requirements') {
-      await interaction.deferReply({ ephemeral: true });
+    if (interaction.customId in roles) {
+      const roleId = roles[interaction.customId];
+      let msg;
+      // eslint-disable-next-line no-underscore-dangle
+      if (interaction.member._roles.includes(roleId)) {
+        await interaction.member.roles.remove(roleId);
+        msg = `<:minus:1005843963686686730> <@&${roleId}>`;
+      } else {
+        await interaction.member.roles.add(roleId);
+        msg = `<:add:1005843961652453487> <@&${roleId}>`;
+      }
+      await interaction.reply({ content: msg, ephemeral: true });
+    } else if (interaction.customId === 'requirements') {
       let uuid; let playerData;
       try {
         ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id));
@@ -182,18 +193,6 @@ async function execute(client, interaction) {
         );
       await global.applicationLogsChannel.send({ embeds: [applicationEmbed] });
       await interaction.message.delete();
-    } else if (interaction.customId in roles) {
-      const roleId = roles[interaction.customId];
-      let msg;
-      // eslint-disable-next-line no-underscore-dangle
-      if (interaction.member._roles.includes(roleId)) {
-        await interaction.member.roles.remove(roleId);
-        msg = `<:minus:1005843963686686730> <@&${roleId}>`;
-      } else {
-        await interaction.member.roles.add(roleId);
-        msg = `<:add:1005843961652453487> <@&${roleId}>`;
-      }
-      await interaction.reply({ content: msg, ephemeral: true });
     }
   } else if (interaction.type === InteractionType.ModalSubmit) {
     if (interaction.customId === 'verification') {
