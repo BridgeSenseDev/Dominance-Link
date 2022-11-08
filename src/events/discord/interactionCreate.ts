@@ -39,6 +39,7 @@ async function execute(client, interaction) {
     if (interaction.customId in roles) {
       const roleId = roles[interaction.customId];
       let msg;
+      await interaction.deferUpdate({ ephemeral: true });
       // eslint-disable-next-line no-underscore-dangle
       if (interaction.member._roles.includes(roleId)) {
         await interaction.member.roles.remove(roleId);
@@ -50,6 +51,7 @@ async function execute(client, interaction) {
       await interaction.reply({ content: msg, ephemeral: true });
     } else if (interaction.customId === 'requirements') {
       let uuid; let playerData;
+      await interaction.deferUpdate({ ephemeral: true });
       try {
         ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id));
         playerData = (await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json()).player;
