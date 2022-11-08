@@ -9,6 +9,11 @@ const db = new Database('guild.db');
 const ranks = {
   GUILDMASTER: '[GM]', Leader: '[Leader]', Staff: '[Staff]', Pro: '[Pro]', Active: '[Active]', Member: '[Member]',
 };
+
+const roles = {
+  '[Staff]': '1005725104430395452', '[Pro]': '1031566725432492133', '[Active]': '950083054326677514', '[Member]': '1031926129822539786',
+};
+
 export const sheet = new google.auth.JWT(
   config.sheets.clientEmail,
   null,
@@ -123,10 +128,36 @@ export async function gsrun(sheets, client) {
 }
 
 export async function players() {
+  const client = (await import('../index.js')).default;
+  const guild = client.guilds.cache.get('242357942664429568');
+  const active = guild.roles.cache.get(roles['[Active]']);
+  const pro = guild.roles.cache.get(roles['[Pro]']);
+  const staff = guild.roles.cache.get(roles['[Staff]']);
   let count = 0;
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
     if (data !== undefined) {
+      if (data.discord !== null) {
+        if (!['[Leader]', '[GM]'].includes(data.tag)) {
+          const member = await guild.members.fetch(data.discord);
+          await member.roles.add(guild.roles.cache.get(roles['[Member]']));
+          if (!data.tag.includes(['[Member]'])) {
+            await member.roles.add(guild.roles.cache.get(roles[data.tag]));
+          }
+          if (data.tag === '[Member]') {
+            await member.roles.remove(active);
+            await member.roles.remove(pro);
+            await member.roles.remove(staff);
+          }
+          if (data.tag === '[Active]') {
+            await member.roles.remove(pro);
+            await member.roles.remove(staff);
+          }
+          if (data.tag === '[Pro]') {
+            await member.roles.remove(staff);
+          }
+        }
+      }
       const { player } = (await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${data.uuid}`)).json());
       const { stats } = player;
       let bwStars; let bwFkdr; let duelsWins; let duelsWlr;
@@ -166,5 +197,5 @@ export async function players() {
     if (count === 126) {
       count = 0;
     }
-  }, 2 * 1000);
+  }, 7 * 1000);
 }
