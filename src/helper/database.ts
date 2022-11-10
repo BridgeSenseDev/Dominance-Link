@@ -137,12 +137,16 @@ export async function players() {
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
     let member;
+    const ign = await UUIDtoName(data.uuid);
     if (data !== undefined) {
       if (data.discord !== null) {
         try {
           member = await guild.members.fetch(data.discord);
         } catch (e) {
           db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
+        }
+        if (!member.displayName.includes(ign)) {
+          await member.setNickname(ign);
         }
         if (!['[Leader]', '[GM]'].includes(data.tag) && member !== undefined) {
           await member.roles.add(guild.roles.cache.get(roles['[Member]']));
