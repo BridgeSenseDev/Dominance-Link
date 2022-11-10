@@ -15,7 +15,6 @@ if (fileURLToPath(import.meta.url).slice(-2) === 'js') {
 }
 
 export default async function execute(client) {
-  // eslint-disable-next-line no-console
   console.log(`[DISCORD] Logged in as ${client.user.tag}`);
 
   for (let i = 0; i < Object.keys(config.messages).length; i += 1) {

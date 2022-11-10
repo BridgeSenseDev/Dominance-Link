@@ -51,10 +51,8 @@ const rest = new REST({ version: '10' }).setToken(config.keys.discordBotToken);
 (async () => {
   try {
     await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
-    // eslint-disable-next-line no-console
     console.log('[DISCORD] Successfully reloaded application commands.');
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error(error);
   }
 })();

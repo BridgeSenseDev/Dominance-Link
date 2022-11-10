@@ -23,6 +23,7 @@
     "no-restricted-syntax": "off",
     "no-await-in-loop": "off",
     "consistent-return": "off",
-    "no-continue": "off"
+    "no-continue": "off",
+    "no-console": "off"
   }
 }

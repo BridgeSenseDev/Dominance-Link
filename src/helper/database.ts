@@ -28,10 +28,8 @@ export const sheet = new google.auth.JWT(config.sheets.clientEmail, null, config
 
 sheet.authorize((err) => {
   if (err) {
-    // eslint-disable-next-line no-console
     console.log(`[SHEETS] ${err}`);
   } else {
-    // eslint-disable-next-line no-console
     console.log('[SHEETS] Successfully connected to spreadsheet');
   }
 });
@@ -172,7 +170,11 @@ export async function players() {
           db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
         }
         if (!member.displayName.includes(ign)) {
-          await member.setNickname(ign);
+          try {
+            await member.setNickname(ign);
+          } catch (e) {
+            // Continue regardless of error
+          }
         }
         if (!['[Leader]', '[GM]'].includes(data.tag) && member !== undefined) {
           await member.roles.add(guild.roles.cache.get(roles['[Member]']));

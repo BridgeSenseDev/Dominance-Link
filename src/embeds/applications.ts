@@ -15,7 +15,6 @@ const client = new Client({
 });
 
 client.on('ready', async () => {
-  // eslint-disable-next-line no-console
   console.log(`[DISCORD] Logged in as ${client.user.tag}`);
   const requirementsEmbed = new EmbedBuilder()
     .setColor(config.colors.discordGray)

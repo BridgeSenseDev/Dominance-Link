@@ -7,7 +7,6 @@ export default async function execute() {
   if (!emittedEvent) {
     writeFileSync('./config.json', JSON.stringify(config, null, 2));
     await global.statusChannel.send(`${config.minecraft.ign} has logged in to Hypixel.`);
-    // eslint-disable-next-line no-console
     console.log(`[MINECRAFT] Logged in as ${config.minecraft.ign}`);
     emittedEvent = true;
 

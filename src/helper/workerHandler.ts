@@ -36,7 +36,6 @@ export async function autoRejoin() {
       ).json()
     ).session.online;
     if (!status) {
-      // eslint-disable-next-line no-console
       console.log('[MINECRAFT] Restarting bot');
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
