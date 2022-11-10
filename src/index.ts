@@ -2,10 +2,8 @@ import fs from 'fs';
 import { DisTube } from 'distube';
 import { SpotifyPlugin } from '@distube/spotify';
 import { REST } from '@discordjs/rest';
-import {
-  Client, GatewayIntentBits, Collection, Routes,
-} from 'discord.js';
-import config from './config.json' assert {type: 'json'};
+import { Client, GatewayIntentBits, Collection, Routes } from 'discord.js';
+import config from './config.json' assert { type: 'json' };
 
 const client = new Client({
   intents: [
@@ -13,8 +11,8 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildVoiceStates,
-  ],
+    GatewayIntentBits.GuildVoiceStates
+  ]
 });
 
 client.distube = new DisTube(client, {
@@ -23,7 +21,7 @@ client.distube = new DisTube(client, {
   leaveOnFinish: false,
   leaveOnStop: false,
 
-  plugins: [new SpotifyPlugin()],
+  plugins: [new SpotifyPlugin()]
 });
 
 client.commands = new Collection();
@@ -52,10 +50,7 @@ const rest = new REST({ version: '10' }).setToken(config.keys.discordBotToken);
 
 (async () => {
   try {
-    await rest.put(
-      Routes.applicationGuildCommands(clientId, guildId),
-      { body: commands },
-    );
+    await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
     // eslint-disable-next-line no-console
     console.log('[DISCORD] Successfully reloaded application commands.');
   } catch (error) {

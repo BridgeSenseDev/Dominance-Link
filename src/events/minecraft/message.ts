@@ -2,7 +2,7 @@ import { EmbedBuilder, WebhookClient } from 'discord.js';
 import Database from 'better-sqlite3';
 import { nameToUUID } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
-import config from '../../config.json' assert {type: 'json'};
+import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../helper/workerHandler.js';
 
 const db = new Database('guild.db');
@@ -59,7 +59,13 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
   } else if (msg.includes('Offline Members:')) {
     let includes = 0;
     for (let i = global.messageCache.length - 1; i >= 0; i -= 1) {
-      if (global.messageCache[i].includes('Guild Name:') || global.messageCache[i].includes('Total Members:') || global.messageCache[i].includes('Online Members:') || global.messageCache[i].includes('Offline Members:')) includes += 1;
+      if (
+        global.messageCache[i].includes('Guild Name:') ||
+        global.messageCache[i].includes('Total Members:') ||
+        global.messageCache[i].includes('Online Members:') ||
+        global.messageCache[i].includes('Offline Members:')
+      )
+        includes += 1;
       if (includes === 4) {
         global.guildOnline = global.messageCache.splice(i);
         break;
@@ -71,57 +77,78 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
-      files: [messageToImage(
-        '§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------',
-      )],
+      files: [
+        messageToImage(
+          '§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------'
+        )
+      ]
     });
   } else if (msg.includes(' has muted ')) {
     await global.guildLogsChannel.send({
-      files: [messageToImage(
-        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-      )],
+      files: [
+        messageToImage(
+          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
+        )
+      ]
     });
   } else if (msg.includes(' has unmuted ')) {
     await global.guildLogsChannel.send({
-      files: [messageToImage(
-        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-      )],
+      files: [
+        messageToImage(
+          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
+        )
+      ]
     });
   } else if (msg.includes('left the guild!') || msg.includes('was promoted') || msg.includes('was kicked')) {
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
-      files: [messageToImage(
-        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-      )],
+      files: [
+        messageToImage(
+          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
+        )
+      ]
     });
     await global.guildLogsChannel.send({
-      files: [messageToImage(
-        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-      )],
+      files: [
+        messageToImage(
+          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
+        )
+      ]
     });
   } else if (msg.includes('joined the guild!')) {
     let funFact;
     const name = msg.substring(msg.search(/ (.*?) joined/g) + 1, msg.lastIndexOf(' joined'));
-    const funFacts = await (await fetch('https://api.api-ninjas.com/v1/facts?limit=3', { method: 'GET', headers: { 'X-Api-Key': config.keys.apiNinjasKey } })).json();
+    const funFacts = await (
+      await fetch('https://api.api-ninjas.com/v1/facts?limit=3', {
+        method: 'GET',
+        headers: { 'X-Api-Key': config.keys.apiNinjasKey }
+      })
+    ).json();
     for (let i = 0; i < funFacts.length; i += 1) {
       if (funFacts[i].fact.length < 150) {
         funFact = funFacts[i].fact;
         break;
       }
     }
-    await chat(`/gc Welcome to Dominance, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`);
+    await chat(
+      `/gc Welcome to Dominance, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`
+    );
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
-      files: [messageToImage(
-        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-      )],
+      files: [
+        messageToImage(
+          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
+        )
+      ]
     });
     await global.guildLogsChannel.send({
-      files: [messageToImage(
-        `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-      )],
+      files: [
+        messageToImage(
+          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
+        )
+      ]
     });
     const uuid = await nameToUUID(name);
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
@@ -134,15 +161,19 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
     }
     try {
       const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
-      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`);
+      await global.guildChatChannel.send(
+        `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
+      );
     } catch (e) {
-      await global.guildChatChannel.send(`<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`);
+      await global.guildChatChannel.send(
+        `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
+      );
     }
   } else if (msg.includes('Guild >')) {
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
-      files: [messageToImage(rawMsg)],
+      files: [messageToImage(rawMsg)]
     });
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUUID(name);
@@ -156,7 +187,7 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
     await ocWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
-      files: [messageToImage(rawMsg)],
+      files: [messageToImage(rawMsg)]
     });
     let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
     let uuid = await nameToUUID(name);
@@ -187,8 +218,10 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`${name} has been invited to the guild`)
-        .setDescription('If you did not receive an invite:\n`-` Make sure you are not in a guild\n`-` The guild may be currently '
-          + 'full, check using the </online:1023548883332255765> command\nIf the guild is full, ping <@&1016513036313448579> here');
+        .setDescription(
+          'If you did not receive an invite:\n`-` Make sure you are not in a guild\n`-` The guild may be currently ' +
+            'full, check using the </online:1023548883332255765> command\nIf the guild is full, ping <@&1016513036313448579> here'
+        );
       await channel.send({ embeds: [embed] });
     }
   }

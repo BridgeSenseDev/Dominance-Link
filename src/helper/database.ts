@@ -1,25 +1,30 @@
 import { schedule } from 'node-cron';
 import { google } from 'googleapis';
-import Database from 'better-sqlite3';
-import config from '../config.json' assert {type: 'json'};
+import Database from 'better-sqlite3'
+import config from '../config.json' assert { type: 'json' };
 import { nameColor, UUIDtoName } from './utils.js';
 
 const db = new Database('guild.db');
 
 const ranks = {
-  GUILDMASTER: '[GM]', Leader: '[Leader]', Staff: '[Staff]', Pro: '[Pro]', Active: '[Active]', Member: '[Member]',
+  GUILDMASTER: '[GM]',
+  Leader: '[Leader]',
+  Staff: '[Staff]',
+  Pro: '[Pro]',
+  Active: '[Active]',
+  Member: '[Member]'
 };
 
 const roles = {
-  '[Staff]': '1005725104430395452', '[Pro]': '1031566725432492133', '[Active]': '950083054326677514', '[Member]': '1031926129822539786',
+  '[Staff]': '1005725104430395452',
+  '[Pro]': '1031566725432492133',
+  '[Active]': '950083054326677514',
+  '[Member]': '1031926129822539786'
 };
 
-export const sheet = new google.auth.JWT(
-  config.sheets.clientEmail,
-  null,
-  config.sheets.privateKey,
-  ['https://www.googleapis.com/auth/spreadsheets'],
-);
+export const sheet = new google.auth.JWT(config.sheets.clientEmail, null, config.sheets.privateKey, [
+  'https://www.googleapis.com/auth/spreadsheets'
+]);
 
 sheet.authorize((err) => {
   if (err) {
@@ -33,7 +38,9 @@ sheet.authorize((err) => {
 
 export async function weekly() {
   schedule('00 50 11 * * 0', async () => {
-    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.members;
+    const guild = (
+      await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
+    ).guild.members;
     for (let i = 0; i < guild.length; i += 1) {
       let weeklyGexp = 0;
       for (let j = 0; j < 7; j += 1) {
@@ -56,7 +63,9 @@ export async function weekly() {
 export async function database() {
   setInterval(async () => {
     const members = [];
-    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.members;
+    const guild = (
+      await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
+    ).guild.members;
     try {
       db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[0].expHistory)[0]}" INTEGER`).run();
     } catch (err) {
@@ -69,8 +78,17 @@ export async function database() {
       for (let j = 0; j < 7; j += 1) {
         weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
       }
-      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime, tag) VALUES (?, ?, ?, ?)').run(guild[i].uuid, 0, 0, tag);
-      db.prepare(`UPDATE guildMembers SET (tag, weeklyGexp, joined, "${Object.keys(guild[i].expHistory)[0]}") = (?, ?, ?, ?) WHERE uuid = (?)`).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime, tag) VALUES (?, ?, ?, ?)').run(
+        guild[i].uuid,
+        0,
+        0,
+        tag
+      );
+      db.prepare(
+        `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${
+          Object.keys(guild[i].expHistory)[0]
+        }") = (?, ?, ?, ?) WHERE uuid = (?)`
+      ).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
     }
     let placeholders = '?';
     for (let i = 0; i < members.length - 1; i += 1) {
@@ -85,11 +103,16 @@ export async function gsrun(sheets, client) {
   setInterval(async () => {
     const gsapi = google.sheets({ version: 'v4', auth: sheets });
     const data = db.prepare('SELECT * FROM guildMembers').all();
-    const guild = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()).guild.members;
+    const guild = (
+      await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
+    ).guild.members;
     const array = [];
     for (let i = data.length - 1; i >= 0; i -= 1) {
       for (let j = Object.keys(data[i]).length; j >= 0; j -= 1) {
-        if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) && !Object.keys(guild[0].expHistory).includes(Object.keys(data[i])[j])) {
+        if (
+          /[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) &&
+          !Object.keys(guild[0].expHistory).includes(Object.keys(data[i])[j])
+        ) {
           delete data[i][Object.keys(data[i])[j]];
         }
       }
@@ -114,15 +137,18 @@ export async function gsrun(sheets, client) {
           data[i].discordTag = null;
         }
       }
-      array.push((Object.values(data[i])));
+      array.push(Object.values(data[i]));
     }
     const options = {
       spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
       range: 'Guild API!A2',
       valueInputOption: 'USER_ENTERED',
-      resource: { values: array },
+      resource: { values: array }
     };
-    await gsapi.spreadsheets.values.clear({ spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE', range: 'Guild API!A2:V126' });
+    await gsapi.spreadsheets.values.clear({
+      spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
+      range: 'Guild API!A2:V126'
+    });
     await gsapi.spreadsheets.values.update(options);
   }, 6 * 60 * 1000);
 }
@@ -167,17 +193,21 @@ export async function players() {
           }
         }
       }
-      const { player } = (await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${data.uuid}`)).json());
+      const { player } = await (
+        await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${data.uuid}`)
+      ).json();
       const { stats } = player;
-      let bwStars; let bwFkdr; let duelsWins; let duelsWlr;
+      let bwStars;
+      let bwFkdr;
+      let duelsWins;
+      let duelsWlr;
       try {
         bwStars = player.achievements.bedwars_level;
       } catch (e) {
         bwStars = 0;
       }
       try {
-        bwFkdr = (stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars)
-          .toFixed(1);
+        bwFkdr = (stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars).toFixed(1);
       } catch (e) {
         bwFkdr = 0;
       }
@@ -200,6 +230,10 @@ export async function players() {
       if (Number.isNaN(Number(duelsWlr))) {
         duelsWlr = 0;
       }
+      db.prepare(
+        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
+      ).run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
+
       db.prepare('UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?').run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
     }
     count += 1;

@@ -22,22 +22,22 @@
 > 🚨 USE AT YOUR OWN RISK:
 > This application will login to Hypixel using Mineflayer which is not a normal Minecraft client, this could result in your Minecraft account getting banned from Hypixel, so use this application at your own risk. I am not liable for any damages and no warranty is provided under the [MIT License.](https://github.com/BridgeSenseDev/Matrix-Link/blob/master/LICENSE)
 
--  [💡 Features](#Features)
--  [Installation](#installation)
-   -  [Prerequisites](#prerequisites)
-   -  [Initial Setup](#initial-setup)
-   -  [Running in the Background](#running-in-the-background)
--  [Acknowledgements](#acknowledgements)
--  [License](#license)
+- [💡 Features](#Features)
+- [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Initial Setup](#initial-setup)
+  - [Running in the Background](#running-in-the-background)
+- [Acknowledgements](#acknowledgements)
+- [License](#license)
 
 ## Features
 
--  Bridges a Discord channel to Hypixel guild chat.
-> <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Discord.png" alt="Hypixel Guild Chat Bot Discord Example" width="300" height="auto">
--  `/reqs` command to check whether you meet guild requirements.
-> <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Requirements.png" alt="Discord Bot Requirements Example" width="300" height="auto">
--  `/online` command to show all online members from `/guild online` ingame.
-> <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Online.png" alt="Discord Bot Online Example" width="300" height="auto">
--  Logs **All** ingame messages into a seperate log channel.
-> <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Logs.png" alt="Discord Bot Logs Example" width="300" height="auto">
--  Automatic restart and joins, making for zero down-time.
+- Bridges a Discord channel to Hypixel guild chat.
+  > <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Discord.png" alt="Hypixel Guild Chat Bot Discord Example" width="300" height="auto">
+- `/reqs` command to check whether you meet guild requirements.
+  > <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Requirements.png" alt="Discord Bot Requirements Example" width="300" height="auto">
+- `/online` command to show all online members from `/guild online` ingame.
+  > <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Online.png" alt="Discord Bot Online Example" width="300" height="auto">
+- Logs **All** ingame messages into a seperate log channel.
+  > <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Logs.png" alt="Discord Bot Logs Example" width="300" height="auto">
+- Automatic restart and joins, making for zero down-time.

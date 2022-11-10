@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
-import config from '../config.json' assert {type: 'json'};
+import config from '../config.json' assert { type: 'json' };
 
 function formatMembers(msg) {
   const message = msg;
@@ -24,9 +24,7 @@ function formatMembers(msg) {
   return online.slice(0, online.length - 2);
 }
 
-export const data = new SlashCommandBuilder()
-  .setName('online')
-  .setDescription('List all online members in the guild');
+export const data = new SlashCommandBuilder().setName('online').setDescription('List all online members in the guild');
 export async function execute(interaction) {
   await interaction.deferReply();
   let offlineMembers = 0;
@@ -43,7 +41,9 @@ export async function execute(interaction) {
   const embed = new EmbedBuilder()
     .setColor(3092790)
     .setTitle('Online Members')
-    .setDescription(`${online}\n\nTotal Members: \`${totalMembers}\` / \`125\`\nOnline Members: \`${global.onlineMembers}\`\nOffline Members: \`${offlineMembers}\``)
+    .setDescription(
+      `${online}\n\nTotal Members: \`${totalMembers}\` / \`125\`\nOnline Members: \`${global.onlineMembers}\`\nOffline Members: \`${offlineMembers}\``
+    )
     .setThumbnail(config.guild.icon);
   await interaction.editReply({ embeds: [embed] });
 }

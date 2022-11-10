@@ -64,22 +64,30 @@ async function generateLeaderboard(message, order) {
     images.push(generateLeaderboardImage(leaderboard.slice(i - 12, i + 1)));
   }
 
-  const row = new ActionRowBuilder()
-    .addComponents(
-      new ButtonBuilder()
-        .setLabel('Scroll To Top')
-        .setStyle(ButtonStyle.Link)
-        .setURL(message.url)
-        .setEmoji({ id: '1036842301428875304' }),
-    );
-  await message.edit({ content: `**Last Update**: <t:${Math.floor(Date.now() / 1000)}:R>`, files: images, components: [row] });
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setLabel('Scroll To Top')
+      .setStyle(ButtonStyle.Link)
+      .setURL(message.url)
+      .setEmoji({ id: '1036842301428875304' })
+  );
+  await message.edit({
+    content: `**Last Update**: <t:${Math.floor(Date.now() / 1000)}:R>`,
+    files: images,
+    components: [row]
+  });
 }
 
 export default async function leaderboards() {
   setInterval(async () => {
     generateLeaderboard(global.weeklyGexpMessage, 'weeklyGexp');
     await sleep(1000);
-    generateLeaderboard(global.dailyGexpMessage, Object.keys(db.prepare('SELECT * FROM guildMembers').get())[Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1]);
+    generateLeaderboard(
+      global.dailyGexpMessage,
+      Object.keys(db.prepare('SELECT * FROM guildMembers').get())[
+        Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1
+      ]
+    );
     await sleep(1000);
     generateLeaderboard(global.playtimeMessage, 'playtime');
     await sleep(1000);

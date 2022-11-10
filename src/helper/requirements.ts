@@ -1,8 +1,6 @@
 import { getNetworth } from 'skyhelper-networth';
-import {
-  removeSectionSymbols, abbreviateNumber, formatNumber, UUIDtoName,
-} from './utils.js';
-import config from '../config.json' assert {type: 'json'};
+import { removeSectionSymbols, abbreviateNumber, formatNumber, UUIDtoName } from './utils.js';
+import config from '../config.json' assert { type: 'json' };
 import { levelingXp } from './constants.js';
 
 async function xpToLevel(exp, cap) {
@@ -46,13 +44,22 @@ function weeklyGexp(members, uuid) {
 }
 
 export default async function requirements(uuid, playerData) {
-  let guild; let bedwars; let duels; let skywars; let skyblock;
+  let guild;
+  let bedwars;
+  let duels;
+  let skywars;
+  let skyblock;
   const name = await UUIDtoName(uuid);
-  const guildData = (await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json()).guild;
+  const guildData = (
+    await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json()
+  ).guild;
 
   // Get gamemode data
-  let profileData; let bankBalance;
-  const { profiles } = (await (await fetch(`https://api.hypixel.net/skyblock/profiles?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json());
+  let profileData;
+  let bankBalance;
+  const { profiles } = await (
+    await fetch(`https://api.hypixel.net/skyblock/profiles?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)
+  ).json();
   if (profiles === null) {
     skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
   } else {
@@ -71,15 +78,19 @@ export default async function requirements(uuid, playerData) {
   }
 
   try {
-    const fkdr = Math.round((playerData.stats.Bedwars.final_kills_bedwars
-      / playerData.stats.Bedwars.final_deaths_bedwars) * 100) / 100;
+    const fkdr =
+      Math.round((playerData.stats.Bedwars.final_kills_bedwars / playerData.stats.Bedwars.final_deaths_bedwars) * 100) /
+      100;
     if (Number.isNaN(fkdr)) {
       bedwars = [playerData.achievements.bedwars_level, 0, playerData.stats.Bedwars.wins_bedwars];
     } else {
-      bedwars = [playerData.achievements.bedwars_level,
-        Math.round((playerData.stats.Bedwars.final_kills_bedwars
-        / playerData.stats.Bedwars.final_deaths_bedwars) * 100) / 100,
-        playerData.stats.Bedwars.wins_bedwars];
+      bedwars = [
+        playerData.achievements.bedwars_level,
+        Math.round(
+          (playerData.stats.Bedwars.final_kills_bedwars / playerData.stats.Bedwars.final_deaths_bedwars) * 100
+        ) / 100,
+        playerData.stats.Bedwars.wins_bedwars
+      ];
     }
   } catch (e) {
     bedwars = ['No Bedwars Data', 'No Bedwars Data', 'No Bedwars Data'];
@@ -89,20 +100,23 @@ export default async function requirements(uuid, playerData) {
   }
 
   try {
-    duels = [playerData.stats.Duels.wins, Math.round((playerData.stats.Duels.wins
-      / playerData.stats.Duels.losses) * 100) / 100];
+    duels = [
+      playerData.stats.Duels.wins,
+      Math.round((playerData.stats.Duels.wins / playerData.stats.Duels.losses) * 100) / 100
+    ];
   } catch (e) {
     duels = ['No Duels Data', 'No Duels Data'];
   }
 
   try {
-    const kdr = Math.round((playerData.stats.SkyWars.kills / playerData.stats.SkyWars.deaths) * 100)
-    / 100;
+    const kdr = Math.round((playerData.stats.SkyWars.kills / playerData.stats.SkyWars.deaths) * 100) / 100;
     if (Number.isNaN(kdr)) {
       skywars = [removeSectionSymbols(playerData.stats.SkyWars.levelFormatted), 0];
     } else {
-      skywars = [removeSectionSymbols(playerData.stats.SkyWars.levelFormatted),
-        Math.round((playerData.stats.SkyWars.kills / playerData.stats.SkyWars.deaths) * 100) / 100];
+      skywars = [
+        removeSectionSymbols(playerData.stats.SkyWars.levelFormatted),
+        Math.round((playerData.stats.SkyWars.kills / playerData.stats.SkyWars.deaths) * 100) / 100
+      ];
     }
   } catch (e) {
     skywars = ['No SkyWars Data', 'No SkyWars Data'];
@@ -117,17 +131,24 @@ export default async function requirements(uuid, playerData) {
   // Check requirements
   let requirementEmbed = '';
   let meetingReqs = false;
-  let author; let color; let reqs;
+  let author;
+  let color;
+  let reqs;
 
   if (playerData.achievementPoints === undefined) {
-    requirementEmbed += ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `No Achievements Data`\n\n';
+    requirementEmbed +=
+      ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `No Achievements Data`\n\n';
   } else if (playerData.achievementPoints >= 12500) {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Achievements**\n';
-    requirementEmbed += `<a:atick:986173414723162113> **Achievement Points:** \`${formatNumber(playerData.achievementPoints)}\`\n\n`;
+    requirementEmbed += `<a:atick:986173414723162113> **Achievement Points:** \`${formatNumber(
+      playerData.achievementPoints
+    )}\`\n\n`;
   } else {
     requirementEmbed += ':red_circle: **Achievements**\n';
-    requirementEmbed += `<a:across:986170696512204820> **Achievement Points:** \`${formatNumber(playerData.achievementPoints)} / 12,500\`\n\n`;
+    requirementEmbed += `<a:across:986170696512204820> **Achievement Points:** \`${formatNumber(
+      playerData.achievementPoints
+    )} / 12,500\`\n\n`;
   }
 
   if (bedwars[0] !== 'No Bedwars Data') {
@@ -148,8 +169,9 @@ export default async function requirements(uuid, playerData) {
       requirementEmbed += `<a:across:986170696512204820> **Bedwars FKDR:** \`${bedwars[1]} / 2\`\n\n`;
     }
   } else {
-    requirementEmbed += ':red_circle: **Bedwars 1**\n<a:across:986170696512204820> **Bedwars Wins:** `No Bedwars Data`\n'
-      + '<a:across:986170696512204820> **Bedwars FKDR:** `No Bedwars Data`\n\n';
+    requirementEmbed +=
+      ':red_circle: **Bedwars 1**\n<a:across:986170696512204820> **Bedwars Wins:** `No Bedwars Data`\n' +
+      '<a:across:986170696512204820> **Bedwars FKDR:** `No Bedwars Data`\n\n';
   }
 
   if (bedwars[0] !== 'No Bedwars Data') {
@@ -160,7 +182,8 @@ export default async function requirements(uuid, playerData) {
       requirementEmbed += `:red_circle: **Bedwars 2**\n<a:across:986170696512204820> **Bedwars Stars:** \`${bedwars[0]} / 300\`\n\n`;
     }
   } else {
-    requirementEmbed += ':red_circle: **Bedwars 2**\n<a:across:986170696512204820> **Bedwars Stars:** `No Bedwars Data`\n\n';
+    requirementEmbed +=
+      ':red_circle: **Bedwars 2**\n<a:across:986170696512204820> **Bedwars Stars:** `No Bedwars Data`\n\n';
   }
 
   if (duels[0] !== 'No Duels Data') {
@@ -181,8 +204,9 @@ export default async function requirements(uuid, playerData) {
       requirementEmbed += `<a:across:986170696512204820> **Duels WLR:** \`${duels[1]} / 2\`\n\n`;
     }
   } else {
-    requirementEmbed += ':red_circle: **Duels 1**\n<a:across:986170696512204820> **Duels Wins:** `No Duels Data`\n'
-      + '<a:across:986170696512204820> **Duels WLR:** `No Duels Data`\n\n';
+    requirementEmbed +=
+      ':red_circle: **Duels 1**\n<a:across:986170696512204820> **Duels Wins:** `No Duels Data`\n' +
+      '<a:across:986170696512204820> **Duels WLR:** `No Duels Data`\n\n';
   }
 
   if (duels[0] !== 'No Duels Data') {
@@ -203,7 +227,8 @@ export default async function requirements(uuid, playerData) {
       requirementEmbed += `<a:across:986170696512204820> **Duels WLR:** \`${duels[1]} / 4\`\n\n`;
     }
   } else {
-    requirementEmbed += ':red_circle: **Duels 2**\n<a:across:986170696512204820> **Duels Wins:** `No Duels Data`\n<a:across:986170696512204820> **Duels WLR:** `No Duels Data`\n\n';
+    requirementEmbed +=
+      ':red_circle: **Duels 2**\n<a:across:986170696512204820> **Duels Wins:** `No Duels Data`\n<a:across:986170696512204820> **Duels WLR:** `No Duels Data`\n\n';
   }
 
   if (skywars[0] !== 'No SkyWars Data') {
@@ -224,7 +249,8 @@ export default async function requirements(uuid, playerData) {
       requirementEmbed += `<a:across:986170696512204820> **Skywars KDR:** \`${skywars[1]} / 1\`\n\n`;
     }
   } else {
-    requirementEmbed += ':red_circle: **Skywars 1**\n<a:across:986170696512204820> **Skywars Stars:** `No Skywars Data`\n<a:across:986170696512204820> **Skywars KDR:** `No Skywars Data`\n\n';
+    requirementEmbed +=
+      ':red_circle: **Skywars 1**\n<a:across:986170696512204820> **Skywars Stars:** `No Skywars Data`\n<a:across:986170696512204820> **Skywars KDR:** `No Skywars Data`\n\n';
   }
 
   if (skywars[0] !== 'No SkyWars Data') {
@@ -245,7 +271,8 @@ export default async function requirements(uuid, playerData) {
       requirementEmbed += `<a:across:986170696512204820> **Skywars KDR:** \`${skywars[1]} / 1.5\`\n\n`;
     }
   } else {
-    requirementEmbed += ':red_circle: **Skywars 2**\n<a:across:986170696512204820> **Skywars Stars:** `No Skywars Data`\n<a:across:986170696512204820> **Skywars KDR:** `No Skywars Data`\n\n';
+    requirementEmbed +=
+      ':red_circle: **Skywars 2**\n<a:across:986170696512204820> **Skywars Stars:** `No Skywars Data`\n<a:across:986170696512204820> **Skywars KDR:** `No Skywars Data`\n\n';
   }
 
   if (skyblock[0] !== 'No Skyblock Data / API Disabled') {
@@ -256,20 +283,30 @@ export default async function requirements(uuid, playerData) {
       requirementEmbed += ':red_circle: **Skyblock**\n';
     }
     if (skyblock[0] >= 500000000) {
-      requirementEmbed += `<a:atick:986173414723162113> **Skyblock Networth:** \`${abbreviateNumber(Math.round(skyblock[0] * 100) / 100)}\`\n`;
+      requirementEmbed += `<a:atick:986173414723162113> **Skyblock Networth:** \`${abbreviateNumber(
+        Math.round(skyblock[0] * 100) / 100
+      )}\`\n`;
     } else {
-      requirementEmbed += `<a:across:986170696512204820> **Skyblock Networth:** \`${abbreviateNumber(Math.round(skyblock[0] * 100) / 100)} / 500m\`\n`;
+      requirementEmbed += `<a:across:986170696512204820> **Skyblock Networth:** \`${abbreviateNumber(
+        Math.round(skyblock[0] * 100) / 100
+      )} / 500m\`\n`;
     }
     if (skyblock[1] === 'No Skyblock Data / API Disabled') {
-      requirementEmbed += '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
+      requirementEmbed +=
+        '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
     } else if (skyblock[1] >= 25) {
-      requirementEmbed += `<a:atick:986173414723162113> **Skyblock Skill Average:** \`${Math.round(skyblock[1] * 10) / 10}\`\n\n`;
+      requirementEmbed += `<a:atick:986173414723162113> **Skyblock Skill Average:** \`${
+        Math.round(skyblock[1] * 10) / 10
+      }\`\n\n`;
     } else {
-      requirementEmbed += `<a:across:986170696512204820> **Skyblock Skill Average:** \`${Math.round(skyblock[1] * 10) / 10} / 25\`\n\n`;
+      requirementEmbed += `<a:across:986170696512204820> **Skyblock Skill Average:** \`${
+        Math.round(skyblock[1] * 10) / 10
+      } / 25\`\n\n`;
     }
   } else {
-    requirementEmbed += '<a:across:986170696512204820> **Skyblock Networth:** `No Skyblock Data / API Disabled`\n'
-    + '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
+    requirementEmbed +=
+      '<a:across:986170696512204820> **Skyblock Networth:** `No Skyblock Data / API Disabled`\n' +
+      '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
   }
 
   if (meetingReqs) {
@@ -282,6 +319,10 @@ export default async function requirements(uuid, playerData) {
     reqs = 'No';
   }
   return {
-    requirementEmbed, guild, author, color, reqs,
+    requirementEmbed,
+    guild,
+    author,
+    color,
+    reqs
   };
 }

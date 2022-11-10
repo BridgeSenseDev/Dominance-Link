@@ -1,18 +1,12 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
-import config from '../config.json' assert {type: 'json'};
+import config from '../config.json' assert { type: 'json' };
 
 export const data = new SlashCommandBuilder()
   .setName('repeat')
   .setDescription('Repeat songs')
-  .addSubcommand((subcommand) => subcommand
-    .setName('all')
-    .setDescription('Repeat all songs in queue'))
-  .addSubcommand((subcommand) => subcommand
-    .setName('off')
-    .setDescription('Play the queue normally'))
-  .addSubcommand((subcommand) => subcommand
-    .setName('single')
-    .setDescription('Repeat the current song'));
+  .addSubcommand((subcommand) => subcommand.setName('all').setDescription('Repeat all songs in queue'))
+  .addSubcommand((subcommand) => subcommand.setName('off').setDescription('Play the queue normally'))
+  .addSubcommand((subcommand) => subcommand.setName('single').setDescription('Repeat the current song'));
 export async function execute(interaction) {
   await interaction.deferReply();
   const client = (await import('../index.js')).default;

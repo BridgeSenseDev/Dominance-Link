@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import { EmbedBuilder, escapeMarkdown } from 'discord.js';
 import { UUIDtoName } from './utils.js';
-import config from '../config.json' assert {type: 'json'};
+import config from '../config.json' assert { type: 'json' };
 
 const db = new Database('guild.db');
 

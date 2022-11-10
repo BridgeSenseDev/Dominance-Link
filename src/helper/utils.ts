@@ -50,7 +50,10 @@ export async function formatMentions(client, message) {
     const { guild } = message;
     const mentions = msg.match(/<#\d+>/g);
     Object.keys(mentions).forEach((mention) => {
-      msg = msg.replace(mention, `#${guild?.channels?.cache?.get(mention.replace(/[^0-9]/g, ''))?.name || 'deleted-channel'}`);
+      msg = msg.replace(
+        mention,
+        `#${guild?.channels?.cache?.get(mention.replace(/[^0-9]/g, ''))?.name || 'deleted-channel'}`
+      );
     });
   }
 
@@ -65,8 +68,10 @@ export async function formatMentions(client, message) {
 }
 
 export function getLevel(experience) {
-  const EXP_NEEDED = [100000, 150000, 250000, 500000, 750000, 1000000, 1250000,
-    1500000, 2000000, 2500000, 2500000, 2500000, 2500000, 2500000, 3000000];
+  const EXP_NEEDED = [
+    100000, 150000, 250000, 500000, 750000, 1000000, 1250000, 1500000, 2000000, 2500000, 2500000, 2500000, 2500000,
+    2500000, 3000000
+  ];
   let exp = experience;
   let level = 0;
 
@@ -78,8 +83,8 @@ export function getLevel(experience) {
       need = EXP_NEEDED[i];
     }
 
-    if ((exp - need) < 0) {
-      return Math.round((level + (exp / need)) * 100) / 100;
+    if (exp - need < 0) {
+      return Math.round((level + exp / need) * 100) / 100;
     }
 
     level += 1;
@@ -107,9 +112,23 @@ export function formatDate(dateObj) {
     case 3:
       suffix = 'rd';
       break;
-    default: suffix = 'th';
+    default:
+      suffix = 'th';
   }
-  const month = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][dateObj.getMonth()];
+  const month = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ][dateObj.getMonth()];
   return `${date + suffix} ${month} ${dateObj.getFullYear()}`;
 }
 
@@ -134,7 +153,7 @@ export function formatNumber(num) {
 export function abbreviateNumber(num) {
   return Intl.NumberFormat('en-US', {
     notation: 'compact',
-    maximumFractionDigits: 1,
+    maximumFractionDigits: 1
   }).format(num);
 }
 

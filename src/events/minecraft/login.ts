@@ -1,5 +1,5 @@
 import { writeFileSync } from 'fs';
-import config from '../../config.json' assert {type: 'json'};
+import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../helper/workerHandler.js';
 
 let emittedEvent = false;

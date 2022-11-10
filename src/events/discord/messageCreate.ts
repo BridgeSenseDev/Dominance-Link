@@ -1,12 +1,12 @@
 import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import { formatMentions, UUIDtoName } from '../../helper/utils.js';
-import config from '../../config.json' assert {type: 'json'};
+import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../helper/workerHandler.js';
 
 const db = new Database('guild.db');
 
-async function execute(client, message) {
+export default async function execute(client, message) {
   const msg = message;
   if (msg.author.bot) return;
   let uuid;
@@ -25,7 +25,9 @@ async function execute(client, message) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
-          .setDescription(`<a:across:986170696512204820> <@${msg.author.id}> Please verify first in <#907911357582704640>`);
+          .setDescription(
+            `<a:across:986170696512204820> <@${msg.author.id}> Please verify first in <#907911357582704640>`
+          );
         msg.reply({ embeds: [embed] });
         return;
       }
@@ -56,7 +58,9 @@ async function execute(client, message) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
-          .setDescription(`<a:across:986170696512204820> <@${msg.author.id}> Please verify first in <#907911357582704640>`);
+          .setDescription(
+            `<a:across:986170696512204820> <@${msg.author.id}> Please verify first in <#907911357582704640>`
+          );
         msg.reply({ embeds: [embed] });
         return;
       }
@@ -79,5 +83,3 @@ async function execute(client, message) {
     await msg.delete();
   }
 }
-
-export default execute;

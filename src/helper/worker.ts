@@ -1,6 +1,6 @@
 import { parentPort } from 'worker_threads';
 import mineflayer from 'mineflayer';
-import config from '../config.json' assert {type: 'json'};
+import config from '../config.json' assert { type: 'json' };
 
 let bot;
 
@@ -14,15 +14,16 @@ parentPort.on('message', async (msg) => {
       hideErrors: false,
       viewDistance: 'tiny',
       chatLengthLimit: 256,
-      defaultChatPatterns: false,
+      defaultChatPatterns: false
     });
 
     bot.on('message', (message, messagePosition) => {
-      parentPort.postMessage(
-        {
-          type: 'message', string: message.toString(), motd: message.toMotd(), messagePosition,
-        },
-      );
+      parentPort.postMessage({
+        type: 'message',
+        string: message.toString(),
+        motd: message.toMotd(),
+        messagePosition
+      });
     });
 
     bot.on('login', () => {
@@ -38,15 +39,16 @@ parentPort.on('message', async (msg) => {
       hideErrors: false,
       viewDistance: 'tiny',
       chatLengthLimit: 256,
-      defaultChatPatterns: false,
+      defaultChatPatterns: false
     });
 
     bot.on('message', (message, messagePosition) => {
-      parentPort.postMessage(
-        {
-          type: 'message', string: message.toString(), motd: message.toMotd(), messagePosition,
-        },
-      );
+      parentPort.postMessage({
+        type: 'message',
+        string: message.toString(),
+        motd: message.toMotd(),
+        messagePosition
+      });
     });
 
     bot.on('login', () => {

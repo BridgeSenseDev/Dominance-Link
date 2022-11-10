@@ -1,5 +1,5 @@
 import { EmbedBuilder } from 'discord.js';
-import config from '../config.json' assert {type: 'json'};
+import config from '../config.json' assert { type: 'json' };
 
 export async function startBot() {
   const client = (await import('../index.js')).default;
@@ -28,7 +28,13 @@ export async function quit() {
 
 export async function autoRejoin() {
   setInterval(async () => {
-    const status = (await (await fetch(`https://api.hypixel.net/status?key=${config.keys.hypixelApiKey}&uuid=5760aae2-d977-467c-bf62-048469d5f507`)).json()).session.online;
+    const status = (
+      await (
+        await fetch(
+          `https://api.hypixel.net/status?key=${config.keys.hypixelApiKey}&uuid=5760aae2-d977-467c-bf62-048469d5f507`
+        )
+      ).json()
+    ).session.online;
     if (!status) {
       // eslint-disable-next-line no-console
       console.log('[MINECRAFT] Restarting bot');
@@ -36,9 +42,7 @@ export async function autoRejoin() {
         .setColor(config.colors.red)
         .setTitle('Disconnected')
         .setDescription(`${config.minecraft.ign} has been disconnected from hypixel. Trying to reconnect...`)
-        .addFields(
-          { name: '<:clock_:969185417712775168> Time', value: `<t:${Math.floor(Date.now() / 1000)}:R>` },
-        );
+        .addFields({ name: '<:clock_:969185417712775168> Time', value: `<t:${Math.floor(Date.now() / 1000)}:R>` });
       await global.statusChannel.send({ embeds: [embed] });
       try {
         quit();
