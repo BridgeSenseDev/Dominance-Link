@@ -161,9 +161,9 @@ export async function players() {
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
     let member;
-    const ign = await UUIDtoName(data.uuid);
     if (data !== undefined) {
       if (data.discord !== null) {
+        const ign = await UUIDtoName(data.uuid);
         try {
           member = await guild.members.fetch(data.discord);
         } catch (e) {
