@@ -18,7 +18,6 @@
   },
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
-    "linebreak-style": "off",
     "import/no-unresolved": "off",
     "no-restricted-syntax": "off",
     "no-await-in-loop": "off",
