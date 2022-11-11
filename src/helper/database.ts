@@ -1,6 +1,6 @@
 import { schedule } from 'node-cron';
 import { google } from 'googleapis';
-import Database from 'better-sqlite3'
+import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
 import { nameColor, UUIDtoName } from './utils.js';
 
@@ -163,21 +163,17 @@ export async function players() {
     let member;
     if (data !== undefined) {
       if (data.discord !== null) {
-        const ign = await UUIDtoName(data.uuid);
         try {
           member = await guild.members.fetch(data.discord);
         } catch (e) {
           db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
         }
-        if (!member.displayName.includes(ign)) {
-          try {
-            await member.setNickname(ign);
-          } catch (e) {
-            // Continue regardless of error
-          }
-        }
         if (!['[Leader]', '[GM]'].includes(data.tag) && member !== undefined) {
+          const ign = await UUIDtoName(data.uuid);
           await member.roles.add(guild.roles.cache.get(roles['[Member]']));
+          if (!member.displayName.includes(ign)) {
+            await member.setNickname(ign);
+          }
           if (!data.tag.includes(['[Member]'])) {
             await member.roles.add(guild.roles.cache.get(roles[data.tag]));
           }
@@ -236,7 +232,9 @@ export async function players() {
         'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
       ).run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
 
-      db.prepare('UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?').run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
+      db.prepare(
+        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
+      ).run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
     }
     count += 1;
     if (count === 126) {
