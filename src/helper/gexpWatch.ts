@@ -1,11 +1,12 @@
 import { schedule } from 'node-cron';
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, TextChannel } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
+import { channels } from '../events/discord/ready.js';
 
 const db = new Database('guild.db');
 
-function gexpGained(gained) {
+function gexpGained(gained: number): [string, number] {
   let desc;
   let color;
   if (gained >= 0) {
@@ -18,16 +19,15 @@ function gexpGained(gained) {
   return [desc, color];
 }
 
-function doubleDigits(number) {
+function doubleDigits(number: number) {
   if (number.toString().length === 1) {
     return `0${number}`;
   }
   return number;
 }
 
-export default async function gexpWatch(client) {
+export default async function gexpWatch() {
   schedule('00 50 11 * * 0-6', async () => {
-    const watchChannel = client.channels.cache.get(config.channels.watchChannel);
     const urls = [
       `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`,
       `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Cronos`,
@@ -161,6 +161,6 @@ export default async function gexpWatch(client) {
       .setThumbnail(
         'https://cdn.discordapp.com/attachments/986281342457237624/1001839294165561505/9faa8886a380dbea8e35c053df43799e.webp'
       );
-    await watchChannel.send({ embeds: [rebelEmbed, cronosEmbed, dawnsEmbed] });
+    await (channels.watchChannel as TextChannel).send({ embeds: [rebelEmbed, cronosEmbed, dawnsEmbed] });
   });
 }
