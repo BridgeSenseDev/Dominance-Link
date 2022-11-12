@@ -1,5 +1,5 @@
 import { schedule } from 'node-cron';
-import { EmbedBuilder, TextChannel } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
 import { channels } from '../events/discord/ready.js';
@@ -161,6 +161,6 @@ export default async function gexpWatch() {
       .setThumbnail(
         'https://cdn.discordapp.com/attachments/986281342457237624/1001839294165561505/9faa8886a380dbea8e35c053df43799e.webp'
       );
-    await (channels.watchChannel as TextChannel).send({ embeds: [rebelEmbed, cronosEmbed, dawnsEmbed] });
+    await channels.guildWatch.send({ embeds: [rebelEmbed, cronosEmbed, dawnsEmbed] });
   });
 }

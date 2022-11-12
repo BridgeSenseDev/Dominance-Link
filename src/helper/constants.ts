@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/extensions
+import { StringObject } from '../types/global.d.js';
+
 export const levelingXp = [
   50, 125, 200, 300, 500, 750, 1000, 1500, 2000, 3500, 5000, 7500, 10000, 15000, 20000, 30000, 50000, 75000, 100000,
   200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1100000, 1200000, 1300000, 1400000, 1500000,
@@ -6,7 +9,7 @@ export const levelingXp = [
   7000000
 ];
 
-export const rgbaColor = {
+export const rgbaColor: StringObject = {
   0: 'rgba(0,0,0,1)',
   1: 'rgba(0,0,170,1)',
   2: 'rgba(0,170,0,1)',
@@ -25,7 +28,7 @@ export const rgbaColor = {
   f: 'rgba(255,255,255,1)'
 };
 
-export const rankColor = {
+export const rankColor: StringObject = {
   DARK_BLUE: '§1',
   DARK_AQUA: '§3',
   DARK_RED: '§4',
@@ -42,4 +45,20 @@ export const rankColor = {
   LIGHT_PURPLE: '§d',
   YELLOW: '§e',
   WHITE: '§f'
+};
+
+export const ranks: StringObject = {
+  GUILDMASTER: '[GM]',
+  Leader: '[Leader]',
+  Staff: '[Staff]',
+  Pro: '[Pro]',
+  Active: '[Active]',
+  Member: '[Member]'
+};
+
+export const roles: StringObject = {
+  '[Staff]': '1005725104430395452',
+  '[Pro]': '1031566725432492133',
+  '[Active]': '950083054326677514',
+  '[Member]': '1031926129822539786'
 };

@@ -1,20 +1,22 @@
-import { EmbedBuilder, WebhookClient } from 'discord.js';
+import { Client, EmbedBuilder, TextChannel, WebhookClient } from 'discord.js';
 import Database from 'better-sqlite3';
-import { nameToUUID } from '../../helper/utils.js';
+import { nameToUuid } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../helper/workerHandler.js';
+import { channels } from '../discord/ready.js';
+import { NumberObject } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
+db.defaultSafeIntegers(true);
 
+const playtime: NumberObject = {};
 const logWebhook = new WebhookClient({ url: config.keys.logWebhookUrl });
 const gcWebhook = new WebhookClient({ url: config.keys.gcWebhookUrl });
 const ocWebhook = new WebhookClient({ url: config.keys.ocWebhookUrl });
-const playtime = {};
-global.messageCache = [];
-db.defaultSafeIntegers(true);
+const messageCache: string[] = [];
 
-export default async function execute(client, msg, rawMsg, messagePosition) {
+export default async function execute(client: Client, msg: string, rawMsg: string, messagePosition: string) {
   if (messagePosition !== 'chat') return;
   if (msg.trim() === '') return;
   // Limbo Check
@@ -31,24 +33,24 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
   } else {
     await logWebhook.send({ content: msg, username: 'Dominance', avatarURL: config.guild.icon });
   }
-  if (global.messageCache.length >= 20) global.messageCache.shift();
-  global.messageCache.push(msg);
+  if (messageCache.length >= 20) messageCache.shift();
+  messageCache.push(msg);
 
   // Guild Chat
   if (msg.includes('joined.')) {
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-    let uuid = await nameToUUID(name);
+    let uuid = await nameToUuid(name);
     if (uuid === null) {
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
-      uuid = await nameToUUID(name);
+      uuid = await nameToUuid(name);
     }
     playtime[name] = Math.floor(Date.now() / 1000);
   } else if (msg.includes('left.')) {
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-    let uuid = await nameToUUID(name);
+    let uuid = await nameToUuid(name);
     if (uuid === null) {
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
-      uuid = await nameToUUID(name);
+      uuid = await nameToUuid(name);
     }
     const time = Math.floor(Date.now() / 1000) - playtime[name];
     if (!Number.isNaN(time)) {
@@ -58,21 +60,21 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
     }
   } else if (msg.includes('Offline Members:')) {
     let includes = 0;
-    for (let i = global.messageCache.length - 1; i >= 0; i -= 1) {
+    for (let i = messageCache.length - 1; i >= 0; i -= 1) {
       if (
-        global.messageCache[i].includes('Guild Name:') ||
-        global.messageCache[i].includes('Total Members:') ||
-        global.messageCache[i].includes('Online Members:') ||
-        global.messageCache[i].includes('Offline Members:')
+        messageCache[i].includes('Guild Name:') ||
+        messageCache[i].includes('Total Members:') ||
+        messageCache[i].includes('Online Members:') ||
+        messageCache[i].includes('Offline Members:')
       )
         includes += 1;
       if (includes === 4) {
-        global.guildOnline = global.messageCache.splice(i);
+        global.guildOnline = messageCache.splice(i);
         break;
       }
     }
   } else if (msg.includes('Online Members:')) {
-    [, global.onlineMembers] = msg.split('Online Members: ');
+    global.onlineMembers = parseInt(msg.split('Online Members: ')[1], 10);
   } else if (msg.includes('cannot say the same message')) {
     await gcWebhook.send({
       username: 'Dominance',
@@ -84,7 +86,7 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
       ]
     });
   } else if (msg.includes(' has muted ')) {
-    await global.guildLogsChannel.send({
+    await channels.guildLogsChannel.send({
       files: [
         messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
@@ -92,7 +94,7 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
       ]
     });
   } else if (msg.includes(' has unmuted ')) {
-    await global.guildLogsChannel.send({
+    await channels.guildLogsChannel.send({
       files: [
         messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
@@ -109,7 +111,7 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
         )
       ]
     });
-    await global.guildLogsChannel.send({
+    await channels.guildLogsChannel.send({
       files: [
         messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
@@ -143,29 +145,29 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
         )
       ]
     });
-    await global.guildLogsChannel.send({
+    await channels.guildLogsChannel.send({
       files: [
         messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
         )
       ]
     });
-    const uuid = await nameToUUID(name);
+    const uuid = await nameToUuid(name);
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     try {
       const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid);
-      await client.channels.cache.get(channel).delete();
+      await client.channels.cache.get(channel)!.delete();
       db.prepare('DELETE FROM waitlist WHERE uuid = ?').run(uuid);
     } catch (e) {
       // Continue regardless of error
     }
     try {
       const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
-      await global.guildChatChannel.send(
+      await channels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
     } catch (e) {
-      await global.guildChatChannel.send(
+      await channels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
     }
@@ -176,10 +178,10 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
       files: [messageToImage(rawMsg)]
     });
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-    let uuid = await nameToUUID(name);
+    let uuid = await nameToUuid(name);
     if (uuid === null) {
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
-      uuid = await nameToUUID(name);
+      uuid = await nameToUuid(name);
     }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
@@ -190,10 +192,10 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
       files: [messageToImage(rawMsg)]
     });
     let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
-    let uuid = await nameToUUID(name);
+    let uuid = await nameToUuid(name);
     if (uuid == null) {
       [name] = msg.replace(/Officer > |:/g, '').split(' ');
-      uuid = await nameToUUID(name);
+      uuid = await nameToUuid(name);
     }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
@@ -201,11 +203,11 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
     let waitlist;
     let [, , name] = msg.split(' ');
     name = name.slice(0, -1);
-    let uuid = await nameToUUID(name);
+    let uuid = await nameToUuid(name);
     if (uuid === null) {
       [, name] = msg.split(' ');
       name = name.slice(0, -1);
-      uuid = await nameToUUID(name);
+      uuid = await nameToUuid(name);
     }
     try {
       waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
@@ -214,7 +216,7 @@ export default async function execute(client, msg, rawMsg, messagePosition) {
     }
     if (waitlist !== undefined) {
       await chat(`/g invite ${name}`);
-      const channel = client.channels.cache.get(waitlist.channel.toString());
+      const channel = client.channels.cache.get(waitlist.channel) as TextChannel;
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`${name} has been invited to the guild`)

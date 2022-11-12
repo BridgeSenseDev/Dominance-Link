@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder, ChannelType } from 'discord.js';
+import { Client, GatewayIntentBits, EmbedBuilder, TextChannel } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { formatDate } from '../helper/utils.js';
 
@@ -7,7 +7,7 @@ const client = new Client({
 });
 
 client.on('ready', async () => {
-  console.log(`[DISCORD] Logged in as ${client.user.tag}`);
+  console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
   const verifyEmbed = new EmbedBuilder()
     .setColor(config.colors.yellow)
     .setAuthor({
@@ -27,10 +27,8 @@ client.on('ready', async () => {
       iconURL: config.guild.icon
     });
 
-  const channel = client.channels.cache.get('660448787147390977');
-  if (channel?.type === ChannelType.GuildText) {
-    await channel.send({ embeds: [verifyEmbed] });
-  }
+  const channel = client.channels.cache.get('660448787147390977') as TextChannel;
+  await channel.send({ embeds: [verifyEmbed] });
 });
 
 client.login(config.keys.discordBotToken);

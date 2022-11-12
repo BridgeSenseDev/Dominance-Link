@@ -2,10 +2,10 @@ import {
   Client,
   GatewayIntentBits,
   EmbedBuilder,
-  ChannelType,
   ButtonBuilder,
   ButtonStyle,
-  ActionRowBuilder
+  ActionRowBuilder,
+  TextChannel
 } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { formatDate } from '../helper/utils.js';
@@ -15,7 +15,7 @@ const client = new Client({
 });
 
 client.on('ready', async () => {
-  console.log(`[DISCORD] Logged in as ${client.user.tag}`);
+  console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
   const requirementsEmbed = new EmbedBuilder()
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Guild Requirements', iconURL: config.guild.icon })
@@ -64,11 +64,9 @@ client.on('ready', async () => {
       .setEmoji('a:checkmark:1011799454959022081')
   );
 
-  const channel = client.channels.cache.get('1017099269372657724');
-  if (channel?.type === ChannelType.GuildText) {
-    await channel.send({ components: [requirementsRow], embeds: [requirementsEmbed] });
-    await channel.send({ components: [applicationsRow], embeds: [applicationsEmbed] });
-  }
+  const channel = client.channels.cache.get('1017099269372657724') as TextChannel;
+  await channel.send({ components: [requirementsRow], embeds: [requirementsEmbed] });
+  await channel.send({ components: [applicationsRow], embeds: [applicationsEmbed] });
 });
 
 client.login(config.keys.discordBotToken);

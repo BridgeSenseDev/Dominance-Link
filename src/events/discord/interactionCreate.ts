@@ -8,16 +8,23 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
-  SelectMenuBuilder
+  SelectMenuBuilder,
+  Client,
+  Interaction,
+  GuildMember,
+  Role,
+  Guild
 } from 'discord.js';
 import Database from 'better-sqlite3';
-import { nameToUUID, UUIDtoName } from '../../helper/utils.js';
+import { nameToUuid, uuidToName } from '../../helper/utils.js';
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
+import { channels } from './ready.js';
+import { StringObject } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
 
-const roles = {
+const roles: StringObject = {
   notifications: '789800580314824744',
   polls: '1039191632207151104',
   qotw: '829991529857810452',
@@ -29,7 +36,8 @@ const roles = {
   skywars: '903996253589880832'
 };
 
-async function execute(client, interaction) {
+async function execute(client: Client, interaction: Interaction) {
+  const member = interaction.member as GuildMember;
   if (interaction.isChatInputCommand()) {
     const command = client.commands.get(interaction.commandName);
 
@@ -42,7 +50,7 @@ async function execute(client, interaction) {
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
   } else if (interaction.isSelectMenu()) {
-    await interaction.deferUpdate({ ephemeral: true });
+    await interaction.deferReply({ ephemeral: true });
     const user = await client.users.fetch(interaction.customId);
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
@@ -54,27 +62,27 @@ async function execute(client, interaction) {
     if (interaction.customId in roles) {
       const roleId = roles[interaction.customId];
       let msg;
-      await interaction.deferUpdate({ ephemeral: true });
+      await interaction.deferReply({ ephemeral: true });
       // eslint-disable-next-line no-underscore-dangle
-      if (interaction.member._roles.includes(roleId)) {
-        await interaction.member.roles.remove(roleId);
+      if (member.roles.resolve(roleId)) {
+        await member.roles.remove(roleId);
         msg = `<:minus:1005843963686686730> <@&${roleId}>`;
       } else {
-        await interaction.member.roles.add(roleId);
+        await member.roles.add(roleId);
         msg = `<:add:1005843961652453487> <@&${roleId}>`;
       }
       await interaction.reply({ content: msg, ephemeral: true });
     } else if (interaction.customId === 'requirements') {
       let uuid;
       let playerData;
-      await interaction.deferUpdate({ ephemeral: true });
+      await interaction.deferReply({ ephemeral: true });
       try {
         ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id));
         playerData = (
           await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json()
         ).player;
       } catch (e) {
-        await interaction.member.roles.add(interaction.guild.roles.cache.get('907911526118223912'));
+        await member.roles.add(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
@@ -102,7 +110,7 @@ async function execute(client, interaction) {
       await interaction.showModal(modal);
     } else if (interaction.customId === 'apply') {
       if (db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id) === undefined) {
-        await interaction.member.roles.add(interaction.guild.roles.cache.get('907911526118223912'));
+        await member.roles.add(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
@@ -130,11 +138,11 @@ async function execute(client, interaction) {
       await interaction.showModal(modal);
     } else if (interaction.customId === 'accept') {
       await interaction.deferReply({ ephemeral: true });
-      const name = await interaction.message.embeds[0].data.fields[0].value;
-      const discordId = await interaction.message.embeds[0].data.fields[3].value.slice(2, -1);
-      const uuid = await nameToUUID(name);
+      const name = await interaction.message.embeds[0].data.fields![0].value;
+      const discordId = await interaction.message.embeds[0].data.fields![3].value.slice(2, -1);
+      const uuid = await nameToUuid(name);
       const user = await client.users.fetch(discordId);
-      interaction.guild.channels
+      (interaction.guild as Guild).channels
         .create({
           name: `🔴 ${name}`,
           type: ChannelType.GuildText,
@@ -169,28 +177,28 @@ async function execute(client, interaction) {
           const applicationEmbed = new EmbedBuilder()
             .setColor(config.colors.green)
             .setTitle(`${name}'s application has been accepted`)
-            .setDescription(interaction.message.embeds[0].data.description)
+            .setDescription(interaction.message.embeds[0].data.description!)
             .addFields(
               { name: '<:user:1029703318924165120> Accepted By', value: interaction.user.toString(), inline: true },
               {
                 name: '<:page_with_curl_3d:1029706324881199126> Meeting Reqs',
-                value: interaction.message.embeds[0].data.fields[1].value,
+                value: interaction.message.embeds[0].data.fields![1].value,
                 inline: true
               },
               {
                 name: '<:three_oclock_3d:1029704628310388796> Application Made',
-                value: interaction.message.embeds[0].data.fields[5].value,
+                value: interaction.message.embeds[0].data.fields![5].value,
                 inline: true
               }
             );
-          await global.applicationLogsChannel.send({ embeds: [applicationEmbed] });
+          await channels.applicationLogsChannel.send({ embeds: [applicationEmbed] });
           await interaction.editReply('Application accepted');
           await interaction.message.delete();
         });
     } else if (interaction.customId === 'deny') {
-      const discordId = await interaction.message.embeds[0].data.fields[3].value.slice(2, -1);
-      const name = await interaction.message.embeds[0].data.fields[0].value;
-      const row = new ActionRowBuilder().addComponents(
+      const discordId = await interaction.message.embeds[0].data.fields![3].value.slice(2, -1);
+      const name = await interaction.message.embeds[0].data.fields![0].value;
+      const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
         new SelectMenuBuilder().setCustomId(discordId).setPlaceholder('Select a reason').addOptions(
           {
             label: 'Not meeting guild requirements',
@@ -218,21 +226,21 @@ async function execute(client, interaction) {
       const applicationEmbed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle(`${name}'s application has been denied`)
-        .setDescription(interaction.message.embeds[0].data.description)
+        .setDescription(interaction.message.embeds[0].data.description!)
         .addFields(
           { name: '<:user:1029703318924165120> Denied By', value: interaction.user.toString(), inline: true },
           {
             name: '<:page_with_curl_3d:1029706324881199126> Meeting Reqs',
-            value: interaction.message.embeds[0].data.fields[1].value,
+            value: interaction.message.embeds[0].data.fields![1].value,
             inline: true
           },
           {
             name: '<:three_oclock_3d:1029704628310388796> Application Made',
-            value: interaction.message.embeds[0].data.fields[5].value,
+            value: interaction.message.embeds[0].data.fields![5].value,
             inline: true
           }
         );
-      await global.applicationLogsChannel.send({ embeds: [applicationEmbed] });
+      await channels.applicationLogs.send({ embeds: [applicationEmbed] });
       await interaction.message.delete();
     }
   } else if (interaction.type === InteractionType.ModalSubmit) {
@@ -274,8 +282,8 @@ async function execute(client, interaction) {
         return;
       }
       if (disc === interaction.user.tag) {
-        await interaction.member.roles.remove(interaction.guild.roles.cache.get('907911526118223912'));
-        await interaction.member.roles.add(interaction.guild.roles.cache.get('445669382539051008'));
+        await member.roles.remove(interaction.guild!.roles.cache.get('907911526118223912') as Role);
+        await member.roles.add(interaction.guild!.roles.cache.get('445669382539051008') as Role);
         const { guild } = await (
           await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)
         ).json();
@@ -294,7 +302,7 @@ async function execute(client, interaction) {
             );
           await interaction.editReply({ embeds: [embed] });
         } else if (guild.name_lower === 'dominance') {
-          await interaction.member.roles.add(interaction.guild.roles.cache.get('1031926129822539786'));
+          await member.roles.add(interaction.guild!.roles.cache.get('1031926129822539786') as Role);
           db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
           db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
           const embed = new EmbedBuilder()
@@ -340,7 +348,7 @@ async function execute(client, interaction) {
         await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json()
       ).player;
       const requirementData = await requirements(uuid, playerData);
-      const name = await UUIDtoName(uuid);
+      const name = await uuidToName(uuid);
 
       const embed = new EmbedBuilder()
         .setColor(requirementData.color)
@@ -364,7 +372,7 @@ async function execute(client, interaction) {
           { name: '<:mention:913408059425058817> Discord: ', value: `<@${interaction.user.id}>`, inline: true },
           {
             name: '<:calendar_3d:1029713106550657055> Discord Member Since: ',
-            value: `<t:${Math.floor(interaction.member.joinedTimestamp / 1000)}:R>`,
+            value: `<t:${Math.floor(member.joinedTimestamp! / 1000)}:R>`,
             inline: true
           },
           {
@@ -374,7 +382,7 @@ async function execute(client, interaction) {
           }
         );
 
-      const row = new ActionRowBuilder()
+      const row = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(
           new ButtonBuilder()
             .setCustomId('accept')
@@ -389,8 +397,8 @@ async function execute(client, interaction) {
             .setLabel('Deny')
             .setEmoji('a:across:986170696512204820')
         );
-      await global.applicationsChannel.send({ components: [row], embeds: [embed] });
-      await interaction.editReply({ content: 'Your application was received successfully!', ephemeral: true });
+      await channels.applicationsChannel.send({ components: [row], embeds: [embed] });
+      await interaction.editReply({ content: 'Your application was received successfully!' });
     }
   }
 }

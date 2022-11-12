@@ -1,85 +1,85 @@
-import { EmbedBuilder } from 'discord.js';
+import { Client, EmbedBuilder, Message, Role } from 'discord.js';
 import Database from 'better-sqlite3';
-import { formatMentions, UUIDtoName } from '../../helper/utils.js';
+import { formatMentions, uuidToName } from '../../helper/utils.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../helper/workerHandler.js';
+import { channels } from './ready.js';
 
 const db = new Database('guild.db');
 
-export default async function execute(client, message) {
-  const msg = message;
-  if (msg.author.bot) return;
+export default async function execute(client: Client, message: Message) {
+  if (message.author.bot) return;
   let uuid;
-  if (msg.content.toLowerCase().includes('dominance')) {
-    await msg.react(':dominance:1033300891597557830');
+  if (message.content.toLowerCase().includes('dominance')) {
+    await message.react(':dominance:1033300891597557830');
   }
-  if (msg.channel.id === global.logChannel.id) {
-    await chat(msg.content);
-  } else if (msg.channel.id === global.minecraftLinkChannel.id) {
-    let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(msg.author.id);
+  if (message.channel.id === channels.guildLogs.id) {
+    await chat(message.content);
+  } else if (message.channel.id === channels.minecraftLink.id) {
+    let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     if (user === undefined) {
       try {
-        ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(msg.author.id));
+        ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(message.author.id));
       } catch (err) {
-        await msg.member.roles.add(msg.guild.roles.cache.get('907911526118223912'));
+        await message.member!.roles.add(message.guild!.roles.cache.get('907911526118223912') as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
           .setDescription(
-            `<a:across:986170696512204820> <@${msg.author.id}> Please verify first in <#907911357582704640>`
+            `<a:across:986170696512204820> <@${message.author.id}> Please verify first in <#907911357582704640>`
           );
-        msg.reply({ embeds: [embed] });
+        message.reply({ embeds: [embed] });
         return;
       }
-      db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(msg.author.id, uuid);
-      user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(msg.author.id);
+      db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(message.author.id, uuid);
+      user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     }
-    msg.content = await formatMentions(client, msg);
-    msg.content = msg.content.replace(/\n/g, '');
+    message.content = await formatMentions(client, message);
+    message.content = message.content.replace(/\n/g, '');
     let length;
     try {
-      ({ length } = `/gc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
+      ({ length } = `/gc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`);
     } catch (e) {
       return;
     }
     if (length > 256) {
-      await global.minecraftLinkChannel.send(`Character limit exceeded (${length})`);
+      await channels.minecraftLink.send(`Character limit exceeded (${length})`);
       return;
     }
-    await chat(`/gc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
-    await msg.delete();
-  } else if (msg.channel.id === global.officerChannel.id) {
-    let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(msg.author.id);
+    await chat(`/gc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`);
+    await message.delete();
+  } else if (message.channel.id === channels.officerChat.id) {
+    let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     if (user === undefined) {
       try {
-        ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(msg.author.id));
+        ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(message.author.id));
       } catch (e) {
-        await msg.author.roles.add(msg.guild.roles.cache.get('907911526118223912'));
+        await message.member!.roles.add(message.guild!.roles.cache.get('907911526118223912') as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
           .setDescription(
-            `<a:across:986170696512204820> <@${msg.author.id}> Please verify first in <#907911357582704640>`
+            `<a:across:986170696512204820> <@${message.author.id}> Please verify first in <#907911357582704640>`
           );
-        msg.reply({ embeds: [embed] });
+        message.reply({ embeds: [embed] });
         return;
       }
-      db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(msg.author.id, uuid);
-      user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(msg.author.id);
+      db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(message.author.id, uuid);
+      user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     }
-    msg.content = await formatMentions(client, msg);
-    msg.content = msg.content.replace(/\n/g, '');
+    message.content = await formatMentions(client, message);
+    message.content = message.content.replace(/\n/g, '');
     let length;
     try {
-      ({ length } = `/oc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
+      ({ length } = `/oc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`);
     } catch (e) {
       return;
     }
     if (length > 256) {
-      await global.minecraftLinkChannel.send(`Character limit exceeded (${length})`);
+      await channels.minecraftLink.send(`Character limit exceeded (${length})`);
       return;
     }
-    await chat(`/oc ${await UUIDtoName(user.uuid)} ${user.tag}: ${msg.content}`);
-    await msg.delete();
+    await chat(`/oc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`);
+    await message.delete();
   }
 }

@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, EmbedBuilder, ChannelType } from 'discord.js';
+import { Client, GatewayIntentBits, EmbedBuilder, TextChannel } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { formatDate } from '../helper/utils.js';
 
@@ -7,7 +7,7 @@ const client = new Client({
 });
 
 client.on('ready', async () => {
-  console.log(`[DISCORD] Logged in as ${client.user.tag}`);
+  console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
   const rulesEmbed = new EmbedBuilder()
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Server Rules', iconURL: config.guild.icon })
@@ -45,10 +45,8 @@ client.on('ready', async () => {
     })
     .setImage('https://cdn.discordapp.com/attachments/986281342457237624/1032299536162492426/Dominace_Banner.png');
 
-  const channel = client.channels.cache.get('1031245971662835834');
-  if (channel?.type === ChannelType.GuildText) {
-    await channel.send({ embeds: [rulesEmbed, guideEmbed] });
-  }
+  const channel = client.channels.cache.get('1031245971662835834') as TextChannel;
+  await channel.send({ embeds: [rulesEmbed, guideEmbed] });
 });
 
 client.login(config.keys.discordBotToken);

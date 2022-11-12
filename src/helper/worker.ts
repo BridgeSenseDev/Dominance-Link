@@ -2,9 +2,9 @@ import { parentPort } from 'worker_threads';
 import mineflayer from 'mineflayer';
 import config from '../config.json' assert { type: 'json' };
 
-let bot;
+let bot: mineflayer.Bot;
 
-parentPort.on('message', async (msg) => {
+parentPort!.on('message', async (msg) => {
   if (msg.type === 'startBot') {
     bot = mineflayer.createBot({
       host: 'mc.hypixel.net',
@@ -18,7 +18,7 @@ parentPort.on('message', async (msg) => {
     });
 
     bot.on('message', (message, messagePosition) => {
-      parentPort.postMessage({
+      parentPort!.postMessage({
         type: 'message',
         string: message.toString(),
         motd: message.toMotd(),
@@ -27,7 +27,7 @@ parentPort.on('message', async (msg) => {
     });
 
     bot.on('login', () => {
-      parentPort.postMessage({ type: 'login' });
+      parentPort!.postMessage({ type: 'login' });
     });
   } else if (msg.type === 'restartBot') {
     bot.quit();
@@ -43,7 +43,7 @@ parentPort.on('message', async (msg) => {
     });
 
     bot.on('message', (message, messagePosition) => {
-      parentPort.postMessage({
+      parentPort!.postMessage({
         type: 'message',
         string: message.toString(),
         motd: message.toMotd(),
@@ -52,7 +52,7 @@ parentPort.on('message', async (msg) => {
     });
 
     bot.on('login', () => {
-      parentPort.postMessage({ type: 'login' });
+      parentPort!.postMessage({ type: 'login' });
     });
   } else if (msg.type === 'send') {
     bot.chat(msg.content);

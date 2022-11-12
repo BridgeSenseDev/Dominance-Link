@@ -1,4 +1,4 @@
-import { Client, EmbedBuilder, GuildMember, TextChannel } from 'discord.js';
+import { Client, EmbedBuilder, GuildMember } from 'discord.js';
 import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
 
@@ -13,7 +13,7 @@ async function execute(client: Client, member: GuildMember) {
       | Need help?**\n \`•\` Feel free to open a ticket in <#867160066704146482>\n\n<:hypixel:968022561940209664> [Hypixel \
       Forum Post](https://dominance.cf/forums) ㅤㅤ<:twitter:968021865064988742> [Twitter Page](https://twitter.com/MatrixHypixel)\
       ㅤㅤ<:twitch:968022010498273280> [Twitch Channel](https://www.twitch.tv/matrix_guild)`);
-  await (channels.welcomeChannel as TextChannel).send({ content: member.toString(), embeds: [embed] });
+  await channels.welcomeChannel.send({ content: member.toString(), embeds: [embed] });
 }
 
 export default execute;

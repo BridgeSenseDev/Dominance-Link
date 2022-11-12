@@ -19,10 +19,12 @@
   "plugins": ["@typescript-eslint", "prettier"],
   "rules": {
     "import/no-unresolved": "off",
+    "import/no-mutable-exports": "off",
     "no-restricted-syntax": "off",
     "no-await-in-loop": "off",
     "consistent-return": "off",
     "no-continue": "off",
-    "no-console": "off"
+    "no-console": "off",
+    "no-param-reassign": "off"
   }
 }

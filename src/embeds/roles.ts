@@ -2,10 +2,10 @@ import {
   Client,
   GatewayIntentBits,
   EmbedBuilder,
-  ChannelType,
   ButtonBuilder,
   ActionRowBuilder,
-  ButtonStyle
+  ButtonStyle,
+  TextChannel
 } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 
@@ -14,7 +14,7 @@ const client = new Client({
 });
 
 client.on('ready', async () => {
-  console.log(`[DISCORD] Logged in as ${client.user.tag}`);
+  console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
   const rolesEmbed = new EmbedBuilder()
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Roles Info', iconURL: config.guild.icon })
@@ -122,18 +122,16 @@ client.on('ready', async () => {
     })
     .setDescription('Use the buttons below to select what gamemodes you like to play\nThese roles can be mentioned!');
 
-  const channel = client.channels.cache.get('1039170240623427584');
-  if (channel?.type === ChannelType.GuildText) {
-    await channel.send({ embeds: [rolesEmbed] });
-    await channel.send({
-      components: [notificationsRow],
-      embeds: [notificationsEmbed]
-    });
-    await channel.send({
-      components: [gamemodesRow],
-      embeds: [gamemodesEmbed]
-    });
-  }
+  const channel = client.channels.cache.get('1039170240623427584') as TextChannel;
+  await channel.send({ embeds: [rolesEmbed] });
+  await channel.send({
+    components: [notificationsRow],
+    embeds: [notificationsEmbed]
+  });
+  await channel.send({
+    components: [gamemodesRow],
+    embeds: [gamemodesEmbed]
+  });
 });
 
 client.login(config.keys.discordBotToken);

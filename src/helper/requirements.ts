@@ -1,21 +1,20 @@
-import { getNetworth } from 'skyhelper-networth';
-import { removeSectionSymbols, abbreviateNumber, formatNumber, UUIDtoName } from './utils.js';
+import getNetworth from 'skyhelper-networth';
+import { removeSectionSymbols, abbreviateNumber, formatNumber, uuidToName } from './utils.js';
 import config from '../config.json' assert { type: 'json' };
 import { levelingXp } from './constants.js';
 
-async function xpToLevel(exp, cap) {
-  let xp = exp;
+async function xpToLevel(exp: number, cap: number) {
   for (let i = 0; i < cap; i += 1) {
-    if (xp - levelingXp[i] > 0) {
-      xp -= levelingXp[i];
+    if (exp - levelingXp[i] > 0) {
+      exp -= levelingXp[i];
     } else {
-      return i + xp / levelingXp[i];
+      return i + exp / levelingXp[i];
     }
   }
   return cap;
 }
 
-async function skillAverage(player) {
+async function skillAverage(player: any) {
   let levels = 0;
   levels += await xpToLevel(player.experience_skill_farming, 60);
   levels += await xpToLevel(player.experience_skill_mining, 60);
@@ -31,7 +30,7 @@ async function skillAverage(player) {
   return levels / 8;
 }
 
-function weeklyGexp(members, uuid) {
+function weeklyGexp(members: any, uuid: string) {
   let gexp = 0;
   Object.keys(members).forEach((member) => {
     if (uuid === members[member].uuid) {
@@ -43,13 +42,13 @@ function weeklyGexp(members, uuid) {
   return gexp;
 }
 
-export default async function requirements(uuid, playerData) {
+export default async function requirements(uuid: string, playerData: any) {
   let guild;
   let bedwars;
   let duels;
   let skywars;
   let skyblock;
-  const name = await UUIDtoName(uuid);
+  const name = await uuidToName(uuid);
   const guildData = (
     await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json()
   ).guild;
@@ -63,7 +62,7 @@ export default async function requirements(uuid, playerData) {
   if (profiles === null) {
     skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
   } else {
-    profiles.forEach((i) => {
+    profiles.forEach((i: any) => {
       if (i.selected === true) {
         profileData = i.members[uuid];
         bankBalance = i.banking?.balance;
@@ -232,13 +231,14 @@ export default async function requirements(uuid, playerData) {
   }
 
   if (skywars[0] !== 'No SkyWars Data') {
-    if (skywars[0].slice(0, -1) >= 12 && skywars[1] >= 1) {
+    const stars = parseInt(skywars[0].toString().slice(0, -1), 10);
+    if (stars >= 12 && skywars[1] >= 1) {
       meetingReqs = true;
       requirementEmbed += ':green_circle: **Skywars 1**\n';
     } else {
       requirementEmbed += ':red_circle: **Skywars 1**\n';
     }
-    if (skywars[0].slice(0, -1) >= 12) {
+    if (stars >= 12) {
       requirementEmbed += `<a:atick:986173414723162113> **Skywars Stars:** \`${skywars[0]}\`\n`;
     } else {
       requirementEmbed += `<a:across:986170696512204820> **Skywars Stars:** \`${skywars[0]} / 12⁕\`\n`;
@@ -254,13 +254,14 @@ export default async function requirements(uuid, playerData) {
   }
 
   if (skywars[0] !== 'No SkyWars Data') {
-    if (skywars[0].slice(0, -1) >= 10 && skywars[1] >= 1.5) {
+    const stars = parseInt(skywars[0].toString().slice(0, -1), 10);
+    if (stars >= 10 && skywars[1] >= 1.5) {
       meetingReqs = true;
       requirementEmbed += ':green_circle: **Skywars 2**\n';
     } else {
       requirementEmbed += ':red_circle: **Skywars 2**\n';
     }
-    if (skywars[0].slice(0, -1) >= 10) {
+    if (stars >= 10) {
       requirementEmbed += `<a:atick:986173414723162113> **Skywars Stars:** \`${skywars[0]}\`\n`;
     } else {
       requirementEmbed += `<a:across:986170696512204820> **Skywars Stars:** \`${skywars[0]} / 10❤\`\n`;

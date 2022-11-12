@@ -1,6 +1,6 @@
 import { Worker } from 'worker_threads';
 import { fileURLToPath } from 'url';
-import { Channel, Client, Message, TextChannel } from 'discord.js';
+import { Client, Message, TextChannel, VoiceChannel } from 'discord.js';
 import { database, gsrun, players, sheet, weekly } from '../../helper/database.js';
 import gexpWatch from '../../helper/gexpWatch.js';
 import unverified from '../../helper/unverified.js';
@@ -9,7 +9,7 @@ import { autoRejoin, startBot } from '../../helper/workerHandler.js';
 import config from '../../config.json' assert { type: 'json' };
 import leaderboards from '../../helper/leaderboards.js';
 
-let worker;
+let worker: Worker;
 
 interface Messages {
   [key: string]: Message;
@@ -17,7 +17,7 @@ interface Messages {
 const messages: Messages = {};
 
 interface Channels {
-  [key: string]: Channel;
+  [key: string]: TextChannel | VoiceChannel;
 }
 const channels: Channels = {};
 
@@ -32,11 +32,19 @@ async function execute(client: Client) {
 
   for (let i = 0; i < Object.keys(config.messages).length; i += 1) {
     const channel = client.channels.cache.get(Object.values(config.messages)[i][0])!;
-    messages[Object.keys(config.messages)[i]] = await (channel as TextChannel).messages.fetch(Object.values(config.messages)[i][1]);
+    messages[Object.keys(config.messages)[i]] = await (channel as TextChannel).messages.fetch(
+      Object.values(config.messages)[i][1]
+    );
   }
 
   for (let i = 0; i < Object.keys(config.channels).length; i += 1) {
-    channels[Object.keys(config.channels)[i]] = client.channels.cache.get(Object.values(config.channels)[i])!;
+    const channel = client.channels.cache.get(Object.values(config.channels)[i])!;
+    if (channel.isTextBased()) {
+      channels[Object.keys(config.channels)[i]] = channel as TextChannel;
+    }
+    if (channel.isVoiceBased()) {
+      channels[Object.keys(config.channels)[i]] = channel as VoiceChannel;
+    }
   }
   global.onlineMembers = 0;
 
@@ -52,7 +60,7 @@ async function execute(client: Client) {
   leaderboards();
 
   // Music
-  const voiceChannel = client.channels.cache.get(config.channels.musicChannel);
+  const voiceChannel = client.channels.cache.get(config.channels.music);
   await client.distube.play(
     voiceChannel,
     'https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4FyS8kM?si=86cc479f1d954174'

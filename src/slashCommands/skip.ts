@@ -1,8 +1,8 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 
 export const data = new SlashCommandBuilder().setName('skip').setDescription('Skip the current song');
-export async function execute(interaction) {
+export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const client = (await import('../index.js')).default;
   const queue = client.distube.getQueue(interaction.guild);

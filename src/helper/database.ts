@@ -1,28 +1,15 @@
 import { schedule } from 'node-cron';
 import { google } from 'googleapis';
 import Database from 'better-sqlite3';
+import { JWT } from 'google-auth-library';
+import { Client, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { nameColor, UUIDtoName } from './utils.js';
+import { nameColor, uuidToName } from './utils.js';
+import { ranks, roles } from './constants.js';
 
 const db = new Database('guild.db');
 
-const ranks = {
-  GUILDMASTER: '[GM]',
-  Leader: '[Leader]',
-  Staff: '[Staff]',
-  Pro: '[Pro]',
-  Active: '[Active]',
-  Member: '[Member]'
-};
-
-const roles = {
-  '[Staff]': '1005725104430395452',
-  '[Pro]': '1031566725432492133',
-  '[Active]': '950083054326677514',
-  '[Member]': '1031926129822539786'
-};
-
-export const sheet = new google.auth.JWT(config.sheets.clientEmail, null, config.sheets.privateKey, [
+export const sheet = new google.auth.JWT(config.sheets.clientEmail, undefined, config.sheets.privateKey, [
   'https://www.googleapis.com/auth/spreadsheets'
 ]);
 
@@ -97,7 +84,7 @@ export async function database() {
   }, 5 * 60 * 1000);
 }
 
-export async function gsrun(sheets, client) {
+export async function gsrun(sheets: JWT, client: Client) {
   setInterval(async () => {
     const gsapi = google.sheets({ version: 'v4', auth: sheets });
     const data = db.prepare('SELECT * FROM guildMembers').all();
@@ -114,7 +101,7 @@ export async function gsrun(sheets, client) {
           delete data[i][Object.keys(data[i])[j]];
         }
       }
-      data[i].name = await UUIDtoName(data[i].uuid);
+      data[i].name = await uuidToName(data[i].uuid);
       if (data[i].discord) {
         try {
           data[i].discordTag = (await client.users.fetch(data[i].discord)).tag;
@@ -153,10 +140,10 @@ export async function gsrun(sheets, client) {
 
 export async function players() {
   const client = (await import('../index.js')).default;
-  const guild = client.guilds.cache.get('242357942664429568');
-  const active = guild.roles.cache.get(roles['[Active]']);
-  const pro = guild.roles.cache.get(roles['[Pro]']);
-  const staff = guild.roles.cache.get(roles['[Staff]']);
+  const guild = client.guilds.cache.get('242357942664429568') as Guild;
+  const active = guild.roles.cache.get(roles['[Active]']) as Role;
+  const pro = guild.roles.cache.get(roles['[Pro]']) as Role;
+  const staff = guild.roles.cache.get(roles['[Staff]']) as Role;
   let count = 0;
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
@@ -169,13 +156,13 @@ export async function players() {
           db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
         }
         if (!['[Leader]', '[GM]'].includes(data.tag) && member !== undefined) {
-          const ign = await UUIDtoName(data.uuid);
-          await member.roles.add(guild.roles.cache.get(roles['[Member]']));
+          const ign = await uuidToName(data.uuid);
+          await member.roles.add(guild.roles.cache.get(roles['[Member]']) as Role);
           if (!member.displayName.includes(ign)) {
             await member.setNickname(ign);
           }
           if (!data.tag.includes(['[Member]'])) {
-            await member.roles.add(guild.roles.cache.get(roles[data.tag]));
+            await member.roles.add(guild.roles.cache.get(roles[data.tag]) as Role);
           }
           if (data.tag === '[Member]') {
             await member.roles.remove(active);

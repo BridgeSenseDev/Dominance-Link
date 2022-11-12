@@ -1,6 +1,7 @@
+import { Client, Message } from 'discord.js';
 import { rankColor } from './constants.js';
 
-export async function nameToUUID(name) {
+export async function nameToUuid(name: string) {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${name}`)).json()).data.player.raw_id;
   } catch (e) {
@@ -8,7 +9,7 @@ export async function nameToUUID(name) {
   }
 }
 
-export async function UUIDtoName(uuid) {
+export async function uuidToName(uuid: string) {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${uuid}`)).json()).data.player.username;
   } catch (e) {
@@ -16,45 +17,51 @@ export async function UUIDtoName(uuid) {
   }
 }
 
-export async function formatMentions(client, message) {
+export async function formatMentions(client: Client, message: Message) {
   let msg = message.content;
   if (msg.includes('<@') && msg.includes('>') && !msg.includes('<@&')) {
-    const guildId = message.guild.id;
+    const guildId = message.guild!.id;
     const mentions = msg.match(/<@!?\d+>/g);
     const members = await client.guilds.cache.get(guildId)?.members?.fetch();
-    Object.keys(mentions).forEach((mention) => {
-      const user = members.get(mention.replace(/[^0-9]/g, ''));
-      if (user) {
-        msg = msg.replace(mention, `@${user.user.username}`);
-      } else {
-        msg = msg.replace(mention, '@Unknown User');
-      }
-    });
+    if (mentions !== null) {
+      Object.keys(mentions).forEach((mention) => {
+        const user = members!.get(mention.replace(/[^0-9]/g, ''));
+        if (user) {
+          msg = msg.replace(mention, `@${user.user.username}`);
+        } else {
+          msg = msg.replace(mention, '@Unknown User');
+        }
+      });
+    }
   }
 
   if (msg.includes('<@&') && msg.includes('>')) {
-    const guildId = message.guild.id;
+    const guildId = message.guild!.id;
     const mentions = msg.match(/<@&\d+>/g);
     const roles = await client.guilds.cache.get(guildId)?.roles.fetch();
-    Object.keys(mentions).forEach((mention) => {
-      const role = roles.get(mention.replace(/[^0-9]/g, ''));
-      if (role) {
-        msg = msg.replace(mention, `@${role.name}`);
-      } else {
-        msg = msg.replace(mention, '@Unknown Role');
-      }
-    });
+    if (mentions !== null) {
+      Object.keys(mentions).forEach((mention) => {
+        const role = roles!.get(mention.replace(/[^0-9]/g, ''));
+        if (role) {
+          msg = msg.replace(mention, `@${role.name}`);
+        } else {
+          msg = msg.replace(mention, '@Unknown Role');
+        }
+      });
+    }
   }
 
   if (msg.includes('<#') && msg.includes('>')) {
     const { guild } = message;
     const mentions = msg.match(/<#\d+>/g);
-    Object.keys(mentions).forEach((mention) => {
-      msg = msg.replace(
-        mention,
-        `#${guild?.channels?.cache?.get(mention.replace(/[^0-9]/g, ''))?.name || 'deleted-channel'}`
-      );
-    });
+    if (mentions !== null) {
+      Object.keys(mentions).forEach((mention) => {
+        msg = msg.replace(
+          mention,
+          `#${guild?.channels?.cache?.get(mention.replace(/[^0-9]/g, ''))?.name || 'deleted-channel'}`
+        );
+      });
+    }
   }
 
   if ((msg.includes('<a:') || msg.includes('<:')) && msg.includes('>')) {
@@ -67,20 +74,19 @@ export async function formatMentions(client, message) {
   return msg;
 }
 
-export function getLevel(experience) {
-  const EXP_NEEDED = [
+export function getLevel(exp: number) {
+  const expNeeded = [
     100000, 150000, 250000, 500000, 750000, 1000000, 1250000, 1500000, 2000000, 2500000, 2500000, 2500000, 2500000,
     2500000, 3000000
   ];
-  let exp = experience;
   let level = 0;
 
   for (let i = 0; i <= 1000; i += 1) {
     let need = 0;
-    if (i >= EXP_NEEDED.length) {
-      need = EXP_NEEDED[EXP_NEEDED.length - 1];
+    if (i >= expNeeded.length) {
+      need = expNeeded[expNeeded.length - 1];
     } else {
-      need = EXP_NEEDED[i];
+      need = expNeeded[i];
     }
 
     if (exp - need < 0) {
@@ -93,12 +99,12 @@ export function getLevel(experience) {
   return 1000;
 }
 
-export async function sleep(ms) {
+export async function sleep(ms: number) {
   // eslint-disable-next-line no-promise-executor-return
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function formatDate(dateObj) {
+export function formatDate(dateObj: Date) {
   let suffix;
   const date = dateObj.getDate();
   if (date > 3 && date < 21) suffix = 'th';
@@ -132,32 +138,31 @@ export function formatDate(dateObj) {
   return `${date + suffix} ${month} ${dateObj.getFullYear()}`;
 }
 
-export function removeSectionSymbols(message) {
-  let msg = message;
-  let pos = msg.indexOf('\u00A7');
+export function removeSectionSymbols(message: string) {
+  let pos = message.indexOf('\u00A7');
   while (pos !== -1) {
-    msg = msg.slice(0, pos) + msg.slice(pos + 1);
-    msg = msg.slice(0, pos) + msg.slice(pos + 1);
-    pos = msg.indexOf('\u00A7');
+    message = message.slice(0, pos) + message.slice(pos + 1);
+    message = message.slice(0, pos) + message.slice(pos + 1);
+    pos = message.indexOf('\u00A7');
   }
-  return msg;
+  return message;
 }
 
-export function formatNumber(num) {
-  if (num === null) {
+export function formatNumber(number: number) {
+  if (number === null) {
     return null;
   }
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-export function abbreviateNumber(num) {
+export function abbreviateNumber(number: number) {
   return Intl.NumberFormat('en-US', {
     notation: 'compact',
     maximumFractionDigits: 1
-  }).format(num);
+  }).format(number);
 }
 
-export function nameColor(player) {
+export function nameColor(player: any) {
   if (player.rank) {
     return player;
   }

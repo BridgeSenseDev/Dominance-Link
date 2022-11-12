@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import requirements from '../helper/requirements.js';
 
@@ -6,7 +6,7 @@ export const data = new SlashCommandBuilder()
   .setName('reqs')
   .setDescription('Check if you meet our guild requirements')
   .addStringOption((option) => option.setName('ign').setDescription('Your minecraft username').setRequired(true));
-export async function execute(interaction) {
+export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   let uuid;
   let playerData;

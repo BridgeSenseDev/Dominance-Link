@@ -1,26 +1,27 @@
 import { registerFont, createCanvas } from 'canvas';
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import Database from 'better-sqlite3';
-import { ButtonStyle } from 'discord.js';
+import { ButtonStyle, Message } from 'discord.js';
 import { rgbaColor } from './constants.js';
 import { formatNumber, sleep } from './utils.js';
+import { messages } from '../events/discord/ready.js';
 
 const db = new Database('guild.db');
 registerFont('./MinecraftRegular-Bmg3.ttf', { family: 'Minecraft' });
 
-function generateLeaderboardImage(message) {
+function generateLeaderboardImage(message: string[]) {
   const canvas = createCanvas(750, message.length * 39 + 6);
   const ctx = canvas.getContext('2d');
   let width = 5;
   let height = 29;
   for (let i = 0; i < 13; i += 1) {
-    let splitMessageSpace: String[];
+    let splitMessageSpace: string[];
     try {
       splitMessageSpace = message[i].split(' ');
     } catch (e) {
       continue;
     }
-    Object.entries(splitMessageSpace).forEach(([j, msg]) => {
+    splitMessageSpace.forEach((msg, j) => {
       if (!msg.startsWith('§')) splitMessageSpace[j] = `§r${msg}`;
     });
     const splitMessage = splitMessageSpace.join(' ').split(/§|\n/g);
@@ -31,7 +32,7 @@ function generateLeaderboardImage(message) {
     ctx.font = '40px Minecraft';
 
     // eslint-disable-next-line no-loop-func
-    Object.values(splitMessage).forEach((msg: String) => {
+    Object.values(splitMessage).forEach((msg: string) => {
       const colorCode = rgbaColor[msg.charAt(0)];
       const currentMessage = msg.substring(1);
       if (colorCode) {
@@ -46,7 +47,7 @@ function generateLeaderboardImage(message) {
   return canvas.toBuffer();
 }
 
-async function generateLeaderboard(message, order) {
+async function generateLeaderboard(message: Message, order: string) {
   const data = db.prepare(`SELECT uuid, nameColor, "${order}" FROM guildMembers ORDER BY "${order}" DESC`).all();
   const leaderboard = [];
   const images = [];
@@ -64,7 +65,7 @@ async function generateLeaderboard(message, order) {
     images.push(generateLeaderboardImage(leaderboard.slice(i - 12, i + 1)));
   }
 
-  const row = new ActionRowBuilder().addComponents(
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setLabel('Scroll To Top')
       .setStyle(ButtonStyle.Link)
@@ -80,25 +81,25 @@ async function generateLeaderboard(message, order) {
 
 export default async function leaderboards() {
   setInterval(async () => {
-    generateLeaderboard(global.weeklyGexpMessage, 'weeklyGexp');
+    generateLeaderboard(messages.weeklyGexp, 'weeklyGexp');
     await sleep(1000);
     generateLeaderboard(
-      global.dailyGexpMessage,
+      messages.dailyGexp,
       Object.keys(db.prepare('SELECT * FROM guildMembers').get())[
         Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1
       ]
     );
     await sleep(1000);
-    generateLeaderboard(global.playtimeMessage, 'playtime');
+    generateLeaderboard(messages.playtime, 'playtime');
     await sleep(1000);
-    generateLeaderboard(global.guildMessagesMessage, 'messages');
+    generateLeaderboard(messages.guildMessages, 'messages');
     await sleep(1000);
-    generateLeaderboard(global.bwStarsMessage, 'bwStars');
+    generateLeaderboard(messages.bwStars, 'bwStars');
     await sleep(1000);
-    generateLeaderboard(global.bwFkdrMessage, 'bwFkdr');
+    generateLeaderboard(messages.bwFkdr, 'bwFkdr');
     await sleep(1000);
-    generateLeaderboard(global.duelsWinsMessage, 'duelsWins');
+    generateLeaderboard(messages.duelsWins, 'duelsWins');
     await sleep(1000);
-    generateLeaderboard(global.duelsWlrMessage, 'duelsWlr');
+    generateLeaderboard(messages.duelsWlr, 'duelsWlr');
   }, 5 * 60 * 1000);
 }

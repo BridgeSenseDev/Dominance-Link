@@ -2,10 +2,10 @@ import {
   Client,
   GatewayIntentBits,
   EmbedBuilder,
-  ChannelType,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
+  TextChannel
 } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { formatDate } from '../helper/utils.js';
@@ -15,7 +15,7 @@ const client = new Client({
 });
 
 client.on('ready', async () => {
-  console.log(`[DISCORD] Logged in as ${client.user.tag}`);
+  console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
   const verifyEmbed = new EmbedBuilder()
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Verification', iconURL: config.guild.icon })
@@ -36,13 +36,11 @@ client.on('ready', async () => {
       .setEmoji('a:checkmark:1011799454959022081')
   );
 
-  const channel = client.channels.cache.get('1031568019522072677');
-  if (channel?.type === ChannelType.GuildText) {
-    await channel.send({
-      components: [verifyRow],
-      embeds: [verifyEmbed]
-    });
-  }
+  const channel = client.channels.cache.get('1031568019522072677') as TextChannel;
+  await channel.send({
+    components: [verifyRow],
+    embeds: [verifyEmbed]
+  });
 });
 
 client.login(config.keys.discordBotToken);
