@@ -32,11 +32,13 @@ export async function weekly() {
         weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
       }
       const tag = ranks[guild[i].rank];
-      if (['[Active]', '[Crew]'].includes(tag)) {
-        if (weeklyGexp > 200000) {
+      if (['[Pro]', '[Active]', '[Member]'].includes(tag)) {
+        if (weeklyGexp > 250000) {
+          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Pro]', guild[i].uuid);
+        } else if (weeklyGexp > 150000) {
           db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Active]', guild[i].uuid);
         } else {
-          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Crew]', guild[i].uuid);
+          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Member]', guild[i].uuid);
         }
       } else {
         db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(tag, guild[i].uuid);
