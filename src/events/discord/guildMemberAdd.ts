@@ -13,7 +13,7 @@ async function execute(client: Client, member: GuildMember) {
       | Need help?**\n \`•\` Feel free to open a ticket in <#867160066704146482>\n\n<:hypixel:968022561940209664> [Hypixel \
       Forum Post](https://dominance.cf/forums) ㅤㅤ<:twitter:968021865064988742> [Twitter Page](https://twitter.com/MatrixHypixel)\
       ㅤㅤ<:twitch:968022010498273280> [Twitch Channel](https://www.twitch.tv/matrix_guild)`);
-  await channels.welcomeChannel.send({ content: member.toString(), embeds: [embed] });
+  await channels.welcome.send({ content: member.toString(), embeds: [embed] });
 }
 
 export default execute;
