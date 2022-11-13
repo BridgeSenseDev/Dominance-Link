@@ -86,7 +86,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       ]
     });
   } else if (msg.includes(' has muted ')) {
-    await channels.guildLogsChannel.send({
+    await channels.guildLogs.send({
       files: [
         messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
@@ -94,7 +94,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       ]
     });
   } else if (msg.includes(' has unmuted ')) {
-    await channels.guildLogsChannel.send({
+    await channels.guildLogs.send({
       files: [
         messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
@@ -111,7 +111,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
-    await channels.guildLogsChannel.send({
+    await channels.guildLogs.send({
       files: [
         messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
@@ -145,7 +145,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
-    await channels.guildLogsChannel.send({
+    await channels.guildLogs.send({
       files: [
         messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`

@@ -1,4 +1,4 @@
-import getNetworth from 'skyhelper-networth';
+import { getNetworth } from 'skyhelper-networth';
 import { removeSectionSymbols, abbreviateNumber, formatNumber, uuidToName } from './utils.js';
 import config from '../config.json' assert { type: 'json' };
 import { levelingXp } from './constants.js';
