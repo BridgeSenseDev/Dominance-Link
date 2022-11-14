@@ -52,7 +52,7 @@ async function execute(client: Client) {
   channelUpdate(client);
   autoRejoin();
   database();
-  weekly();
+  weekly(client);
   gsrun(sheet, client);
   startBot();
   unverified();

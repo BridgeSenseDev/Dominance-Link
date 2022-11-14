@@ -2,10 +2,11 @@ import { schedule } from 'node-cron';
 import { google } from 'googleapis';
 import Database from 'better-sqlite3';
 import { JWT } from 'google-auth-library';
-import { Client, Guild, Role } from 'discord.js';
+import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { nameColor, uuidToName } from './utils.js';
+import { doubleDigits, formatNumber, nameColor, uuidToName } from './utils.js';
 import { ranks, roles } from './constants.js';
+import { channels } from '../events/discord/ready.js';
 
 const db = new Database('guild.db');
 
@@ -21,7 +22,7 @@ sheet.authorize((err) => {
   }
 });
 
-export async function weekly() {
+export async function weekly(client: Client) {
   schedule('00 50 11 * * 0', async () => {
     const guild = (
       await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
@@ -44,6 +45,49 @@ export async function weekly() {
         db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(tag, guild[i].uuid);
       }
     }
+  });
+
+  schedule('00 55 11 * * 0', async () => {
+    let proDesc = '';
+    let activeDesc = '';
+    const pro = db
+      .prepare(
+        'SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC'
+      )
+      .all('[Pro]');
+    const active = db
+      .prepare(
+        'SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC'
+      )
+      .all('[Active]');
+    for (let i = 0; i < pro.length; i += 1) {
+      if (pro[i].discord !== null) {
+        proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} (${await client.users.fetch(pro[i].discord)}) - ${formatNumber(pro[i].weeklyGexp)}`;
+      } else {
+        proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} - ${formatNumber(pro[i].weeklyGexp)}`;
+      }
+    }
+    for (let i = 0; i < active.length; i += 1) {
+      if (active[i].discord !== null) {
+        activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} (${await client.users.fetch(active[i].discord)}) - ${formatNumber(active[i].weeklyGexp)}`;
+      } else {
+        activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} - ${formatNumber(active[i].weeklyGexp)}`;
+      }
+    }
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    const previous = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${(date.getFullYear())}`;
+    date.setDate(date.getDate() - 6);
+    const prevWeek = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.discordGray)
+      .setTitle(`Weekly Roles Update ${previous} - ${prevWeek}`)
+      .setDescription(
+        `Congrats to the following **PRO** members${proDesc}\n\nCongrats to the following **ACTIVE** members${activeDesc}\n\n**Detailed ` +
+          `stats can be found in https://dominance.cf/sheets**`
+      )
+      .setImage(config.guild.banner);
+    await channels.announcements.send({ embeds: [embed] })
   });
 }
 
