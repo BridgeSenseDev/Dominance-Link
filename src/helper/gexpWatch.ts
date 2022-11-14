@@ -3,6 +3,7 @@ import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
 import { channels } from '../events/discord/ready.js';
+import { doubleDigits } from './utils.js';
 
 const db = new Database('guild.db');
 
@@ -17,13 +18,6 @@ function gexpGained(gained: number): [string, number] {
     color = config.colors.red;
   }
   return [desc, color];
-}
-
-function doubleDigits(number: number) {
-  if (number.toString().length === 1) {
-    return `0${number}`;
-  }
-  return number;
 }
 
 export default async function gexpWatch() {

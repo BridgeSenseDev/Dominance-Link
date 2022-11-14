@@ -196,3 +196,10 @@ export function nameColor(player: any) {
   }
   return `§7${player.displayname}`;
 }
+
+export function doubleDigits(number: number) {
+  if (number.toString().length === 1) {
+    return `0${number}`;
+  }
+  return number;
+}

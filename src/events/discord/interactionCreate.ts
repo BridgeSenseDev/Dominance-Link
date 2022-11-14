@@ -191,7 +191,7 @@ async function execute(client: Client, interaction: Interaction) {
                 inline: true
               }
             );
-          await channels.applicationLogsChannel.send({ embeds: [applicationEmbed] });
+          await channels.applicationLogs.send({ embeds: [applicationEmbed] });
           await interaction.editReply('Application accepted');
           await interaction.message.delete();
         });
@@ -397,7 +397,7 @@ async function execute(client: Client, interaction: Interaction) {
             .setLabel('Deny')
             .setEmoji('a:across:986170696512204820')
         );
-      await channels.applicationsChannel.send({ components: [row], embeds: [embed] });
+      await channels.applications.send({ components: [row], embeds: [embed] });
       await interaction.editReply({ content: 'Your application was received successfully!' });
     }
   }

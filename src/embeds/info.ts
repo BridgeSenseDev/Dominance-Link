@@ -43,7 +43,7 @@ client.on('ready', async () => {
       text: `Updated ${formatDate(new Date())}`,
       iconURL: config.guild.icon
     })
-    .setImage('https://cdn.discordapp.com/attachments/986281342457237624/1032299536162492426/Dominace_Banner.png');
+    .setImage(config.guild.banner);
 
   const channel = client.channels.cache.get('1031245971662835834') as TextChannel;
   await channel.send({ embeds: [rulesEmbed, guideEmbed] });
