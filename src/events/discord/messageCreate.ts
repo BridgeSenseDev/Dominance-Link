@@ -13,7 +13,7 @@ export default async function execute(client: Client, message: Message) {
   if (message.content.toLowerCase().includes('dominance')) {
     await message.react(':dominance:1033300891597557830');
   }
-  if (message.channel.id === channels.guildLogs.id) {
+  if (message.channel.id === channels.chatLogs.id) {
     await chat(message.content);
   } else if (message.channel.id === channels.minecraftLink.id) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
