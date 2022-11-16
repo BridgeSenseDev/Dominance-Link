@@ -58,13 +58,6 @@ async function execute(client: Client) {
   unverified();
   players();
   leaderboards();
-
-  // Music
-  const voiceChannel = client.channels.cache.get(config.channels.music);
-  await client.distube.play(
-    voiceChannel,
-    'https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4FyS8kM?si=86cc479f1d954174'
-  );
 }
 
 export default execute;
