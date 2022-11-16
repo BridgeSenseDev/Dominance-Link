@@ -7,6 +7,7 @@ import config from '../config.json' assert { type: 'json' };
 import { doubleDigits, formatNumber, nameColor, uuidToName } from './utils.js';
 import { ranks, roles } from './constants.js';
 import { channels } from '../events/discord/ready.js';
+import { chat } from './workerHandler.js';
 
 const db = new Database('guild.db');
 
@@ -51,32 +52,32 @@ export async function weekly(client: Client) {
     let proDesc = '';
     let activeDesc = '';
     const pro = db
-      .prepare(
-        'SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC'
-      )
+      .prepare('SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC')
       .all('[Pro]');
     const active = db
-      .prepare(
-        'SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC'
-      )
+      .prepare('SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC')
       .all('[Active]');
     for (let i = 0; i < pro.length; i += 1) {
       if (pro[i].discord !== null) {
-        proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} (${await client.users.fetch(pro[i].discord)}) - ${formatNumber(pro[i].weeklyGexp)}`;
+        proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} (${await client.users.fetch(
+          pro[i].discord
+        )}) - ${formatNumber(pro[i].weeklyGexp)}`;
       } else {
         proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} - ${formatNumber(pro[i].weeklyGexp)}`;
       }
     }
     for (let i = 0; i < active.length; i += 1) {
       if (active[i].discord !== null) {
-        activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} (${await client.users.fetch(active[i].discord)}) - ${formatNumber(active[i].weeklyGexp)}`;
+        activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} (${await client.users.fetch(
+          active[i].discord
+        )}) - ${formatNumber(active[i].weeklyGexp)}`;
       } else {
         activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} - ${formatNumber(active[i].weeklyGexp)}`;
       }
     }
     const date = new Date();
     date.setDate(date.getDate() - 1);
-    const previous = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${(date.getFullYear())}`;
+    const previous = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
     date.setDate(date.getDate() - 6);
     const prevWeek = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
     const embed = new EmbedBuilder()
@@ -87,7 +88,7 @@ export async function weekly(client: Client) {
           `stats can be found in https://dominance.cf/sheets**`
       )
       .setImage(config.guild.banner);
-    await channels.announcements.send({ embeds: [embed] })
+    await channels.announcements.send({ embeds: [embed] });
   });
 }
 
@@ -204,6 +205,19 @@ export async function players() {
         if (!['[Leader]', '[GM]'].includes(data.tag) && member !== undefined) {
           const ign = await uuidToName(data.uuid);
           await member.roles.add(guild.roles.cache.get(roles['[Member]']) as Role);
+          if (data.targetRank !== null && data.tag !== '[Staff]' && data.targetRank !== data.tag) {
+            if (data.targetRank === '[Pro]') {
+              await chat(`/g promote ${ign}`);
+            } else if (data.targetRank === '[Active]') {
+              if (data.tag === '[Member]') {
+                await chat(`/g promote ${ign}`);
+              } else if (data.tag === '[Pro]') {
+                await chat(`/g demote ${ign}`);
+              }
+            } else if (data.targetRank === '[Member]') {
+              await chat(`/g demote ${ign}`);
+            }
+          }
           if (!member.displayName.includes(ign)) {
             await member.setNickname(ign);
           }
