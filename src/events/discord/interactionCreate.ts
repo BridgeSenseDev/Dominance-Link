@@ -144,7 +144,7 @@ async function execute(client: Client, interaction: Interaction) {
       const user = await client.users.fetch(discordId);
       (interaction.guild as Guild).channels
         .create({
-          name: `🔴 ${name}`,
+          name: `⌛┃${name}`,
           type: ChannelType.GuildText,
           parent: '1020948893204217856'
         })
@@ -158,11 +158,10 @@ async function execute(client: Client, interaction: Interaction) {
             .setColor(config.colors.green)
             .setTitle(`Congrats ${name}, your application has been accepted!`)
             .setDescription(
-              '**How to get started:**\n`1.` **Join The Guild**\nYou can get invited to the guild at anytime without ' +
-                'staff. Just type `/msg DominanceLink .` or if you are muted, type `/immuted DominanceLink`\n\n`2.` **Familiarize Yourself**' +
-                "\nHang out with other guild members in <#1031234201279807519> or talk in-game using <#1016734361472729088>. Don't " +
-                'miss out on weekly announcements in <#1031233510817681478>\n\n`3.` **Confused?**\nFeel free to ask any questions here, ' +
-                'only ping staff if needed!'
+              `**How to get started:**\n${config.emojis.bullet} **Join The Guild**\nYou can be invited to the guild anytime without ` +
+                `staff. Just type \`/msg DominanceLink .\` in-game or if you are muted, type \`/immuted DominanceLink\`\n\n` +
+                `You won't be able to see guild channels until you have joined in-game\n\n${config.emojis.bullet} **Confused?**\n` +
+                `Feel free to ask any questions here, only ping staff if needed!`
             )
             .setThumbnail(
               `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
@@ -213,8 +212,8 @@ async function execute(client: Client, interaction: Interaction) {
             value: 'Being a guild hopper'
           },
           {
-            label: 'Being a known hacker/cheater',
-            value: 'Being a known hacker/cheater'
+            label: 'Being a known hacker / cheater',
+            value: 'Being a known hacker / cheater'
           },
           {
             label: 'Being toxic',
@@ -270,69 +269,51 @@ async function execute(client: Client, interaction: Interaction) {
         if (name === undefined) {
           const embed = new EmbedBuilder()
             .setColor(config.colors.red)
-            .setTitle('Error')
+            .setTitle('Verification Unsuccessful')
             .setDescription(`<a:across:986170696512204820> **${ign}** is an invalid IGN`);
           await interaction.editReply({ embeds: [embed] });
           return;
         }
-        const embed = new EmbedBuilder().setColor(config.colors.red).setTitle('Error')
-          .setDescription(`<a:across:986170696512204820> **${name}** doesn't have a discord linked on hypixel\nPlease link your social media\
-                    following [this](https://www.youtube.com/watch?v=gqUPbkxxKLI&feature=emb_title) tutorial`);
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Verification Unsuccessful')
+          .setDescription(
+            `<a:across:986170696512204820> **${name}** doesn't have a discord linked on hypixel\nPlease link your social media` +
+              `following [this tutorial](https://www.youtube.com/watch?v=gqUPbkxxKLI&feature=emb_title)`
+          );
         await interaction.editReply({ embeds: [embed] });
         return;
       }
       if (disc === interaction.user.tag) {
+        let guildInfo;
         await member.roles.remove(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         await member.roles.add(interaction.guild!.roles.cache.get('445669382539051008') as Role);
         const { guild } = await (
           await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)
         ).json();
         if (guild === null) {
-          db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
-          db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
-          const embed = new EmbedBuilder()
-            .setColor(config.colors.green)
-            .setTitle('Successful')
-            .setDescription(
-              `<a:atick:986173414723162113> Verification successful, **${name}** is not in Dominance\n<:add:1005843961652453487>\
-                      Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&907911526118223912>`
-            )
-            .setThumbnail(
-              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-            );
-          await interaction.editReply({ embeds: [embed] });
+          guildInfo = 'is not in Dominance';
         } else if (guild.name_lower === 'dominance') {
-          await member.roles.add(interaction.guild!.roles.cache.get('1031926129822539786') as Role);
-          db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
-          db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
-          const embed = new EmbedBuilder()
-            .setColor(config.colors.green)
-            .setTitle('Successful')
-            .setDescription(
-              `<a:atick:986173414723162113> Verification successful, **${name}** is in Dominance\n<:add:1005843961652453487> Added: \
-                        <@&445669382539051008>, <@&753172820133150772>\n<:minus:1005843963686686730> Removed: <@&907911526118223912>`
-            )
-            .setThumbnail(
-              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-            );
-          await interaction.editReply({ embeds: [embed] });
+          await member.roles.add(interaction.guild!.roles.cache.get(roles['[Member]']) as Role);
+          guildInfo = 'is in Dominance';
         } else {
-          db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
-          db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
-          const embed = new EmbedBuilder()
-            .setColor(config.colors.green)
-            .setTitle('Successful')
-            .setDescription(
-              `<a:atick:986173414723162113> Verification successful, **${name}** is not in Dominance\n<:add:1005843961652453487>\
-                        Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&907911526118223912>`
-            )
-            .setThumbnail(
-              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-            );
-          await interaction.editReply({ embeds: [embed] });
+          guildInfo = 'is not in Dominance';
         }
+        db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
+        db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.green)
+          .setTitle('Verification Successful')
+          .setDescription(
+            `<a:atick:986173414723162113> **${name}** ${guildInfo}\n<:add:1005843961652453487>\
+                    Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&907911526118223912>`
+          )
+          .setThumbnail(
+            `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+          );
+        await interaction.editReply({ embeds: [embed] });
       } else {
-        const embed = new EmbedBuilder().setColor(config.colors.red).setTitle('Error')
+        const embed = new EmbedBuilder().setColor(config.colors.red).setTitle('Verification Unsuccessful')
           .setDescription(`<a:across:986170696512204820>${name} has a different discord account linked on hypixel\nThe discord tag **${disc}**\
                         linked on hypixel does not match your discord tag **${interaction.user.tag}**`);
         await interaction.editReply({ embeds: [embed] });
@@ -350,16 +331,16 @@ async function execute(client: Client, interaction: Interaction) {
       const requirementData = await requirements(uuid, playerData);
       const name = await uuidToName(uuid);
 
-      const embed = new EmbedBuilder()
+      const applicationEmbed = new EmbedBuilder()
         .setColor(requirementData.color)
         .setTitle(`${interaction.user.tag}'s Application`)
         .setThumbnail(
           `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
         )
         .setDescription(
-          `<:keycap_1_3d:1029711346297737277> **What games do you mainly play?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> \
-        **Why should we accept you? (4 sentences)**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> 
-        **Do you know anyone from the guild?**\n${q3}\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n${requirementData.requirementEmbed}`
+          `<:keycap_1_3d:1029711346297737277> **What games do you mainly play?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> ` +
+            `**Why should we accept you? (4 sentences)**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> **Do you know anyone from ` +
+            `the guild?**\n${q3}\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n${requirementData.requirementEmbed}`
         )
         .addFields(
           { name: '<:user:1029703318924165120> IGN: ', value: name, inline: true },
@@ -397,8 +378,20 @@ async function execute(client: Client, interaction: Interaction) {
             .setLabel('Deny')
             .setEmoji('a:across:986170696512204820')
         );
-      await channels.applications.send({ components: [row], embeds: [embed] });
-      await interaction.editReply({ content: 'Your application was received successfully!' });
+      await channels.applications.send({ components: [row], embeds: [applicationEmbed] });
+      const replyEmbed = new EmbedBuilder()
+        .setColor(requirementData.color)
+        .setTitle(`${interaction.user.tag}'s application has been received`)
+        .setThumbnail(
+          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+        )
+        .setDescription(
+          `<:keycap_1_3d:1029711346297737277> **What games do you mainly play?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> ` +
+            `**Why should we accept you? (4 sentences)**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> **Do you know anyone from the ` +
+            `guild?**\n${q3}\n\n════ ⋆★⋆ ════\n\n**[Info]**\nApplications usually receive a response within 24 hours\nYou will be ` +
+            `**pinged** in this server if you have been accepted\nYou will receive a dm if you are rejected **unless** your dm's are closed`
+        );
+      await interaction.editReply({ embeds: [replyEmbed] });
     }
   }
 }
