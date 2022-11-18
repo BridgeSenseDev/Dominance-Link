@@ -1,6 +1,6 @@
-import SpotifyPlugin from '@distube/spotify';
+import { SpotifyPlugin } from '@distube/spotify';
 import { Client, Collection, REST, Routes } from 'discord.js';
-import DisTube from 'distube';
+import { DisTube } from 'distube';
 import fs from 'fs';
 import config from '../config.json' assert { type: 'json' };
 
@@ -19,7 +19,7 @@ export default async function discordCommands(client: Client) {
   const commands = [];
 
   for (const file of commandFiles) {
-    const command = await import(`./slashCommands/${file}`);
+    const command = await import(`../slashCommands/${file}`);
     commands.push(command.data.toJSON());
     if (command.data.name) {
       client.commands.set(command.data.name, command);
