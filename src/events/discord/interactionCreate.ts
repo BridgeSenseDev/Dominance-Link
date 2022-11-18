@@ -20,21 +20,9 @@ import { nameToUuid, uuidToName } from '../../helper/utils.js';
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
-import { StringObject } from '../../types/global.d.js';
+import { roles } from '../../helper/constants.js';
 
 const db = new Database('guild.db');
-
-const roles: StringObject = {
-  notifications: '789800580314824744',
-  polls: '1039191632207151104',
-  qotw: '829991529857810452',
-  events: '655711286755065856',
-  bot_updates: '1039190833552961538',
-  bedwars: '903995572392984576',
-  duels: '903996109096103986',
-  skyblock: '903996220551360642',
-  skywars: '903996253589880832'
-};
 
 async function execute(client: Client, interaction: Interaction) {
   const member = interaction.member as GuildMember;
