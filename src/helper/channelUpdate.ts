@@ -1,7 +1,7 @@
 import { ActivityType, Client } from 'discord.js';
 import { getLevel, sleep } from './utils.js';
 import config from '../config.json' assert { type: 'json' };
-import { chat } from '../helper/workerHandler.js';
+import { chat } from '../handlers/workerHandler.js';
 import { channels } from '../events/discord/ready.js';
 
 async function channelUpdate(client: Client) {

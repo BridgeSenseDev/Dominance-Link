@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs';
 import config from '../../config.json' assert { type: 'json' };
-import { chat } from '../../helper/workerHandler.js';
+import { chat } from '../../handlers/workerHandler.js';
 import { channels } from '../discord/ready.js';
 
 let emittedEvent = false;

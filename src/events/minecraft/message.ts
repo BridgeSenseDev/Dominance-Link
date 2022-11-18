@@ -3,7 +3,7 @@ import Database from 'better-sqlite3';
 import { nameToUuid } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
-import { chat } from '../../helper/workerHandler.js';
+import { chat } from '../../handlers/workerHandler.js';
 import { channels } from '../discord/ready.js';
 import { NumberObject } from '../../types/global.d.js';
 

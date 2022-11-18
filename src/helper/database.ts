@@ -7,7 +7,7 @@ import config from '../config.json' assert { type: 'json' };
 import { doubleDigits, formatNumber, nameColor, uuidToName } from './utils.js';
 import { ranks, roles } from './constants.js';
 import { channels } from '../events/discord/ready.js';
-import { chat } from './workerHandler.js';
+import { chat } from '../handlers/workerHandler.js';
 
 const db = new Database('guild.db');
 

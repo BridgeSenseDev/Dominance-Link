@@ -5,7 +5,7 @@ import { database, gsrun, players, sheet, weekly } from '../../helper/database.j
 import gexpWatch from '../../helper/gexpWatch.js';
 import unverified from '../../helper/unverified.js';
 import channelUpdate from '../../helper/channelUpdate.js';
-import { autoRejoin, startBot } from '../../helper/workerHandler.js';
+import { autoRejoin, startBot } from '../../handlers/workerHandler.js';
 import config from '../../config.json' assert { type: 'json' };
 import leaderboards from '../../helper/leaderboards.js';
 

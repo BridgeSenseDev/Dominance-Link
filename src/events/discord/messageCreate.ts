@@ -2,7 +2,7 @@ import { Client, EmbedBuilder, Message, Role } from 'discord.js';
 import Database from 'better-sqlite3';
 import { formatMentions, uuidToName } from '../../helper/utils.js';
 import config from '../../config.json' assert { type: 'json' };
-import { chat } from '../../helper/workerHandler.js';
+import { chat } from '../../handlers/workerHandler.js';
 import { channels } from './ready.js';
 
 const db = new Database('guild.db');
