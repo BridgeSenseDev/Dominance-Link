@@ -34,7 +34,7 @@ export async function weekly(client: Client) {
         weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
       }
       const tag = ranks[guild[i].rank];
-      if (['[Pro]', '[Active]', '[Member]'].includes(tag)) {
+      if (['[Staff]', '[Pro]', '[Active]', '[Member]'].includes(tag)) {
         if (weeklyGexp > 250000) {
           db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Pro]', guild[i].uuid);
         } else if (weeklyGexp > 150000) {
