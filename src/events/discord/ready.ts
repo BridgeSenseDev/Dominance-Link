@@ -27,7 +27,7 @@ if (fileURLToPath(import.meta.url).slice(-2) === 'js') {
   worker = new Worker(new URL('../../helper/worker.ts', import.meta.url));
 }
 
-async function execute(client: Client) {
+export default async function execute(client: Client) {
   console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
 
   for (let i = 0; i < Object.keys(config.messages).length; i += 1) {
@@ -60,5 +60,4 @@ async function execute(client: Client) {
   leaderboards();
 }
 
-export default execute;
 export { worker, channels, messages };

@@ -24,7 +24,7 @@ import { roles } from '../../helper/constants.js';
 
 const db = new Database('guild.db');
 
-async function execute(client: Client, interaction: Interaction) {
+export default async function execute(client: Client, interaction: Interaction) {
   const member = interaction.member as GuildMember;
   if (interaction.isChatInputCommand()) {
     const command = client.commands.get(interaction.commandName);
@@ -383,5 +383,3 @@ async function execute(client: Client, interaction: Interaction) {
     }
   }
 }
-
-export default execute;

@@ -88,7 +88,7 @@ export async function weekly(client: Client) {
           `stats can be found in https://dominance.cf/sheets**`
       )
       .setImage(config.guild.banner);
-    await channels.announcements.send({ embeds: [embed] });
+    await channels.announcements.send({ content: '<@&1031926129822539786>', embeds: [embed] });
   });
 }
 
