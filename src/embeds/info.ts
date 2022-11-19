@@ -27,17 +27,17 @@ client.on('ready', async () => {
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Dominance Guide', iconURL: config.guild.icon })
     .setDescription(
-      `════ ⋆★⋆ ════\n\n**[FAQ]**\n\`Q:\` **How many times can I rejoin the guild?**\n> There is no limit, but you have \
-    to wait before reapplying\n\n\`Q:\` **Where can I apply?**\n> <#1017099269372657724>\n\n\`Q:\` **How do I rankup once in the \
-    guild?**\n> Learn about guild ranks in <#660448787147390977>\n\n\`Q:\` **How much GEXP do I need to get every week?**\n> \
-    ${config.guild.gexpReq} GEXP per week\n\n\`Q:\` **Can public members participate in events**?\n> Yes\n\n════ ⋆★⋆ ════\n\n**\
-    [Socials]**\n<:discord:963609407390883860> [Discord Invite](https://dominance.cf/discord)\n<:twitter:968021865064988742> \
-    [Twitter](https://twitter.com/MatrixHypixel)\n<:twitch:968022010498273280> [Twitch Channel](https://www.twitch.tv/matrix_guild)\n\
-    <:hypixel:968022561940209664> [Hypixel Forum Post](https://dominance.cf/forums)\n\n════ ⋆★⋆ ════\n\n**[Guild Art]**\n\
-    :white_large_square: [Light Background Cape](https://bit.ly/3Klyt79)\n:black_large_square: [Dark Background Cape](https://bit.ly/3ueDmte)\
-    \n:purple_square: [Pink Cape](https://bit.ly/3jb0nXz)\n:yellow_square: [Yellow Cape White Background](https://bit.ly/3udsd) \
-    (By @Lennos#3244)\n:yellow_square: [Yellow Cape Black Background](https://bit.ly/3Jdkajx) (By @Lennos#3244)\n:frame_photo: \
-    [Dominance Pack 16x](https://pvprp.com/pack?p=10795&or=profile) (By <@818468511612403772>)\n\n════ ⋆★⋆ ════`
+      `════ ⋆★⋆ ════\n\n**[FAQ]**\n\`Q:\` **How many times can I rejoin the guild?**\n> There is no limit, but you have to wait ` +
+        `before reapplying\n\n\`Q:\` **Where can I apply?**\n> <#1017099269372657724>\n\n\`Q:\` **How do I rankup once in the ` +
+        `guild?**\n> Learn about guild ranks in <#660448787147390977>\n\n\`Q:\` **How much GEXP do I need to get every week?**\n> ` +
+        `${config.guild.gexpReq} GEXP per week\n\n\`Q:\` **Can public members participate in events**?\n> Yes\n\n════ ⋆★⋆ ════\n\n**` +
+        `[Socials]**\n<:discord:963609407390883860> [Discord Invite](https://dominance.cf/discord)\n<:twitter:968021865064988742> ` +
+        `[Twitter](https://twitter.com/MatrixHypixel)\n🌐 [Website](https://dominance.cf/)\n<:hypixel:968022561940209664> ` +
+        `[Hypixel Forum Post](https://dominance.cf/forums)\n\n════ ⋆★⋆ ════\n\n**[Guild Art]**\n:white_large_square: ` +
+        `[Light Background Cape](https://bit.ly/3Klyt79)\n:black_large_square: [Dark Background Cape](https://bit.ly/3ueDmte)` +
+        `\n:purple_square: [Pink Cape](https://bit.ly/3jb0nXz)\n:yellow_square: [Yellow Cape White Background](https://bit.ly/3udsd) ` +
+        `(By @Lennos#3244)\n:yellow_square: [Yellow Cape Black Background](https://bit.ly/3Jdkajx) (By @Lennos#3244)\n:frame_photo: ` +
+        `[Dominance Pack 16x](https://pvprp.com/pack?p=10795&or=profile) (By <@818468511612403772>)\n\n════ ⋆★⋆ ════`
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,
