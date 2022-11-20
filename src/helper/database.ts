@@ -5,7 +5,7 @@ import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage } from './utils.js';
+import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage, abbreviateNumber } from './utils.js';
 import { ranks, roles } from './constants.js';
 import { channels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
@@ -302,7 +302,16 @@ export async function players() {
 
       db.prepare(
         'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
-      ).run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, Math.round(networth * 100) / 100, Math.round(sa * 100) / 100, data.uuid);
+      ).run(
+        nameColor(player),
+        bwStars,
+        bwFkdr,
+        duelsWins,
+        duelsWlr,
+        abbreviateNumber(Math.round(networth * 100) / 100),
+        Math.round(sa * 100) / 100,
+        data.uuid
+      );
     }
     count += 1;
     if (count === 126) {
