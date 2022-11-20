@@ -104,8 +104,8 @@ export default async function leaderboards() {
     await sleep(3000);
     generateLeaderboard(messages.duelsWlr, 'duelsWlr');
     await sleep(3000);
-    generateLeaderboard(messages.duelsWlr, 'networth');
+    generateLeaderboard(messages.networth, 'networth');
     await sleep(3000);
-    generateLeaderboard(messages.duelsWlr, 'skillAverage');
+    generateLeaderboard(messages.skillAverage, 'skillAverage');
   }, 10 * 60 * 1000);
 }
