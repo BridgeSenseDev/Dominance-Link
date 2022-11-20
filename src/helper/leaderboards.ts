@@ -3,7 +3,7 @@ import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import Database from 'better-sqlite3';
 import { ButtonStyle, Message } from 'discord.js';
 import { rgbaColor } from './constants.js';
-import { formatNumber, sleep } from './utils.js';
+import { abbreviateNumber, formatNumber, sleep } from './utils.js';
 import { messages } from '../events/discord/ready.js';
 
 const db = new Database('guild.db');
@@ -52,7 +52,11 @@ async function generateLeaderboard(message: Message, order: string) {
   const leaderboard = [];
   const images = [];
 
-  if (order === 'playtime') {
+  if (order === 'networth') {
+    for (let i = 0; i < data.length; i += 1) {
+      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
+    }
+  } else if (order === 'playtime') {
     for (let i = 0; i < data.length; i += 1) {
       leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)} H`);
     }
