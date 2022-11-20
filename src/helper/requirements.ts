@@ -1,34 +1,6 @@
 import { getNetworth } from 'skyhelper-networth';
-import { removeSectionSymbols, abbreviateNumber, formatNumber, uuidToName } from './utils.js';
+import { removeSectionSymbols, abbreviateNumber, formatNumber, uuidToName, skillAverage } from './utils.js';
 import config from '../config.json' assert { type: 'json' };
-import { levelingXp } from './constants.js';
-
-async function xpToLevel(exp: number, cap: number) {
-  for (let i = 0; i < cap; i += 1) {
-    if (exp - levelingXp[i] > 0) {
-      exp -= levelingXp[i];
-    } else {
-      return i + exp / levelingXp[i];
-    }
-  }
-  return cap;
-}
-
-async function skillAverage(player: any) {
-  let levels = 0;
-  levels += await xpToLevel(player.experience_skill_farming, 60);
-  levels += await xpToLevel(player.experience_skill_mining, 60);
-  levels += await xpToLevel(player.experience_skill_combat, 60);
-  levels += await xpToLevel(player.experience_skill_foraging, 50);
-  levels += await xpToLevel(player.experience_skill_fishing, 50);
-  levels += await xpToLevel(player.experience_skill_enchanting, 60);
-  levels += await xpToLevel(player.experience_skill_alchemy, 50);
-  levels += await xpToLevel(player.experience_skill_taming, 50);
-  if (Number.isNaN(levels)) {
-    return 'No Skyblock Data / API Disabled';
-  }
-  return levels / 8;
-}
 
 function weeklyGexp(members: any, uuid: string) {
   let gexp = 0;
@@ -292,7 +264,7 @@ export default async function requirements(uuid: string, playerData: any) {
         Math.round(skyblock[0] * 100) / 100
       )} / 500m\`\n`;
     }
-    if (skyblock[1] === 'No Skyblock Data / API Disabled') {
+    if (skyblock[1] === 0) {
       requirementEmbed +=
         '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
     } else if (skyblock[1] >= 25) {

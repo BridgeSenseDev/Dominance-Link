@@ -89,17 +89,23 @@ export default async function leaderboards() {
         Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1
       ]
     );
-    await sleep(1000);
+    await sleep(3000);
     generateLeaderboard(messages.playtime, 'playtime');
-    await sleep(1000);
+    await sleep(3000);
     generateLeaderboard(messages.guildMessages, 'messages');
-    await sleep(1000);
+    await sleep(3000);
     generateLeaderboard(messages.bwStars, 'bwStars');
-    await sleep(1000);
+    await sleep(3000);
     generateLeaderboard(messages.bwFkdr, 'bwFkdr');
-    await sleep(1000);
+    await sleep(3000);
     generateLeaderboard(messages.duelsWins, 'duelsWins');
-    await sleep(1000);
+    await sleep(3000);
     generateLeaderboard(messages.duelsWlr, 'duelsWlr');
-  }, 5 * 60 * 1000);
+    await sleep(3000);
+    generateLeaderboard(messages.duelsWlr, 'duelsWlr');
+    await sleep(3000);
+    generateLeaderboard(messages.duelsWlr, 'networth');
+    await sleep(3000);
+    generateLeaderboard(messages.duelsWlr, 'skillAverage');
+  }, 10 * 60 * 1000);
 }

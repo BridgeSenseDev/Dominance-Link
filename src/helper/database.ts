@@ -1,10 +1,11 @@
 import { schedule } from 'node-cron';
 import { google } from 'googleapis';
 import Database from 'better-sqlite3';
+import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { doubleDigits, formatNumber, nameColor, uuidToName } from './utils.js';
+import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage } from './utils.js';
 import { ranks, roles } from './constants.js';
 import { channels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
@@ -275,13 +276,33 @@ export async function players() {
       if (Number.isNaN(Number(duelsWlr))) {
         duelsWlr = 0;
       }
-      db.prepare(
-        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
-      ).run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
+      let profileData;
+      let bankBalance;
+      let networth;
+      let sa = 0;
+      const { profiles } = await (
+        await fetch(`https://api.hypixel.net/skyblock/profiles?key=${config.keys.hypixelApiKey}&uuid=${data.uuid}`)
+      ).json();
+      if (profiles === null) {
+        networth = 0;
+      } else {
+        profiles.forEach((i: any) => {
+          if (i.selected === true) {
+            profileData = i.members[data.uuid];
+            bankBalance = i.banking?.balance;
+          }
+        });
+        if (profileData === undefined) {
+          networth = 0;
+        } else {
+          ({ networth } = await getNetworth(profileData, bankBalance));
+          sa = await skillAverage(profileData);
+        }
+      }
 
       db.prepare(
-        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
-      ).run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
+        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
+      ).run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, Math.round(networth * 100) / 100, Math.round(sa * 100) / 100, data.uuid);
     }
     count += 1;
     if (count === 126) {
