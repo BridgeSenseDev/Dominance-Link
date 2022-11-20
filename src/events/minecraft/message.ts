@@ -101,7 +101,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
-  } else if (msg.includes('left the guild!') || msg.includes('was promoted') || msg.includes('was kicked')) {
+  } else if (msg.includes('left the guild!') || msg.includes('was promoted') || msg.includes('was kicked') || msg.includes('was demoted')) {
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
