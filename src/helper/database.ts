@@ -195,18 +195,18 @@ export async function players() {
   const proRole = guild.roles.cache.get(roles['[Pro]']) as Role;
   const staffRole = guild.roles.cache.get(roles['[Staff]']) as Role;
   let count = 0;
-  setInterval(async() => {
-  const discordId = db
-    .prepare('SELECT discord FROM guildMembers')
-    .all()
-    .map((i) => i.discord);
-  const members = Array.from(memberRole.members);
-  for (let i = 0; i < members.length; i += 1) {
-    if (!discordId.includes(members[i][0])) {
-      await members[i][1].roles.remove(memberRole);
+  setInterval(async () => {
+    const discordId = db
+      .prepare('SELECT discord FROM guildMembers')
+      .all()
+      .map((i) => i.discord);
+    const members = Array.from(memberRole.members);
+    for (let i = 0; i < members.length; i += 1) {
+      if (!discordId.includes(members[i][0])) {
+        await members[i][1].roles.remove(memberRole);
+      }
     }
-  }
-  }, 5 * 60 * 1000)
+  }, 5 * 60 * 1000);
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
     let member;
