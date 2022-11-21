@@ -5,7 +5,7 @@ import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage } from './utils.js';
+import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage, sleep } from './utils.js';
 import { ranks, roles } from './constants.js';
 import { channels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
@@ -101,6 +101,7 @@ export async function database() {
     ).guild.members;
     try {
       db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[0].expHistory)[0]}" INTEGER`).run();
+      await sleep(1000);
     } catch (err) {
       // Continue regardless of error
     }
@@ -129,7 +130,7 @@ export async function database() {
     }
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
     db.prepare('DELETE FROM guildMembers WHERE uuid IS NULL').run();
-  }, 5 * 60 * 1000);
+  }, 1 * 60 * 1000);
 }
 
 export async function gsrun(sheets: JWT, client: Client) {
@@ -189,10 +190,23 @@ export async function gsrun(sheets: JWT, client: Client) {
 export async function players() {
   const client = (await import('../index.js')).default;
   const guild = client.guilds.cache.get('242357942664429568') as Guild;
-  const active = guild.roles.cache.get(roles['[Active]']) as Role;
-  const pro = guild.roles.cache.get(roles['[Pro]']) as Role;
-  const staff = guild.roles.cache.get(roles['[Staff]']) as Role;
+  const memberRole = guild.roles.cache.get(roles['[Member]']) as Role;
+  const activeRole = guild.roles.cache.get(roles['[Active]']) as Role;
+  const proRole = guild.roles.cache.get(roles['[Pro]']) as Role;
+  const staffRole = guild.roles.cache.get(roles['[Staff]']) as Role;
   let count = 0;
+  setInterval(async() => {
+  const discordId = db
+    .prepare('SELECT discord FROM guildMembers')
+    .all()
+    .map((i) => i.discord);
+  const members = Array.from(memberRole.members);
+  for (let i = 0; i < members.length; i += 1) {
+    if (!discordId.includes(members[i][0])) {
+      await members[i][1].roles.remove(memberRole);
+    }
+  }
+  }, 5 * 60 * 1000)
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
     let member;
@@ -205,7 +219,7 @@ export async function players() {
         }
         if (!['[Leader]', '[GM]'].includes(data.tag) && member !== undefined) {
           const ign = await uuidToName(data.uuid);
-          await member.roles.add(guild.roles.cache.get(roles['[Member]']) as Role);
+          await member.roles.add(memberRole);
           if (data.targetRank !== null && data.tag !== '[Staff]' && data.targetRank !== data.tag) {
             if (data.targetRank === '[Pro]') {
               await chat(`/g promote ${ign}`);
@@ -226,16 +240,16 @@ export async function players() {
             await member.roles.add(guild.roles.cache.get(roles[data.tag]) as Role);
           }
           if (data.tag === '[Member]') {
-            await member.roles.remove(active);
-            await member.roles.remove(pro);
-            await member.roles.remove(staff);
+            await member.roles.remove(activeRole);
+            await member.roles.remove(proRole);
+            await member.roles.remove(staffRole);
           }
           if (data.tag === '[Active]') {
-            await member.roles.remove(pro);
-            await member.roles.remove(staff);
+            await member.roles.remove(proRole);
+            await member.roles.remove(staffRole);
           }
           if (data.tag === '[Pro]') {
-            await member.roles.remove(staff);
+            await member.roles.remove(staffRole);
           }
         }
       }
