@@ -1,11 +1,11 @@
 <br />
 <p align="center">
   <a href="https://dominance.cf/discord">
-    <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Dominance%20Logo%20Full.png" alt="Dominance" width="200" height="auto">
+    <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Dominace Banner.png" alt="Dominance" width="400" height="auto">
   </a>
 </p>
   <h1 align="center">
-   <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Permanent+Marker&size=40&pause=1000&color=40444b&center=true&vCenter=true&width=435&lines=Dominance+Link" alt="Typing SVG" /></a>
+   <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.herokuapp.com?font=Permanent+Marker&size=40&pause=1000&color=d0d0d0&center=true&vCenter=true&width=435&lines=Dominance+Link" alt="Typing SVG" /></a>
   </h1>
   
 <h3 align="center">
