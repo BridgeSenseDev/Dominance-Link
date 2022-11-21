@@ -181,7 +181,7 @@ export async function gsrun(sheets: JWT, client: Client) {
     };
     await gsapi.spreadsheets.values.clear({
       spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
-      range: 'Guild API!A2:V126'
+      range: 'Guild API!A2:X126'
     });
     await gsapi.spreadsheets.values.update(options);
   }, 6 * 60 * 1000);
