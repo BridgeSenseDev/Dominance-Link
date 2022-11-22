@@ -59,7 +59,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         await member.roles.add(roleId);
         msg = `<:add:1005843961652453487> <@&${roleId}>`;
       }
-      await interaction.reply({ content: msg, ephemeral: true });
+      await interaction.editReply({ content: msg });
     } else if (interaction.customId === 'requirements') {
       let uuid;
       let playerData;
