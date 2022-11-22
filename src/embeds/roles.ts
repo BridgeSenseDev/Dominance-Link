@@ -67,8 +67,8 @@ client.on('ready', async () => {
       .setStyle(ButtonStyle.Secondary)
       .setEmoji(':poll:1039179935966842940'),
     new ButtonBuilder()
-      .setCustomId('qotw')
-      .setLabel('QOTW')
+      .setCustomId('qotd')
+      .setLabel('QOTD')
       .setStyle(ButtonStyle.Primary)
       .setEmoji('a:aquestion:999684566220558507'),
     new ButtonBuilder()
