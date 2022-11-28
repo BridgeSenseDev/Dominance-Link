@@ -80,7 +80,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       username: 'Dominance',
       avatarURL: config.guild.icon,
       files: [
-        messageToImage(
+        await messageToImage(
           '§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------'
         )
       ]
@@ -88,7 +88,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   } else if (msg.includes(' has muted ')) {
     await channels.guildLogs.send({
       files: [
-        messageToImage(
+        await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
         )
       ]
@@ -96,7 +96,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   } else if (msg.includes(' has unmuted ')) {
     await channels.guildLogs.send({
       files: [
-        messageToImage(
+        await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
         )
       ]
@@ -111,14 +111,14 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       username: 'Dominance',
       avatarURL: config.guild.icon,
       files: [
-        messageToImage(
+        await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
         )
       ]
     });
     await channels.guildLogs.send({
       files: [
-        messageToImage(
+        await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
         )
       ]
@@ -145,14 +145,14 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       username: 'Dominance',
       avatarURL: config.guild.icon,
       files: [
-        messageToImage(
+        await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
         )
       ]
     });
     await channels.guildLogs.send({
       files: [
-        messageToImage(
+        await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
         )
       ]
@@ -180,7 +180,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
-      files: [messageToImage(rawMsg)]
+      files: [await messageToImage(rawMsg)]
     });
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
@@ -194,7 +194,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     await ocWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
-      files: [messageToImage(rawMsg)]
+      files: [await messageToImage(rawMsg)]
     });
     let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);

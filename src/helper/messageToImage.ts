@@ -1,10 +1,10 @@
-import { registerFont, createCanvas } from 'canvas';
+import { Canvas, FontLibrary } from 'skia-canvas';
 import { rgbaColor } from './constants.js';
 
-registerFont('./Uni Sans Heavy Regular.ttf', { family: 'Uni Sans' });
+FontLibrary.use('Uni Sans Heavy', './Uni Sans Heavy Regular.ttf');
 
 function getHeight(message: string) {
-  const canvas = createCanvas(1, 1);
+  const canvas = new Canvas(1, 1);
   const ctx = canvas.getContext('2d');
   const splitMessageSpace = message.split(' ');
   splitMessageSpace.forEach((msg, i) => {
@@ -30,9 +30,9 @@ function getHeight(message: string) {
   return height + 10;
 }
 
-export default function generateMessageImage(message: string) {
+export default async function generateMessageImage(message: string) {
   const canvasHeight = getHeight(message);
-  const canvas = createCanvas(1000, canvasHeight);
+  const canvas = new Canvas(1000, canvasHeight);
   const ctx = canvas.getContext('2d');
   const splitMessageSpace = message.split(' ');
   splitMessageSpace.forEach((msg, i) => {
@@ -60,5 +60,6 @@ export default function generateMessageImage(message: string) {
     ctx.fillText(currentMessage, width, height);
     width += ctx.measureText(currentMessage).width;
   });
-  return canvas.toBuffer();
+  const buffer = await canvas.toBuffer('png');
+  return buffer;
 }

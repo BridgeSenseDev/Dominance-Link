@@ -1,4 +1,4 @@
-import { registerFont, createCanvas } from 'canvas';
+import { Canvas, FontLibrary } from 'skia-canvas';
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import Database from 'better-sqlite3';
 import { ButtonStyle, Message } from 'discord.js';
@@ -7,10 +7,10 @@ import { abbreviateNumber, formatNumber, sleep } from './utils.js';
 import { messages } from '../events/discord/ready.js';
 
 const db = new Database('guild.db');
-registerFont('./MinecraftRegular-Bmg3.ttf', { family: 'Minecraft' });
+FontLibrary.use('Minecraft', './MinecraftRegular-Bmg3.ttf');
 
-function generateLeaderboardImage(message: string[]) {
-  const canvas = createCanvas(750, message.length * 39 + 6);
+async function generateLeaderboardImage(message: string[]) {
+  const canvas = new Canvas(750, message.length * 39 + 6);
   const ctx = canvas.getContext('2d');
   let width = 5;
   let height = 29;
@@ -44,7 +44,8 @@ function generateLeaderboardImage(message: string[]) {
     width = 5;
     height += 40;
   }
-  return canvas.toBuffer();
+  const buffer = await canvas.toBuffer('png');
+  return buffer;
 }
 
 async function generateLeaderboard(message: Message, order: string) {
@@ -66,7 +67,7 @@ async function generateLeaderboard(message: Message, order: string) {
     }
   }
   for (let i = 12; i < 130; i += 13) {
-    images.push(generateLeaderboardImage(leaderboard.slice(i - 12, i + 1)));
+    images.push(await generateLeaderboardImage(leaderboard.slice(i - 12, i + 1)));
   }
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
