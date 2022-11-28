@@ -65,7 +65,7 @@ async function generateLeaderboard(message: Message, order: string) {
       leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
     }
   }
-  for (let i = 12; i < 130; i ++3) {
+  for (let i = 12; i < 130; i += 3) {
     images.push(generateLeaderboardImage(leaderboard.slice(i - 12, i + 1)));
   }
 
