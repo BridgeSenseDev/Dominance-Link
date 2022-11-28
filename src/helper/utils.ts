@@ -81,7 +81,7 @@ export function getLevel(exp: number) {
   ];
   let level = 0;
 
-  for (let i = 0; i <= 1000; i += 1) {
+  for (let i = 0; i <= 1000; i++) {
     let need = 0;
     if (i >= expNeeded.length) {
       need = expNeeded[expNeeded.length - 1];
@@ -93,7 +93,7 @@ export function getLevel(exp: number) {
       return Math.round((level + exp / need) * 100) / 100;
     }
 
-    level += 1;
+    level++;
     exp -= need;
   }
   return 1000;
@@ -205,7 +205,7 @@ export function doubleDigits(number: number) {
 }
 
 async function xpToLevel(exp: number, cap: number) {
-  for (let i = 0; i < cap; i += 1) {
+  for (let i = 0; i < cap; i++) {
     if (exp - levelingXp[i] > 0) {
       exp -= levelingXp[i];
     } else {

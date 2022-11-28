@@ -14,7 +14,7 @@ function generateLeaderboardImage(message: string[]) {
   const ctx = canvas.getContext('2d');
   let width = 5;
   let height = 29;
-  for (let i = 0; i < 13; i += 1) {
+  for (let i = 0; i < 13; i ++) {
     let splitMessageSpace: string[];
     try {
       splitMessageSpace = message[i].split(' ');
@@ -53,19 +53,19 @@ async function generateLeaderboard(message: Message, order: string) {
   const images = [];
 
   if (order === 'networth') {
-    for (let i = 0; i < data.length; i += 1) {
+    for (let i = 0; i < data.length; i ++) {
       leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
     }
   } else if (order === 'playtime') {
-    for (let i = 0; i < data.length; i += 1) {
+    for (let i = 0; i < data.length; i ++) {
       leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)} H`);
     }
   } else {
-    for (let i = 0; i < data.length; i += 1) {
+    for (let i = 0; i < data.length; i ++) {
       leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
     }
   }
-  for (let i = 12; i < 130; i += 13) {
+  for (let i = 12; i < 130; i ++3) {
     images.push(generateLeaderboardImage(leaderboard.slice(i - 12, i + 1)));
   }
 

@@ -29,9 +29,9 @@ export async function weekly(client: Client) {
     const guild = (
       await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
     ).guild.members;
-    for (let i = 0; i < guild.length; i += 1) {
+    for (let i = 0; i < guild.length; i++) {
       let weeklyGexp = 0;
-      for (let j = 0; j < 7; j += 1) {
+      for (let j = 0; j < 7; j++) {
         weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
       }
       const tag = ranks[guild[i].rank];
@@ -58,7 +58,7 @@ export async function weekly(client: Client) {
     const active = db
       .prepare('SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC')
       .all('[Active]');
-    for (let i = 0; i < pro.length; i += 1) {
+    for (let i = 0; i < pro.length; i++) {
       if (pro[i].discord !== null) {
         proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} (${await client.users.fetch(
           pro[i].discord
@@ -67,7 +67,7 @@ export async function weekly(client: Client) {
         proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} - ${formatNumber(pro[i].weeklyGexp)}`;
       }
     }
-    for (let i = 0; i < active.length; i += 1) {
+    for (let i = 0; i < active.length; i++) {
       if (active[i].discord !== null) {
         activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} (${await client.users.fetch(
           active[i].discord
@@ -105,11 +105,11 @@ export async function database() {
     } catch (err) {
       // Continue regardless of error
     }
-    for (let i = 0; i < guild.length; i += 1) {
+    for (let i = 0; i < guild.length; i++) {
       members.push(guild[i].uuid);
       const tag = ranks[guild[i].rank];
       let weeklyGexp = 0;
-      for (let j = 0; j < 7; j += 1) {
+      for (let j = 0; j < 7; j++) {
         weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
       }
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime, tag) VALUES (?, ?, ?, ?)').run(
@@ -125,7 +125,7 @@ export async function database() {
       ).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
     }
     let placeholders = '?';
-    for (let i = 0; i < members.length - 1; i += 1) {
+    for (let i = 0; i < members.length - 1; i++) {
       placeholders += ', ?';
     }
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
@@ -141,8 +141,8 @@ export async function gsrun(sheets: JWT, client: Client) {
       await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
     ).guild.members;
     const array = [];
-    for (let i = data.length - 1; i >= 0; i -= 1) {
-      for (let j = Object.keys(data[i]).length; j >= 0; j -= 1) {
+    for (let i = data.length - 1; i >= 0; i--) {
+      for (let j = Object.keys(data[i]).length; j >= 0; j--) {
         if (
           /[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) &&
           !Object.keys(guild[0].expHistory).includes(Object.keys(data[i])[j])
@@ -201,7 +201,7 @@ export async function players() {
       .all()
       .map((i) => i.discord);
     const members = Array.from(memberRole.members);
-    for (let i = 0; i < members.length; i += 1) {
+    for (let i = 0; i < members.length; i++) {
       if (!discordId.includes(members[i][0])) {
         await members[i][1].roles.remove(memberRole);
       }
@@ -327,7 +327,7 @@ export async function players() {
         data.uuid
       );
     }
-    count += 1;
+    count++;
     if (count === 126) {
       count = 0;
     }

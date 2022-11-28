@@ -9,7 +9,7 @@ async function channelUpdate(client: Client) {
     await chat('/g online');
     // Presence
     let members = 0;
-    for (let i = 0; i < client.guilds.cache.size; i += 1) {
+    for (let i = 0; i < client.guilds.cache.size; i++) {
       members += client.guilds.cache.map((guild) => guild.memberCount)[i];
     }
     await client.user!.setPresence({

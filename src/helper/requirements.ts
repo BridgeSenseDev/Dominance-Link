@@ -6,7 +6,7 @@ function weeklyGexp(members: any, uuid: string) {
   let gexp = 0;
   Object.keys(members).forEach((member) => {
     if (uuid === members[member].uuid) {
-      for (let i = 0; i < 7; i += 1) {
+      for (let i = 0; i < 7; i++) {
         gexp += Number(Object.values(members[member].expHistory)[i]);
       }
     }

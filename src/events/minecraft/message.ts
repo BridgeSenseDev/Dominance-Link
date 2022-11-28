@@ -60,14 +60,14 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     }
   } else if (msg.includes('Offline Members:')) {
     let includes = 0;
-    for (let i = messageCache.length - 1; i >= 0; i -= 1) {
+    for (let i = messageCache.length - 1; i >= 0; i--) {
       if (
         messageCache[i].includes('Guild Name:') ||
         messageCache[i].includes('Total Members:') ||
         messageCache[i].includes('Online Members:') ||
         messageCache[i].includes('Offline Members:')
       )
-        includes += 1;
+        includes++;
       if (includes === 4) {
         global.guildOnline = messageCache.splice(i);
         break;
@@ -132,7 +132,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         headers: { 'X-Api-Key': config.keys.apiNinjasKey }
       })
     ).json();
-    for (let i = 0; i < funFacts.length; i += 1) {
+    for (let i = 0; i < funFacts.length; i++) {
       if (funFacts[i].fact.length < 150) {
         funFact = funFacts[i].fact;
         break;

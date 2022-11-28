@@ -3,7 +3,7 @@ import config from '../config.json' assert { type: 'json' };
 
 function formatMembers(message: string[] | string[][]) {
   let online = '';
-  for (let i = 1; i < message.length - 3; i += 1) {
+  for (let i = 1; i < message.length - 3; i++) {
     if (message[i].includes('-- ')) {
       message[i] = (message[i] as string).trim();
       if (i === 1) online += `**${message[i].slice(3, -3)}**\n`;
@@ -13,7 +13,7 @@ function formatMembers(message: string[] | string[][]) {
       }
     } else if (message[i].includes('●')) {
       message[i] = (message[i] as string).split(/\s+/);
-      for (let j = 0; j < message[i].length; j += 1) {
+      for (let j = 0; j < message[i].length; j++) {
         if (!(message[i][j].includes('●') || message[i][j].includes('[') || message[i][j] === '')) {
           online += `\`${message[i][j]}\`, `;
         }

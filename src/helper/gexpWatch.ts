@@ -29,7 +29,7 @@ export default async function gexpWatch() {
       `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=The%20Dawns%20Awakening`
     ];
     const guildGexp = [];
-    for (let i = 0; i < urls.length; i += 1) {
+    for (let i = 0; i < urls.length; i++) {
       // eslint-disable-next-line no-await-in-loop
       guildGexp.push((await (await fetch(urls[i])).json()).guild.exp);
     }
