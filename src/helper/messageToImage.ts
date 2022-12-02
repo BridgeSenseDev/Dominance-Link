@@ -1,7 +1,7 @@
 import { Canvas, FontLibrary } from 'skia-canvas';
 import { rgbaColor } from './constants.js';
 
-FontLibrary.use('Uni Sans Heavy', './Uni Sans Heavy Regular.ttf');
+FontLibrary.use('Uni Sans Heavy', './fonts/Uni Sans Heavy Regular.ttf');
 
 function getHeight(message: string) {
   const canvas = new Canvas(1, 1);

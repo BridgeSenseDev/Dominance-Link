@@ -7,7 +7,7 @@ import { abbreviateNumber, formatNumber, sleep } from './utils.js';
 import { messages } from '../events/discord/ready.js';
 
 const db = new Database('guild.db');
-FontLibrary.use('Minecraft', './MinecraftRegular-Bmg3.ttf');
+FontLibrary.use('Minecraft', './fonts/Minecraft Regular.ttf');
 
 async function generateLeaderboardImage(message: string[]) {
   const canvas = new Canvas(750, message.length * 39 + 6);
@@ -59,7 +59,17 @@ async function generateLeaderboard(message: Message, order: string) {
     }
   } else if (order === 'playtime') {
     for (let i = 0; i < data.length; i++) {
-      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)} H`);
+      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)}H`);
+    }
+  } else if (
+    order === 'weeklyGexp' ||
+    order ===
+      Object.keys(db.prepare('SELECT * FROM guildMembers').get())[
+        Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1
+      ]
+  ) {
+    for (let i = 0; i < data.length; i++) {
+      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
     }
   } else {
     for (let i = 0; i < data.length; i++) {
