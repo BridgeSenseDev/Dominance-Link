@@ -19,7 +19,7 @@
     "@discordjs/rest": "^1.4.0",
     "@discordjs/voice": "^0.14.0",
     "@distube/spotify": "^1.4.2",
-    "better-sqlite3": "^8.0.0",
+    "better-sqlite3": "^8.0.1",
     "discord.js": "^14.7.0",
     "distube": "^4.0.4",
     "ffmpeg-static": "^5.1.0",
