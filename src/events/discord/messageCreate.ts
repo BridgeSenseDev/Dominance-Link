@@ -4,10 +4,29 @@ import { formatMentions, uuidToName } from '../../helper/utils.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { channels } from './ready.js';
+import { StringObject } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
 
+const lastMessage: StringObject = {};
+
 export default async function execute(client: Client, message: Message) {
+  if (message.guildId !== '242357942664429568') return;
+  if (message.author.id.toString() in lastMessage) {
+    if (Date.now() / 1000 - Number(lastMessage[message.author.id]) >= 60) {
+      db.prepare('UPDATE members SET xp = xp + ? WHERE discord = ?').run(
+        Math.floor(Math.random() * 11 + 15),
+        message.author.id
+      );
+    }
+  } else {
+    db.prepare('UPDATE members SET xp = xp + ? WHERE discord = ?').run(
+      Math.floor(Math.random() * 11 + 15),
+      message.author.id
+    );
+  }
+  db.prepare('UPDATE members SET (messages) = messages + 1 WHERE discord = (?)').run(message.author.id);
+  lastMessage[message.author.id.toString()] = Math.floor(Date.now() / 1000).toString();
   if (message.author.bot) return;
   let uuid;
   if (message.content.toLowerCase().includes('dominance')) {
@@ -34,7 +53,7 @@ export default async function execute(client: Client, message: Message) {
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(message.author.id, uuid);
       user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     }
-    message.content = await formatMentions(client, message);
+    message.content = (await formatMentions(client, message))!;
     message.content = message.content.replace(/\n/g, '');
     let length;
     try {
@@ -67,7 +86,7 @@ export default async function execute(client: Client, message: Message) {
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(message.author.id, uuid);
       user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     }
-    message.content = await formatMentions(client, message);
+    message.content = (await formatMentions(client, message))!;
     message.content = message.content.replace(/\n/g, '');
     let length;
     try {
