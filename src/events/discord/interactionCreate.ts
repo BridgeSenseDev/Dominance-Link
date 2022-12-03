@@ -27,9 +27,11 @@ const db = new Database('guild.db');
 const names = db.prepare('SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC').all();
 const choices: string[] = [];
 for (let i = 0; i < names.length; i++) {
-  choices.push(
-    removeSectionSymbols(names[i].nameColor).split(' ')[removeSectionSymbols(names[i].nameColor).split(' ').length - 1]
-  );
+  if (names[i].nameColor !== null) {
+    choices.push(
+      removeSectionSymbols(names[i].nameColor).split(' ')[removeSectionSymbols(names[i].nameColor).split(' ').length - 1]
+    );
+  }
 }
 
 export default async function execute(client: Client, interaction: Interaction) {
