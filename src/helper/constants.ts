@@ -25,7 +25,11 @@ export const rgbaColor: StringObject = {
   c: 'rgba(255,85,85,1)',
   d: 'rgba(255,85,255,1)',
   e: 'rgba(255,255,85,1)',
-  f: 'rgba(255,255,255,1)'
+  f: 'rgba(255,255,255,1)',
+  g: 'rgb(194, 206, 227)',
+  h: 'rgb(161, 171, 189)',
+  i: 'rgb(129, 137, 151)',
+  j: 'rgb(117, 124, 138)'
 };
 
 export const rankColor: StringObject = {

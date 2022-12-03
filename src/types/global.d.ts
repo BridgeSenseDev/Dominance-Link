@@ -6,15 +6,15 @@
 
 import { Channel, WebhookClient } from 'discord.js';
 
-declare global {
-  var onlineMembers: number;
-  var guildOnline: string[];
-}
-
 interface StringObject {
   [key: string]: string;
 }
 
 interface NumberObject {
   [key: string]: number;
+}
+declare global {
+  var onlineMembers: number;
+  var guildOnline: string[];
+  var playtime: NumberObject;
 }

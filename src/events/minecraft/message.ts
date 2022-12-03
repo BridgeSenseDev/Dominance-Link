@@ -5,12 +5,11 @@ import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { channels } from '../discord/ready.js';
-import { NumberObject } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
 db.defaultSafeIntegers(true);
 
-const playtime: NumberObject = {};
+global.playtime = {};
 const logWebhook = new WebhookClient({ url: config.keys.logWebhookUrl });
 const gcWebhook = new WebhookClient({ url: config.keys.gcWebhookUrl });
 const ocWebhook = new WebhookClient({ url: config.keys.ocWebhookUrl });
@@ -44,7 +43,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
-    playtime[name] = Math.floor(Date.now() / 1000);
+    global.playtime[name] = Math.floor(Date.now() / 1000);
   } else if (msg.includes('left.')) {
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
@@ -52,9 +51,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
-    const time = Math.floor(Date.now() / 1000) - playtime[name];
+    const time = Math.floor(Date.now() / 1000) - global.playtime[name];
     if (!Number.isNaN(time)) {
-      delete playtime[name];
+      delete global.playtime[name];
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
       db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
     }

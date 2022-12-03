@@ -16,13 +16,19 @@ import {
   Guild
 } from 'discord.js';
 import Database from 'better-sqlite3';
-import { nameToUuid, uuidToName } from '../../helper/utils.js';
+import { nameToUuid, removeSectionSymbols, uuidToName } from '../../helper/utils.js';
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
 import { roles } from '../../helper/constants.js';
 
 const db = new Database('guild.db');
+
+const names = db.prepare('SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC').all()
+const choices: string[] = [];
+for (let i=0; i < names.length; i ++) {
+  choices.push(removeSectionSymbols(names[i].nameColor).split(' ')[removeSectionSymbols(names[i].nameColor).split(' ').length - 1]) 
+}
 
 export default async function execute(client: Client, interaction: Interaction) {
   const member = interaction.member as GuildMember;
@@ -37,6 +43,12 @@ export default async function execute(client: Client, interaction: Interaction) 
       console.error(error);
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
+  } else if (interaction.isAutocomplete()) {
+    const focusedValue = interaction.options.getFocused();
+		const filtered = choices.filter(choice => choice.toLowerCase().startsWith(focusedValue.toLowerCase())).slice(0, 25);
+		await interaction.respond(
+			filtered.map(choice => ({ name: choice, value: choice })),
+		);
   } else if (interaction.isSelectMenu()) {
     await interaction.deferReply({ ephemeral: true });
     const user = await client.users.fetch(interaction.customId);
