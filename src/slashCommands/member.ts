@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import { Canvas, Image } from 'skia-canvas';
 import renderBox, { renderSkin } from '../helper/render.js';
@@ -27,6 +27,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const uuid = await nameToUuid(interaction.options.getString('name')!);
   const member = db.prepare('SELECT * FROM guildMembers WHERE uuid = (?)').get(uuid);
+  if (member === undefined) {
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.red)
+      .setTitle('Error')
+      .setDescription(`<a:across:986170696512204820> **${interaction.options.getString('name')}** is not in Dominance`);
+    await interaction.editReply({ embeds: [embed] });
+    return;
+  }
   const canvas = new Canvas(591, 568);
   const ctx = canvas.getContext('2d');
   const image = new Image();
