@@ -17,12 +17,12 @@ export default async function discordCommands(client: Client) {
   client.commands = new Collection();
   const commandFiles = fs.readdirSync('./slashCommands/');
   const commands = [];
-  const globalCommands = []
+  const globalCommands = [];
 
   for (const file of commandFiles) {
     const command = await import(`../slashCommands/${file}`);
     if (command.data.name === 'member') {
-      globalCommands.push(command.data.toJSON())
+      globalCommands.push(command.data.toJSON());
       if (command.data.name) {
         client.commands.set(command.data.name, command);
       }
