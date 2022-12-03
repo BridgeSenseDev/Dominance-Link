@@ -19,57 +19,49 @@ export async function uuidToName(uuid: string) {
 
 export async function formatMentions(client: Client, message: Message) {
   let msg = message.content;
+  const guild = message.guild!;
   if (msg.includes('<@') && msg.includes('>') && !msg.includes('<@&')) {
-    const guildId = message.guild!.id;
-    const mentions = msg.match(/<@!?\d+>/g);
-    const members = await client.guilds.cache.get(guildId)?.members?.fetch();
-    if (mentions !== null) {
-      Object.keys(mentions).forEach((mention) => {
-        const user = members!.get(mention.replace(/[^0-9]/g, ''));
-        if (user) {
-          msg = msg.replace(mention, `@${user.user.username}`);
-        } else {
-          msg = msg.replace(mention, '@Unknown User');
-        }
-      });
+    const mentions = msg.match(/<@!?\d+>/g)!;
+    const members = await guild.members.fetch();
+    for (const mention of mentions) {
+      const user = members.get(mention.replace(/[^0-9]/g, ''));
+      if (user) {
+        msg = msg.replace(mention, `@${user.user.username}`);
+      } else {
+        msg = msg.replace(mention, `@Unknown User`);
+      }
     }
   }
 
   if (msg.includes('<@&') && msg.includes('>')) {
-    const guildId = message.guild!.id;
-    const mentions = msg.match(/<@&\d+>/g);
-    const roles = await client.guilds.cache.get(guildId)?.roles.fetch();
-    if (mentions !== null) {
-      Object.keys(mentions).forEach((mention) => {
-        const role = roles!.get(mention.replace(/[^0-9]/g, ''));
-        if (role) {
-          msg = msg.replace(mention, `@${role.name}`);
-        } else {
-          msg = msg.replace(mention, '@Unknown Role');
-        }
-      });
+    const mentions = msg.match(/<@&\d+>/g)!;
+    const roles = await guild.roles.fetch();
+    for (const mention of mentions) {
+      const role = roles.get(mention.replace(/[^0-9]/g, ''));
+      if (role) {
+        msg = msg.replace(mention, `@${role.name}`);
+      } else {
+        msg = msg.replace(mention, `@Unknown Role`);
+      }
     }
   }
 
   if (msg.includes('<#') && msg.includes('>')) {
-    const { guild } = message;
-    const mentions = msg.match(/<#\d+>/g);
-    if (mentions !== null) {
-      Object.keys(mentions).forEach((mention) => {
-        msg = msg.replace(
-          mention,
-          `#${guild?.channels?.cache?.get(mention.replace(/[^0-9]/g, ''))?.name || 'deleted-channel'}`
-        );
-      });
+    let mentions = msg.match(/<#\d+>/g)!;
+    for (const mention of mentions) {
+      msg = msg.replace(
+        mention,
+        `#${guild.channels.cache.get(mention.replace(/[^0-9]/g, ''))!.name || 'deleted-channel'}`
+      );
     }
-  }
 
-  if ((msg.includes('<a:') || msg.includes('<:')) && msg.includes('>')) {
-    const mentions = [...(msg?.match(/<a:\w+:\d+>/g) || []), ...(msg?.match(/<:\w+:\d+>/g) || [])];
-    Object.keys(mentions).forEach((mention) => {
-      const emojiName = mention.replace(/[0-9]/g, '').replace(/<a:/g, '').replace(/:>/g, '').replace(/<:/g, '');
-      msg = msg.replace(mention, `:${emojiName}:`);
-    });
+    if ((msg.includes('<a:') || msg.includes('<:')) && msg.includes('>')) {
+      mentions = [...(msg.match(/<a:\w+:\d+>/g) || []), ...(msg.match(/<:\w+:\d+>/g) || [])];
+      for (const mention of mentions) {
+        const emojiName = mention.replace(/[0-9]/g, '').replace(/<a:/g, '').replace(/:>/g, '').replace(/<:/g, '');
+        msg = msg.replace(mention, `:${emojiName}:`);
+      }
+    }
   }
   return msg;
 }
