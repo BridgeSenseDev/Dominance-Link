@@ -47,7 +47,7 @@ export async function formatMentions(client: Client, message: Message) {
   }
 
   if (msg.includes('<#') && msg.includes('>')) {
-    let mentions = msg.match(/<#\d+>/g)!;
+    const mentions = msg.match(/<#\d+>/g)!;
     for (const mention of mentions) {
       msg = msg.replace(
         mention,
@@ -56,10 +56,10 @@ export async function formatMentions(client: Client, message: Message) {
     }
 
     if ((msg.includes('<a:') || msg.includes('<:')) && msg.includes('>')) {
-      mentions = [...(msg.match(/<a:\w+:\d+>/g) || []), ...(msg.match(/<:\w+:\d+>/g) || [])];
-      for (const mention of mentions) {
-        const emojiName = mention.replace(/[0-9]/g, '').replace(/<a:/g, '').replace(/:>/g, '').replace(/<:/g, '');
-        msg = msg.replace(mention, `:${emojiName}:`);
+      const emojis = [...(msg.match(/<a:\w+:\d+>/g) || []), ...(msg.match(/<:\w+:\d+>/g) || [])];
+      for (const emoji of emojis) {
+        const emojiName = emoji.replace(/[0-9]/g, '').replace(/<a:/g, '').replace(/:>/g, '').replace(/<:/g, '');
+        msg = msg.replace(emoji, `:${emojiName}:`);
       }
     }
   }
