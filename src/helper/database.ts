@@ -5,7 +5,7 @@ import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage, sleep } from './utils.js';
+import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage, sleep, removeSectionSymbols } from './utils.js';
 import { ranks, roles } from './constants.js';
 import { channels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
@@ -261,6 +261,8 @@ export async function players() {
       let bwFkdr;
       let duelsWins;
       let duelsWlr;
+      let swLevel;
+      let swKdr
       try {
         bwStars = player.achievements.bedwars_level;
       } catch (e) {
@@ -313,9 +315,25 @@ export async function players() {
           sa = await skillAverage(profileData);
         }
       }
+      try {
+        swLevel = parseInt(removeSectionSymbols(stats.SkyWars.levelFormatted).toString().slice(0, -1), 10)
+      } catch (e) {
+        swLevel = 0;
+      }
+      if (swLevel === undefined) {
+        swLevel = 0;
+      }
+      try {
+        swKdr = (stats.SkyWars.kills / stats.SkyWars.deaths).toFixed(1);
+      } catch (e) {
+        swKdr = 0;
+      }
+      if (Number.isNaN(Number(swKdr))) {
+        swKdr = 0;
+      }
 
       db.prepare(
-        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
+        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, swKdr) = (?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
       ).run(
         nameColor(player),
         bwStars,
@@ -324,6 +342,8 @@ export async function players() {
         duelsWlr,
         Math.round(networth * 100) / 100,
         Math.round(sa * 100) / 100,
+        swLevel,
+        swKdr,
         data.uuid
       );
     }
