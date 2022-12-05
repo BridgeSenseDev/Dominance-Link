@@ -5,7 +5,7 @@ import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage, sleep, removeSectionSymbols } from './utils.js';
+import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage, removeSectionSymbols } from './utils.js';
 import { ranks, roles } from './constants.js';
 import { channels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
@@ -99,12 +99,6 @@ export async function database() {
     const guild = (
       await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
     ).guild.members;
-    try {
-      db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[0].expHistory)[0]}" INTEGER`).run();
-      await sleep(1000);
-    } catch (err) {
-      // Continue regardless of error
-    }
     for (let i = 0; i < guild.length; i++) {
       members.push(guild[i].uuid);
       const tag = ranks[guild[i].rank];
@@ -118,11 +112,20 @@ export async function database() {
         0,
         tag
       );
-      db.prepare(
-        `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${
-          Object.keys(guild[i].expHistory)[0]
-        }") = (?, ?, ?, ?) WHERE uuid = (?)`
-      ).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
+      try {
+        db.prepare(
+          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${
+            Object.keys(guild[i].expHistory)[0]
+          }") = (?, ?, ?, ?) WHERE uuid = (?)`
+        ).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
+      } catch {
+        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[0].expHistory)[0]}" INTEGER`).run();
+        db.prepare(
+          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${
+            Object.keys(guild[i].expHistory)[0]
+          }") = (?, ?, ?, ?) WHERE uuid = (?)`
+        ).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
+      }
     }
     let placeholders = '?';
     for (let i = 0; i < members.length - 1; i++) {
