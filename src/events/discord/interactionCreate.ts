@@ -53,7 +53,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       .filter((choice) => choice.toLowerCase().startsWith(focusedValue.toLowerCase()))
       .slice(0, 25);
     await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
-  } else if (interaction.isSelectMenu()) {
+  } else if (interaction.isStringSelectMenu()) {
     await interaction.deferReply({ ephemeral: true });
     const user = await client.users.fetch(interaction.customId);
     const embed = new EmbedBuilder()
