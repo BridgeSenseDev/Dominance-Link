@@ -17,4 +17,5 @@ declare global {
   var onlineMembers: number;
   var guildOnline: string[];
   var playtime: NumberObject;
+  var lastMessage: StringObject;
 }

@@ -1,5 +1,8 @@
 import { Client, Message } from 'discord.js';
+import Database from 'better-sqlite3';
 import { rankColor, levelingXp } from './constants.js';
+
+const db = new Database('guild.db');
 
 export async function nameToUuid(name: string) {
   try {
@@ -221,4 +224,19 @@ export async function skillAverage(player: any) {
     return 0;
   }
   return levels / 8;
+}
+
+export function addXp(discordId: string) {
+  if (discordId in global.lastMessage) {
+    if (Date.now() / 1000 - Number(global.lastMessage[discordId]) >= 60) {
+      db.prepare('UPDATE members SET xp = xp + ? WHERE discord = ?').run(
+        Math.floor(Math.random() * 11 + 15),
+        discordId
+      );
+    }
+  } else {
+    db.prepare('UPDATE members SET xp = xp + ? WHERE discord = ?').run(Math.floor(Math.random() * 11 + 15), discordId);
+  }
+  db.prepare('UPDATE members SET (messages) = messages + 1 WHERE discord = (?)').run(discordId);
+  global.lastMessage[discordId] = Math.floor(Date.now() / 1000).toString();
 }
