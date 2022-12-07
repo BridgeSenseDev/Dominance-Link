@@ -18,7 +18,6 @@ export default async function execute(client: Client, message: Message) {
   if (message.channel.id === channels.chatLogs.id) {
     await chat(message.content);
   } else if (message.channel.id === channels.minecraftLink.id) {
-    addXp(message.author.id)
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     if (user === undefined) {
       try {
