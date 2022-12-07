@@ -183,11 +183,11 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     });
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
-    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid);
     if (uuid === null) {
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
+    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid);
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
     addXp(discordId);
