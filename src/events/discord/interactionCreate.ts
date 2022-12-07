@@ -29,7 +29,9 @@ const choices: string[] = [];
 for (let i = 0; i < names.length; i++) {
   if (names[i].nameColor !== null) {
     choices.push(
-      removeSectionSymbols(names[i].nameColor).split(' ')[removeSectionSymbols(names[i].nameColor).split(' ').length - 1]
+      removeSectionSymbols(names[i].nameColor).split(' ')[
+        removeSectionSymbols(names[i].nameColor).split(' ').length - 1
+      ]
     );
   }
 }

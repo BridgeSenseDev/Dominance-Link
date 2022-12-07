@@ -46,7 +46,7 @@ export default async function execute(client: Client) {
       channels[Object.keys(config.channels)[i]] = channel as VoiceChannel;
     }
   }
-  
+
   global.onlineMembers = 0;
   global.lastMessage = {};
 

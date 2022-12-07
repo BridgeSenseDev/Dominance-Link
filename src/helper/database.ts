@@ -265,7 +265,7 @@ export async function players() {
       let duelsWins;
       let duelsWlr;
       let swLevel;
-      let swKdr
+      let swKdr;
       try {
         bwStars = player.achievements.bedwars_level;
       } catch (e) {
@@ -319,7 +319,7 @@ export async function players() {
         }
       }
       try {
-        swLevel = parseInt(removeSectionSymbols(stats.SkyWars.levelFormatted).toString().slice(0, -1), 10)
+        swLevel = parseInt(removeSectionSymbols(stats.SkyWars.levelFormatted).toString().slice(0, -1), 10);
       } catch (e) {
         swLevel = 0;
       }

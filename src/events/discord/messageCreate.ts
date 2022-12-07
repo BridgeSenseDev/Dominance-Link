@@ -9,7 +9,7 @@ const db = new Database('guild.db');
 
 export default async function execute(client: Client, message: Message) {
   if (message.guildId !== '242357942664429568') return;
-  addXp(message.author.id)
+  addXp(message.author.id);
   if (message.author.bot) return;
   let uuid;
   if (message.content.toLowerCase().includes('dominance')) {
