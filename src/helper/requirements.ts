@@ -109,7 +109,7 @@ export default async function requirements(uuid: string, playerData: any) {
   if (playerData.achievementPoints === undefined) {
     requirementEmbed +=
       ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `No Achievements Data`\n\n';
-  } else if (playerData.achievementPoints >= 12500) {
+  } else if (playerData.achievementPoints >= 9000) {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Achievements**\n';
     requirementEmbed += `<a:atick:986173414723162113> **Achievement Points:** \`${formatNumber(
@@ -119,20 +119,20 @@ export default async function requirements(uuid: string, playerData: any) {
     requirementEmbed += ':red_circle: **Achievements**\n';
     requirementEmbed += `<a:across:986170696512204820> **Achievement Points:** \`${formatNumber(
       playerData.achievementPoints
-    )} / 12,500\`\n\n`;
+    )} / 9,000\`\n\n`;
   }
 
   if (bedwars[0] !== 'No Bedwars Data') {
-    if (bedwars[2] >= 1500 && bedwars[1] >= 2 && bedwars[0] !== 'No Bedwars Data') {
+    if (bedwars[0] >= 300 && bedwars[1] >= 2) {
       meetingReqs = true;
       requirementEmbed += ':green_circle: **Bedwars 1**\n';
     } else {
       requirementEmbed += ':red_circle: **Bedwars 1**\n';
     }
-    if (bedwars[2] >= 1500) {
-      requirementEmbed += `<a:atick:986173414723162113> **Bedwars Wins:** \`${bedwars[2]}\`\n`;
+    if (bedwars[0] >= 300) {
+      requirementEmbed += `<a:atick:986173414723162113> **Bedwars Stars:** \`${bedwars[0]}\`\n`;
     } else {
-      requirementEmbed += `<a:across:986170696512204820> **Bedwars Wins:** \`${bedwars[2]} / 1500\`\n`;
+      requirementEmbed += `<a:across:986170696512204820> **Bedwars Stars:** \`${bedwars[0]} / 300\`\n`;
     }
     if (bedwars[1] >= 2) {
       requirementEmbed += `<a:atick:986173414723162113> **Bedwars FKDR:** \`${bedwars[1]}\`\n\n`;
@@ -146,28 +146,39 @@ export default async function requirements(uuid: string, playerData: any) {
   }
 
   if (bedwars[0] !== 'No Bedwars Data') {
-    if (bedwars[0] >= 300) {
+    if (bedwars[0] >= 150 && bedwars[1] >= 5) {
       meetingReqs = true;
-      requirementEmbed += `:green_circle: **Bedwars 2**\n<a:atick:986173414723162113> **Bedwars Stars:** \`${bedwars[0]}\`\n\n`;
+      requirementEmbed += ':green_circle: **Bedwars 2**\n';
     } else {
-      requirementEmbed += `:red_circle: **Bedwars 2**\n<a:across:986170696512204820> **Bedwars Stars:** \`${bedwars[0]} / 300\`\n\n`;
+      requirementEmbed += ':red_circle: **Bedwars 2**\n';
+    }
+    if (bedwars[0] >= 150) {
+      requirementEmbed += `<a:atick:986173414723162113> **Bedwars Stars:** \`${bedwars[0]}\`\n`;
+    } else {
+      requirementEmbed += `<a:across:986170696512204820> **Bedwars Stars:** \`${bedwars[0]} / 150\`\n`;
+    }
+    if (bedwars[1] >= 5) {
+      requirementEmbed += `<a:atick:986173414723162113> **Bedwars FKDR:** \`${bedwars[1]}\`\n\n`;
+    } else {
+      requirementEmbed += `<a:across:986170696512204820> **Bedwars FKDR:** \`${bedwars[1]} / 5\`\n\n`;
     }
   } else {
     requirementEmbed +=
-      ':red_circle: **Bedwars 2**\n<a:across:986170696512204820> **Bedwars Stars:** `No Bedwars Data`\n\n';
+      ':red_circle: **Bedwars 2**\n<a:across:986170696512204820> **Bedwars Wins:** `No Bedwars Data`\n' +
+      '<a:across:986170696512204820> **Bedwars FKDR:** `No Bedwars Data`\n\n';
   }
 
   if (duels[0] !== 'No Duels Data') {
-    if (duels[0] >= 7500 && duels[1] >= 2) {
+    if (duels[0] >= 6500 && duels[1] >= 2) {
       meetingReqs = true;
       requirementEmbed += ':green_circle: **Duels 1**\n';
     } else {
       requirementEmbed += ':red_circle: **Duels 1**\n';
     }
-    if (duels[0] >= 7500) {
+    if (duels[0] >= 6500) {
       requirementEmbed += `<a:atick:986173414723162113> **Duels Wins:** \`${formatNumber(duels[0])}\`\n`;
     } else {
-      requirementEmbed += `<a:across:986170696512204820> **Duels Wins:** \`${formatNumber(duels[0])} / 7,500\`\n`;
+      requirementEmbed += `<a:across:986170696512204820> **Duels Wins:** \`${formatNumber(duels[0])} / 6,500\`\n`;
     }
     if (duels[1] >= 2) {
       requirementEmbed += `<a:atick:986173414723162113> **Duels WLR:** \`${duels[1]}\`\n\n`;
@@ -181,16 +192,16 @@ export default async function requirements(uuid: string, playerData: any) {
   }
 
   if (duels[0] !== 'No Duels Data') {
-    if (duels[0] >= 4000 && duels[1] >= 4) {
+    if (duels[0] >= 3000 && duels[1] >= 4) {
       meetingReqs = true;
       requirementEmbed += ':green_circle: **Duels 2**\n';
     } else {
       requirementEmbed += ':red_circle: **Duels 2**\n';
     }
-    if (duels[0] >= 4000) {
+    if (duels[0] >= 3000) {
       requirementEmbed += `<a:atick:986173414723162113> **Duels Wins:** \`${formatNumber(duels[0])}\`\n`;
     } else {
-      requirementEmbed += `<a:across:986170696512204820> **Duels Wins:** \`${formatNumber(duels[0])} / 4,000\`\n`;
+      requirementEmbed += `<a:across:986170696512204820> **Duels Wins:** \`${formatNumber(duels[0])} / 3,000\`\n`;
     }
     if (duels[1] >= 4) {
       requirementEmbed += `<a:atick:986173414723162113> **Duels WLR:** \`${duels[1]}\`\n\n`;
