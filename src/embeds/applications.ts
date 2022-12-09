@@ -22,8 +22,8 @@ client.on('ready', async () => {
     .setDescription(
       `**Our current GEXP requirement is \`${config.guild.gexpReq}\` per week\nClick the button below to check if you \
     meet our requirements**\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n**You can join if you meet at least one of these requirements:**\n\
-    \`Achievement Points\`\n\`-\` 12,500 Achievement Points\n\`Bedwars 1\`\n\`-\` 1,500 Wins\n\`-\` 2 FKDR\n\`Bedwars 2\`\n\`-\` 300 \
-    Stars\n\`Duels 1\`\n\`-\` 7,500 Wins\n\`-\` 2 WLR\n\`Duels 2\`\n\`-\` 4,000 Wins\n\`-\` 4 WLR\n\`Skywars 1\`\n\`-\` 12 Stars\n\`-\` \
+    \`Achievement Points\`\n\`-\` 9,000 Achievement Points\n\`Bedwars 1\`\n\`-\` 300 Stars\n\`-\` 2 FKDR\n\`Bedwars 2\`\n\`-\` 150 \
+    Stars\n\`-\` 5 FKDR\n\`Duels 1\`\n\`-\` 6,500 Wins\n\`-\` 2 WLR\n\`Duels 2\`\n\`-\` 3,000 Wins\n\`-\` 4 WLR\n\`Skywars 1\`\n\`-\` 12 Stars\n\`-\` \
     1 KDR\n\`Skywars 2\`\n\`-\` 10 Stars\n\`-\` 1.5 KDR\n\`Skyblock (API On)\`\n\`-\` 500m Networth\n\`-\` 25 Skill Average\n\n\
     ════ ⋆★⋆ ════`
     )
