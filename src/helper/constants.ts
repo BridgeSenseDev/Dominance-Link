@@ -53,7 +53,7 @@ export const rankColor: StringObject = {
 
 export const ranks: StringObject = {
   GUILDMASTER: '[GM]',
-  Leader: '[Leader]',
+  Owner: '[Owner]',
   Staff: '[Staff]',
   Pro: '[Pro]',
   Active: '[Active]',

@@ -13,7 +13,7 @@ const tagColor: StringObject = {
   '[Active]': '§6[Active]',
   '[Pro]': '§5[Pro]',
   '[Staff]': '§c[Staff]',
-  '[Leader]': '§4[Leader]',
+  '[Owner]': '§4[Owner]',
   '[GM]': '§4[GM]'
 };
 

@@ -220,7 +220,7 @@ export async function players() {
         } catch (e) {
           db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
         }
-        if (!['[Leader]', '[GM]'].includes(data.tag) && member !== undefined) {
+        if (!['[Owner]', '[GM]'].includes(data.tag) && member !== undefined) {
           const ign = await uuidToName(data.uuid);
           await member.roles.add(memberRole);
           if (data.targetRank !== null && data.tag !== '[Staff]' && data.targetRank !== data.tag) {
