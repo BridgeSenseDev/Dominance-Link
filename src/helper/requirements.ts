@@ -70,13 +70,12 @@ export default async function requirements(uuid: string, playerData: any) {
     bedwars = ['No Bedwars Data', 'No Bedwars Data', 'No Bedwars Data'];
   }
 
-  try {
-    duels = [
-      playerData.stats.Duels.wins,
-      Math.round((playerData.stats.Duels.wins / playerData.stats.Duels.losses) * 100) / 100
-    ];
-  } catch (e) {
-    duels = ['No Duels Data', 'No Duels Data'];
+  duels = [
+    playerData.stats.Duels.wins,
+    Math.round((playerData.stats.Duels.wins / playerData.stats.Duels.losses) * 100) / 100
+  ];
+  if (duels[0] === undefined) {
+    duels = ['No Duels Data', 'No Duels Data']
   }
 
   try {
