@@ -8,6 +8,7 @@ import {
   TextChannel
 } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
+import { dividers } from '../helper/constants.js';
 import { formatDate } from '../helper/utils.js';
 
 const client = new Client({
@@ -20,8 +21,8 @@ client.on('ready', async () => {
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Verification', iconURL: config.guild.icon })
     .setDescription(
-      'Welcome to the offical **Dominance** discord server!\n\n════ ⋆★⋆ ════\n\n**[How To Verify]**\n**To gain access ' +
-        'to our public channels, click the button below**\nMessage <@485703283839860736> if you need any help\n\n════ ⋆★⋆ ════'
+      `Welcome to the official **Dominance** discord server!\n\n${dividers(22)}\n\n**How To Verify:**\n\n**To gain access ` +
+        `to our public channels, click the button below**\nMessage <@485703283839860736> if you need any help`
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,

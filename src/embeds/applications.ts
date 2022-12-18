@@ -8,6 +8,7 @@ import {
   TextChannel
 } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
+import { bullet, dividers, invis, sub } from '../helper/constants.js';
 import { formatDate } from '../helper/utils.js';
 
 const client = new Client({
@@ -20,12 +21,13 @@ client.on('ready', async () => {
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Guild Requirements', iconURL: config.guild.icon })
     .setDescription(
-      `**Our current GEXP requirement is \`${config.guild.gexpReq}\` per week\nClick the button below to check if you \
-    meet our requirements**\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n**You can join if you meet at least one of these requirements:**\n\
-    \`Achievement Points\`\n\`-\` 9,000 Achievement Points\n\`Bedwars 1\`\n\`-\` 300 Stars\n\`-\` 2 FKDR\n\`Bedwars 2\`\n\`-\` 150 \
-    Stars\n\`-\` 5 FKDR\n\`Duels 1\`\n\`-\` 6,500 Wins\n\`-\` 2 WLR\n\`Duels 2\`\n\`-\` 3,000 Wins\n\`-\` 4 WLR\n\`Skywars 1\`\n\`-\` 12 Stars\n\`-\` \
-    1 KDR\n\`Skywars 2\`\n\`-\` 10 Stars\n\`-\` 1.5 KDR\n\`Skyblock (API On)\`\n\`-\` 500m Networth\n\`-\` 25 Skill Average\n\n\
-    ════ ⋆★⋆ ════`
+      `**Our current GEXP requirement is \`${config.guild.gexpReq}\` per week\nClick the button below to check if you meet our ` +
+        `requirements**\n\n${dividers(23)}\n\n**Requirements:**\n\n**You can join if you meet at least one of these requirements:**\n` +
+        `${bullet}**Achievement Points**\n${invis}${sub} 9,000 Achievement Points\n${bullet}**Bedwars 1**\n${invis}${sub} 300 Stars\n` +
+        `${invis}${sub} 2 FKDR\n${bullet}**Bedwars 2**\n${invis}${sub} 150 Stars\n${invis}${sub} 5 FKDR\n${bullet}**Duels 1**\n${invis}` +
+        `${sub} 6,500 Wins\n${invis}${sub} 2 WLR\n${bullet}**Duels 2**\n${invis}${sub} 3,000 Wins\n${invis}${sub} 4 WLR\n${bullet}` +
+        `**Skywars 1**\n${invis}${sub} 12 Stars\n${invis}${sub} 1 KDR\n${bullet}**Skywars 2**\n${invis}${sub} 10 Stars\n${invis}${sub} ` +
+        `1.5 KDR\n${bullet}**Skyblock (API ON)**\n${invis}${sub} 500m Networth\n${invis}${sub} 25 Skill Average`
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,
@@ -44,12 +46,12 @@ client.on('ready', async () => {
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Applications', iconURL: config.guild.icon })
     .setDescription(
-      "**Click the button below to apply**\nYou **WILL NOT** get a response if you're rejected and your dm's are closed" +
-        '\n\n════ ⋆★⋆ ════\n\n**[Rejoining]**\n`-` If your application gets rejected wait **3 weeks** before reapplying\n`-` Wait ' +
-        '**1 month** before reapplying if you get kicked / leave\n`-` Wait **2 months** before reapplying if you get kicked within a ' +
-        'month\n`-` You can reapply **unlimited** times\n\n════ ⋆★⋆ ════\n\n**[What You Could Get Denied For]**\n`1` Having an offensive ' +
-        'mc name/profile\n`2` Being toxic\n`3` Being a known cheater\n`4` Not writing enough on your application\n`5` Not meeting our ' +
-        'requirements\n`6` Being a guild hopper\n\n════ ⋆★⋆ ════'
+      `**Click the button below to apply**\nYou **WILL NOT** get a response if rejected and your dm's are closed\n\n${dividers(23)}` +
+        `\n\n**Rejoining:**\n\n${bullet} If your application gets rejected wait **3 weeks** before reapplying\n${bullet} Wait **1 ` +
+        `month** before reapplying if you get kicked / leave\n${bullet} Wait **2 months** before reapplying if you get kicked within a ` +
+        `month\n${bullet} You can reapply **unlimited** times\n\n${dividers(23)}\n\n**What You Could Get Denied For:**\n\n${bullet} ` +
+        `Having an offensive mc name/profile\n${bullet} Being toxic\n${bullet} Being a known cheater\n${bullet} Not writing enough on ` +
+        `your application\n${bullet} Not meeting our requirements\n${bullet} Being a guild hopper`
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,

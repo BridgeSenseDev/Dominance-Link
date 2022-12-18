@@ -75,3 +75,13 @@ export const roles: StringObject = {
   skyblock: '903996220551360642',
   skywars: '903996253589880832'
 };
+
+export function dividers(amount: number) {
+  return '<:divider:1053686643380461618>'.repeat(amount);
+}
+
+export const bullet = '<:bullet:1053696563773456485>';
+
+export const sub = '<:sub:1053696986177609808>';
+
+export const invis = '<:invis:1053698615903785010>';
