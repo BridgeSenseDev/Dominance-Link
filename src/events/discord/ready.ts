@@ -21,6 +21,9 @@ interface Channels {
 }
 const channels: Channels = {};
 
+global.onlineMembers = 0;
+global.lastMessage = {};
+
 if (fileURLToPath(import.meta.url).slice(-2) === 'js') {
   worker = new Worker('./helper/worker.js');
 } else {
@@ -46,9 +49,6 @@ export default async function execute(client: Client) {
       channels[Object.keys(config.channels)[i]] = channel as VoiceChannel;
     }
   }
-
-  global.onlineMembers = 0;
-  global.lastMessage = {};
 
   gexpWatch();
   channelUpdate(client);
