@@ -1,5 +1,6 @@
 import { Client, EmbedBuilder, GuildMember } from 'discord.js';
 import config from '../../config.json' assert { type: 'json' };
+import { invis } from '../../helper/constants.js';
 import { channels } from './ready.js';
 
 export default async function execute(client: Client, member: GuildMember) {
@@ -14,8 +15,8 @@ export default async function execute(client: Client, member: GuildMember) {
         `in <#1031568019522072677>\n\n**:loudspeaker: | Announcements**\n\`•\` Stay up to date by checking out ` +
         `<#1031257076065914930>\n\n**:pencil: | Want to join us?**\n\`•\`Learn how to in <#1017099269372657724>\n\n**:question: ` +
         `| Need help?**\n \`•\` Feel free to open a ticket in <#867160066704146482>\n\n<:hypixel:968022561940209664> [Hypixel ` +
-        `Forum Post](https://dominance.cf/forums) ㅤㅤ<:twitter:968021865064988742> [Twitter Page](https://twitter.com/MatrixHypixel)` +
-        `ㅤㅤ🌐 [Website](https://dominance.cf/)`
+        `Forum Post](https://dominance.cf/forums)${invis}${invis}<:twitter:968021865064988742> [Twitter Page](https://twitter.com/` +
+        `MatrixHypixel)${invis}${invis}🌐 [Website](https://dominance.cf/)`
     );
   await channels.welcome.send({ content: member.toString(), embeds: [embed] });
 }
