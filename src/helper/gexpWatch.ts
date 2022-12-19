@@ -46,7 +46,7 @@ export default async function gexpWatch() {
     // Dominance
     let result = db.prepare('SELECT gexp FROM dominanceWatch WHERE date=?').get(previous).gexp;
     let gained = guildGexp[0] - result;
-    db.prepare('INSERT INTO dominanceWatch (date, gexp, gained) VALUES (?, ?, ?)').run(today, guildGexp[2], gained);
+    db.prepare('INSERT INTO dominanceWatch (date, gexp, gained) VALUES (?, ?, ?)').run(today, guildGexp[0], gained);
 
     // Rebel
     result = db.prepare('SELECT separation FROM rebelWatch WHERE date=?').get(previous).separation;
