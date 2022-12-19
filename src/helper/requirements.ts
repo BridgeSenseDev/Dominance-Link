@@ -75,7 +75,7 @@ export default async function requirements(uuid: string, playerData: any) {
     Math.round((playerData.stats.Duels.wins / playerData.stats.Duels.losses) * 100) / 100
   ];
   if (duels[0] === undefined) {
-    duels = ['No Duels Data', 'No Duels Data']
+    duels = ['No Duels Data', 'No Duels Data'];
   }
 
   try {
