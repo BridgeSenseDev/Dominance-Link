@@ -15,7 +15,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     case 'off': {
       queue.setRepeatMode(0);
       const embed0 = new EmbedBuilder()
-        .setColor(config.colors.yellow)
+        .setColor(config.colors.discordGray)
         .setDescription('<:stop_sign_3d:1022169854469476422> Playing the queue **normally**');
       await interaction.editReply({ embeds: [embed0] });
       break;
@@ -23,7 +23,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     case 'single': {
       queue.setRepeatMode(1);
       const embed1 = new EmbedBuilder()
-        .setColor(config.colors.yellow)
+        .setColor(config.colors.discordGray)
         .setDescription('<:repeat_single_button_3d:1022167927077740555> Now looping the **current track**');
       await interaction.editReply({ embeds: [embed1] });
       break;
@@ -31,7 +31,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     case 'all': {
       queue.setRepeatMode(2);
       const embed2 = new EmbedBuilder()
-        .setColor(config.colors.yellow)
+        .setColor(config.colors.discordGray)
         .setDescription('<:repeat_button_3d:1022167924334661632> Now looping the **queue**');
       await interaction.editReply({ embeds: [embed2] });
       break;

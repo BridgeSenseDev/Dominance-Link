@@ -26,7 +26,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const { songs } = client.distube.getQueue(interaction.guild);
   if (songs[songs.length - 1].playlist) {
     const embed = new EmbedBuilder()
-      .setColor(config.colors.yellow)
+      .setColor(config.colors.discordGray)
       .setAuthor({ name: 'Added to queue', iconURL: interaction.user.displayAvatarURL() })
       .setDescription(
         `**Playlist:** [${songs[songs.length - 1].playlist.name}](${songs[songs.length - 1].playlist.url})`
@@ -48,7 +48,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     return;
   }
   const embed = new EmbedBuilder()
-    .setColor(config.colors.yellow)
+    .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Added to queue', iconURL: interaction.user.displayAvatarURL() })
     .setDescription(`[${songs[songs.length - 1].name}](${songs[songs.length - 1].url})`)
     .setThumbnail(songs[songs.length - 1].thumbnail)

@@ -8,7 +8,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const queue = client.distube.getQueue(interaction.guild);
   if (!queue) {
     const embed = new EmbedBuilder()
-      .setColor(config.colors.yellow)
+      .setColor(config.colors.discordGray)
       .setDescription('<:red_exclamation_mark_3d:1022140163800969306> The queue is empty!');
     await interaction.editReply({ embeds: [embed] });
     return;
@@ -16,14 +16,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   if (!queue.autoplay && queue.songs.length <= 1) {
     queue.stop();
     const embed = new EmbedBuilder()
-      .setColor(config.colors.yellow)
+      .setColor(config.colors.discordGray)
       .setDescription('<:right_arrow_3d:1022139507585327124> Skipped! The queue is empty.');
     await interaction.editReply({ embeds: [embed] });
     return;
   }
   const song = await queue.skip();
   const embed = new EmbedBuilder()
-    .setColor(config.colors.yellow)
+    .setColor(config.colors.discordGray)
     .setDescription(`<:right_arrow_3d:1022139507585327124> Skipped! Now playing:\n[${song.name}](${song.url})`);
   await interaction.editReply({ embeds: [embed] });
 }

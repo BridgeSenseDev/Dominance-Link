@@ -19,6 +19,7 @@
     "@discordjs/rest": "^1.5.0",
     "@discordjs/voice": "^0.14.0",
     "@distube/spotify": "^1.4.5",
+    "@distube/ytdl-core": "^4.11.7",
     "better-sqlite3": "^8.0.1",
     "discord.js": "^14.7.1",
     "distube": "^4.0.4",
@@ -28,6 +29,7 @@
     "libsodium-wrappers": "^0.7.10",
     "mineflayer": "^4.5.1",
     "node-cron": "^3.0.2",
+    "opusscript": "^0.0.8",
     "skia-canvas": "^1.0.1",
     "skyhelper-networth": "^1.8.2",
     "ytdl-core": "^4.11.2"

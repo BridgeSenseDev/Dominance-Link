@@ -58,8 +58,14 @@ export default async function execute(client: Client) {
   gsrun(sheet, client);
   startBot();
   unverified();
-  players();
+  // players();
   leaderboards();
+
+  // Music
+  await client.distube.play(
+    channels.music,
+    'https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4FyS8kM?si=86cc479f1d954174'
+  );
 }
 
 export { worker, channels, messages };
