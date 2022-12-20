@@ -58,7 +58,7 @@ export default async function execute(client: Client) {
   gsrun(sheet, client);
   startBot();
   unverified();
-  // players();
+  players();
   leaderboards();
 
   // Music
@@ -66,6 +66,7 @@ export default async function execute(client: Client) {
     channels.music,
     'https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4FyS8kM?si=86cc479f1d954174'
   );
+  client.distube.getQueue(channels.music.guild).setRepeatMode(2);
 }
 
 export { worker, channels, messages };
