@@ -119,7 +119,7 @@ export async function database() {
           }") = (?, ?, ?, ?) WHERE uuid = (?)`
         ).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
       } catch {
-        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[0].expHistory)[0]}" INTEGER`).run();
+        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[i].expHistory)[0]}" INTEGER`).run();
         db.prepare(
           `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${
             Object.keys(guild[i].expHistory)[0]
