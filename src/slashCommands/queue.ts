@@ -94,8 +94,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       queue.stop();
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
-        .setTitle('<:wastebasket_3d:1054307993199575080> Cleared!')
-        .setDescription(`Queue cleared by ${interaction.user}`);
+        .setDescription(`<:wastebasket_3d:1054307993199575080> Cleared! Queue cleared by ${interaction.user}`);
       await interaction.followUp({ embeds: [embed] });
       return;
     }

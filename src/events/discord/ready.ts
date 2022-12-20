@@ -67,6 +67,7 @@ export default async function execute(client: Client) {
     'https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4FyS8kM?si=86cc479f1d954174'
   );
   client.distube.getQueue(channels.music.guild).setRepeatMode(2);
+  await client.distube.shuffle(channels.music.guild);
 }
 
 export { worker, channels, messages };
