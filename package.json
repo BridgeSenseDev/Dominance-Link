@@ -18,7 +18,7 @@
     "@discordjs/opus": "^0.9.0",
     "@discordjs/rest": "^1.5.0",
     "@discordjs/voice": "^0.14.0",
-    "@distube/spotify": "^1.4.5",
+    "@distube/spotify": "^1.5.0",
     "@distube/ytdl-core": "^4.11.7",
     "better-sqlite3": "^8.0.1",
     "discord.js": "^14.7.1",
