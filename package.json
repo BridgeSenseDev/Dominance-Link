@@ -27,7 +27,7 @@
     "google-auth-library": "^8.7.0",
     "googleapis": "^109.0.1",
     "libsodium-wrappers": "^0.7.10",
-    "mineflayer": "^4.5.1",
+    "mineflayer": "^4.6.0",
     "node-cron": "^3.0.2",
     "opusscript": "^0.0.8",
     "skia-canvas": "^1.0.1",
