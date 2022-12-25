@@ -36,7 +36,66 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   messageCache.push(msg);
 
   // Guild Chat
-  if (msg.includes('joined.')) {
+  if (msg.includes('Guild >')) {
+    await gcWebhook.send({
+      username: 'Dominance',
+      avatarURL: config.guild.icon,
+      files: [await messageToImage(rawMsg)]
+    });
+    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
+    let uuid = await nameToUuid(name);
+    if (uuid === null) {
+      [name] = msg.replace(/Guild > |:/g, '').split(' ');
+      uuid = await nameToUuid(name);
+    }
+    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+    db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
+    addXp(discordId);
+  } else if (msg.includes('Officer >')) {
+    await ocWebhook.send({
+      username: 'Dominance',
+      avatarURL: config.guild.icon,
+      files: [await messageToImage(rawMsg)]
+    });
+    let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
+    let uuid = await nameToUuid(name);
+    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+    if (uuid == null) {
+      [name] = msg.replace(/Officer > |:/g, '').split(' ');
+      uuid = await nameToUuid(name);
+    }
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+    db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
+    addXp(discordId);
+  } else if (msg.includes('From')) {
+    let waitlist;
+    let [, , name] = msg.split(' ');
+    name = name.slice(0, -1);
+    let uuid = await nameToUuid(name);
+    if (uuid === null) {
+      [, name] = msg.split(' ');
+      name = name.slice(0, -1);
+      uuid = await nameToUuid(name);
+    }
+    try {
+      waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
+    } catch (err) {
+      // Continue regardless of error
+    }
+    if (waitlist !== undefined) {
+      await chat(`/g invite ${name}`);
+      const channel = client.channels.cache.get(waitlist.channel) as TextChannel;
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.discordGray)
+        .setTitle(`${name} has been invited to the guild`)
+        .setDescription(
+          'If you did not receive an invite:\n`-` Make sure you are not in a guild\n`-` The guild may be currently ' +
+            'full, check using the </online:1023548883332255765> command\nIf the guild is full, ping <@&1016513036313448579> here'
+        );
+      await channel.send({ embeds: [embed] });
+    }
+  } else if (msg.includes('joined.')) {
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
     if (uuid === null) {
@@ -57,6 +116,36 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
       db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
     }
+  } else if (msg.includes('The Guild has reached Level')) {
+    await gcWebhook.send({
+      username: 'Dominance',
+      avatarURL: config.guild.icon,
+      files: [
+        await messageToImage(
+          '§6-------------------------------------------------------------§r§f§l                                                        LEVEL ' +
+            'UP!§r                                                       §f                                §6The Guild has reached Level 212!' +
+            '§6-------------------------------------------------------------'
+        )
+      ]
+    });
+    await channels.guildLogs.send({
+      files: [
+        await messageToImage(
+          '§6-------------------------------------------------------------§r§f§l                                                        LEVEL ' +
+            'UP!§r                                                       §f                                §6The Guild has reached Level 212!' +
+            '§6-------------------------------------------------------------'
+        )
+      ]
+    });
+    await channels.announcements.send({
+      files: [
+        await messageToImage(
+          '§6-------------------------------------------------------------§r§f§l                                                        LEVEL ' +
+            'UP!§r                                                       §f                                §6The Guild has reached Level 212!' +
+            '§6-------------------------------------------------------------'
+        )
+      ]
+    });
   } else if (msg.includes('Offline Members:')) {
     let includes = 0;
     for (let i = messageCache.length - 1; i >= 0; i--) {
@@ -174,65 +263,6 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       await channels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
-    }
-  } else if (msg.includes('Guild >')) {
-    await gcWebhook.send({
-      username: 'Dominance',
-      avatarURL: config.guild.icon,
-      files: [await messageToImage(rawMsg)]
-    });
-    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-    let uuid = await nameToUuid(name);
-    if (uuid === null) {
-      [name] = msg.replace(/Guild > |:/g, '').split(' ');
-      uuid = await nameToUuid(name);
-    }
-    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
-    db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-    addXp(discordId);
-  } else if (msg.includes('Officer >')) {
-    await ocWebhook.send({
-      username: 'Dominance',
-      avatarURL: config.guild.icon,
-      files: [await messageToImage(rawMsg)]
-    });
-    let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
-    let uuid = await nameToUuid(name);
-    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
-    if (uuid == null) {
-      [name] = msg.replace(/Officer > |:/g, '').split(' ');
-      uuid = await nameToUuid(name);
-    }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
-    db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-    addXp(discordId);
-  } else if (msg.includes('From')) {
-    let waitlist;
-    let [, , name] = msg.split(' ');
-    name = name.slice(0, -1);
-    let uuid = await nameToUuid(name);
-    if (uuid === null) {
-      [, name] = msg.split(' ');
-      name = name.slice(0, -1);
-      uuid = await nameToUuid(name);
-    }
-    try {
-      waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
-    } catch (err) {
-      // Continue regardless of error
-    }
-    if (waitlist !== undefined) {
-      await chat(`/g invite ${name}`);
-      const channel = client.channels.cache.get(waitlist.channel) as TextChannel;
-      const embed = new EmbedBuilder()
-        .setColor(config.colors.discordGray)
-        .setTitle(`${name} has been invited to the guild`)
-        .setDescription(
-          'If you did not receive an invite:\n`-` Make sure you are not in a guild\n`-` The guild may be currently ' +
-            'full, check using the </online:1023548883332255765> command\nIf the guild is full, ping <@&1016513036313448579> here'
-        );
-      await channel.send({ embeds: [embed] });
     }
   }
 }
