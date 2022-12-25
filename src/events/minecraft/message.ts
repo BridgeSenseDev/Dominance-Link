@@ -36,7 +36,28 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   messageCache.push(msg);
 
   // Guild Chat
-  if (msg.includes('Guild >')) {
+  if (msg.includes('joined.')) {
+    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
+    let uuid = await nameToUuid(name);
+    if (uuid === null) {
+      [name] = msg.replace(/Guild > |:/g, '').split(' ');
+      uuid = await nameToUuid(name);
+    }
+    global.playtime[name] = Math.floor(Date.now() / 1000);
+  } else if (msg.includes('left.')) {
+    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
+    let uuid = await nameToUuid(name);
+    if (uuid === null) {
+      [name] = msg.replace(/Guild > |:/g, '').split(' ');
+      uuid = await nameToUuid(name);
+    }
+    const time = Math.floor(Date.now() / 1000) - global.playtime[name];
+    if (!Number.isNaN(time)) {
+      delete global.playtime[name];
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+      db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
+    }
+  } else if (msg.includes('Guild >')) {
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
@@ -94,27 +115,6 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
             'full, check using the </online:1023548883332255765> command\nIf the guild is full, ping <@&1016513036313448579> here'
         );
       await channel.send({ embeds: [embed] });
-    }
-  } else if (msg.includes('joined.')) {
-    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-    let uuid = await nameToUuid(name);
-    if (uuid === null) {
-      [name] = msg.replace(/Guild > |:/g, '').split(' ');
-      uuid = await nameToUuid(name);
-    }
-    global.playtime[name] = Math.floor(Date.now() / 1000);
-  } else if (msg.includes('left.')) {
-    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-    let uuid = await nameToUuid(name);
-    if (uuid === null) {
-      [name] = msg.replace(/Guild > |:/g, '').split(' ');
-      uuid = await nameToUuid(name);
-    }
-    const time = Math.floor(Date.now() / 1000) - global.playtime[name];
-    if (!Number.isNaN(time)) {
-      delete global.playtime[name];
-      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
-      db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
     }
   } else if (msg.includes('The Guild has reached Level')) {
     await gcWebhook.send({
