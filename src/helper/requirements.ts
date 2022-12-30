@@ -259,20 +259,20 @@ export default async function requirements(uuid: string, playerData: any) {
   }
 
   if (skyblock[0] !== 'No Skyblock Data / API Disabled') {
-    if (skyblock[0] >= 500000000 && skyblock[1] >= 25) {
+    if (skyblock[0] >= 1500000000 && skyblock[1] >= 25) {
       meetingReqs = true;
       requirementEmbed += ':green_circle: **Skyblock**\n';
     } else {
       requirementEmbed += ':red_circle: **Skyblock**\n';
     }
-    if (skyblock[0] >= 500000000) {
+    if (skyblock[0] >= 1500000000) {
       requirementEmbed += `<a:atick:986173414723162113> **Skyblock Networth:** \`${abbreviateNumber(
         Math.round(skyblock[0] * 100) / 100
       )}\`\n`;
     } else {
       requirementEmbed += `<a:across:986170696512204820> **Skyblock Networth:** \`${abbreviateNumber(
         Math.round(skyblock[0] * 100) / 100
-      )} / 500m\`\n`;
+      )} / 1.5b\`\n`;
     }
     if (skyblock[1] === 0) {
       requirementEmbed +=
