@@ -27,7 +27,7 @@ client.on('ready', async () => {
         `${invis}${sub} 2 FKDR\n${bullet}**Bedwars 2**\n${invis}${sub} 150 Stars\n${invis}${sub} 5 FKDR\n${bullet}**Duels 1**\n${invis}` +
         `${sub} 6,500 Wins\n${invis}${sub} 2 WLR\n${bullet}**Duels 2**\n${invis}${sub} 3,000 Wins\n${invis}${sub} 4 WLR\n${bullet}` +
         `**Skywars 1**\n${invis}${sub} 12 Stars\n${invis}${sub} 1 KDR\n${bullet}**Skywars 2**\n${invis}${sub} 10 Stars\n${invis}${sub} ` +
-        `1.5 KDR\n${bullet}**Skyblock (API ON)**\n${invis}${sub} 500m Networth\n${invis}${sub} 25 Skill Average`
+        `1.5 KDR\n${bullet}**Skyblock (API ON)**\n${invis}${sub} 1.5b Networth\n${invis}${sub} 25 Skill Average`
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,
