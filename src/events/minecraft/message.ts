@@ -137,7 +137,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
-    await channels.announcements.send({
+    await channels.publicAnnouncements.send({
       files: [
         await messageToImage(
           '§6-------------------------------------------------------------§r§f§l                                                        LEVEL ' +
