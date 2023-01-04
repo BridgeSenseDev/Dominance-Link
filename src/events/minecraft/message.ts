@@ -117,32 +117,33 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       await channel.send({ embeds: [embed] });
     }
   } else if (msg.includes('The Guild has reached Level')) {
+    const level = msg.split(' ')[msg.split(' ').indexOf('Level') + 1]
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
       files: [
         await messageToImage(
-          '§6-------------------------------------------------------------§r§f§l                                                        LEVEL ' +
-            'UP!§r                                                       §f                                §6The Guild has reached Level 212!' +
-            '§6-------------------------------------------------------------'
+          `§6-------------------------------------------------------------§r§f§l                                                        LEVEL ` +
+            `UP!§r                                                       §f                                §6The Guild has reached Level ${level}` +
+            `§6-------------------------------------------------------------`
         )
       ]
     });
     await channels.guildLogs.send({
       files: [
         await messageToImage(
-          '§6-------------------------------------------------------------§r§f§l                                                        LEVEL ' +
-            'UP!§r                                                       §f                                §6The Guild has reached Level 212!' +
-            '§6-------------------------------------------------------------'
+          `§6-------------------------------------------------------------§r§f§l                                                        LEVEL ` +
+            `UP!§r                                                       §f                                §6The Guild has reached Level ${level}` +
+            `§6-------------------------------------------------------------`
         )
       ]
     });
     await channels.publicAnnouncements.send({
       files: [
         await messageToImage(
-          '§6-------------------------------------------------------------§r§f§l                                                        LEVEL ' +
-            'UP!§r                                                       §f                                §6The Guild has reached Level 212!' +
-            '§6-------------------------------------------------------------'
+          `§6-------------------------------------------------------------§r§f§l                                                        LEVEL ` +
+            `UP!§r                                                       §f                                §6The Guild has reached Level ${level}` +
+            `§6-------------------------------------------------------------`
         )
       ]
     });
