@@ -13,7 +13,7 @@ export default async function execute(client: Client, message: Message) {
   if (message.author.bot) return;
   let uuid;
   if (message.content.toLowerCase().includes('dominance')) {
-    await message.react(':dominance:1033300891597557830');
+    await message.react(':dominance:1060579574347472946');
   }
   if (message.channel.id === channels.chatLogs.id) {
     await chat(message.content);
