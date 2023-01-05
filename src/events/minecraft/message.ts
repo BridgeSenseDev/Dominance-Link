@@ -5,6 +5,7 @@ import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { channels } from '../discord/ready.js';
+import { roles } from '../../helper/constants.js';
 
 const db = new Database('guild.db');
 db.defaultSafeIntegers(true);
@@ -260,6 +261,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       await channels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
+      const member = await channels.guildChat.guild.members.fetch(discord);
+      await member.roles.add(roles['[Member]'])
     } catch (e) {
       await channels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
