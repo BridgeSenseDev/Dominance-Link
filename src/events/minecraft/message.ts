@@ -118,7 +118,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       await channel.send({ embeds: [embed] });
     }
   } else if (msg.includes('The Guild has reached Level')) {
-    const level = msg.split(' ')[msg.split(' ').indexOf('Level') + 1]
+    const level = msg.split(' ')[msg.split(' ').indexOf('Level') + 1];
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
@@ -262,7 +262,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
       const member = await channels.guildChat.guild.members.fetch(discord);
-      await member.roles.add(roles['[Member]'])
+      await member.roles.add(roles['[Member]']);
     } catch (e) {
       await channels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
