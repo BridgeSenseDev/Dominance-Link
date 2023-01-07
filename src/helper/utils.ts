@@ -1,6 +1,7 @@
 import { Client, Message } from 'discord.js';
 import Database from 'better-sqlite3';
 import { rankColor, levelingXp } from './constants.js';
+import config from '../config.json' assert { type: 'json' };
 
 const db = new Database('guild.db');
 
@@ -239,4 +240,16 @@ export function addXp(discordId: string) {
   }
   db.prepare('UPDATE members SET (messages) = messages + 1 WHERE discord = (?)').run(discordId);
   global.lastMessage[discordId] = Math.floor(Date.now() / 1000).toString();
+}
+
+export async function hypixelRequest(url: string) {
+  try {
+    return await (
+      await fetch(url, {
+        headers: { 'API-Key': config.keys.hypixelApiKey }
+      })
+    ).json();
+  } catch (e) {
+    return null;
+  }
 }

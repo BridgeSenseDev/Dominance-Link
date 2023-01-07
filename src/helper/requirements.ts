@@ -1,5 +1,12 @@
 import { getNetworth } from 'skyhelper-networth';
-import { removeSectionSymbols, abbreviateNumber, formatNumber, uuidToName, skillAverage } from './utils.js';
+import {
+  removeSectionSymbols,
+  abbreviateNumber,
+  formatNumber,
+  uuidToName,
+  skillAverage,
+  hypixelRequest
+} from './utils.js';
 import config from '../config.json' assert { type: 'json' };
 
 function weeklyGexp(members: any, uuid: string) {
@@ -21,16 +28,12 @@ export default async function requirements(uuid: string, playerData: any) {
   let skywars;
   let skyblock;
   const name = await uuidToName(uuid);
-  const guildData = (
-    await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)).json()
-  ).guild;
+  const guildData = (await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`)).guild;
 
   // Get gamemode data
   let profileData;
   let bankBalance;
-  const { profiles } = await (
-    await fetch(`https://api.hypixel.net/skyblock/profiles?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)
-  ).json();
+  const { profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${uuid}`);
   if (profiles === null) {
     skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
   } else {

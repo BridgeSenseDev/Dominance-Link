@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import requirements from '../helper/requirements.js';
+import { hypixelRequest, nameToUuid } from '../helper/utils.js';
 
 export const data = new SlashCommandBuilder()
   .setName('reqs')
@@ -12,10 +13,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   let playerData;
   const ign = interaction.options.getString('ign');
   try {
-    uuid = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player.raw_id;
-    playerData = (
-      await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json()
-    ).player;
+    uuid = await nameToUuid(ign!);
+    playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
     if (playerData.displayname === undefined) {
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)

@@ -1,6 +1,5 @@
 import { ActivityType, Client } from 'discord.js';
-import { getLevel, sleep } from './utils.js';
-import config from '../config.json' assert { type: 'json' };
+import { getLevel, hypixelRequest, sleep } from './utils.js';
 import { chat } from '../handlers/workerHandler.js';
 import { channels } from '../events/discord/ready.js';
 
@@ -21,9 +20,7 @@ async function channelUpdate(client: Client) {
     await channels.members.setName(`🧑│All members: ${channels.members.guild.memberCount}`);
 
     // Guild level
-    const level = (
-      await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
-    ).guild.exp;
+    const level = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.exp;
     await channels.level.setName(`📈│Guild Level: ${getLevel(level)}`);
 
     // Online members

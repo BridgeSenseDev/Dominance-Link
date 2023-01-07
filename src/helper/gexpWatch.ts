@@ -3,7 +3,7 @@ import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
 import { channels } from '../events/discord/ready.js';
-import { doubleDigits } from './utils.js';
+import { doubleDigits, hypixelRequest } from './utils.js';
 import { NumberObject, StringObject } from '../types/global.d.js';
 
 const db = new Database('guild.db');
@@ -34,7 +34,7 @@ export default async function gexpWatch() {
     };
     const guildGexp: NumberObject = {};
     for (const i in gexpUrls) {
-      guildGexp[i] = (await (await fetch(gexpUrls[i])).json()).guild.exp;
+      guildGexp[i] = (await hypixelRequest(gexpUrls[i])).guild.exp;
     }
     const date = new Date();
     const today = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;

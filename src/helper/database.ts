@@ -5,7 +5,15 @@ import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage, removeSectionSymbols } from './utils.js';
+import {
+  doubleDigits,
+  formatNumber,
+  nameColor,
+  uuidToName,
+  skillAverage,
+  removeSectionSymbols,
+  hypixelRequest
+} from './utils.js';
 import { ranks, roles } from './constants.js';
 import { channels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
@@ -26,9 +34,7 @@ sheet.authorize((err) => {
 
 export async function weekly(client: Client) {
   schedule('00 50 11 * * 0', async () => {
-    const guild = (
-      await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
-    ).guild.members;
+    const guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
     for (let i = 0; i < guild.length; i++) {
       let weeklyGexp = 0;
       for (let j = 0; j < 7; j++) {
@@ -96,9 +102,7 @@ export async function weekly(client: Client) {
 export async function database() {
   setInterval(async () => {
     const members = [];
-    const guild = (
-      await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
-    ).guild.members;
+    const guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
     for (let i = 0; i < guild.length; i++) {
       members.push(guild[i].uuid);
       const tag = ranks[guild[i].rank];
@@ -140,9 +144,7 @@ export async function gsrun(sheets: JWT, client: Client) {
   setInterval(async () => {
     const gsapi = google.sheets({ version: 'v4', auth: sheets });
     const data = db.prepare('SELECT * FROM guildMembers').all();
-    const guild = (
-      await (await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`)).json()
-    ).guild.members;
+    const guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
     const array = [];
     for (let i = data.length - 1; i >= 0; i--) {
       for (let j = Object.keys(data[i]).length; j >= 0; j--) {
@@ -256,9 +258,7 @@ export async function players() {
           }
         }
       }
-      const { player } = await (
-        await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${data.uuid}`)
-      ).json();
+      const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${data.uuid}`);
       const { stats } = player;
       let bwStars;
       let bwFkdr;
@@ -299,9 +299,7 @@ export async function players() {
       let bankBalance;
       let networth;
       let sa = 0;
-      const { profiles } = await (
-        await fetch(`https://api.hypixel.net/skyblock/profiles?key=${config.keys.hypixelApiKey}&uuid=${data.uuid}`)
-      ).json();
+      const { profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${data.uuid}`);
       if (profiles === null) {
         networth = 0;
       } else {

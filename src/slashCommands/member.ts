@@ -2,7 +2,7 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 import Database from 'better-sqlite3';
 import { Canvas, Image } from 'skia-canvas';
 import renderBox, { renderSkin } from '../helper/render.js';
-import { abbreviateNumber, doubleDigits, nameToUuid, uuidToName } from '../helper/utils.js';
+import { abbreviateNumber, doubleDigits, hypixelRequest, nameToUuid, uuidToName } from '../helper/utils.js';
 import { StringObject } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
 
@@ -234,9 +234,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   );
 
   let online = '§cCurrently Offline';
-  const status = await (
-    await fetch(`https://api.hypixel.net/status?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)
-  ).json();
+  const status = await hypixelRequest(`https://api.hypixel.net/status?uuid=${uuid}`);
   if (status.session.online) {
     online = '§aCurrently Online';
   } else if ((await uuidToName(uuid)) in global.playtime) {

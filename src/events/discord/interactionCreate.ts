@@ -16,7 +16,7 @@ import {
   Guild
 } from 'discord.js';
 import Database from 'better-sqlite3';
-import { nameToUuid, removeSectionSymbols, uuidToName } from '../../helper/utils.js';
+import { hypixelRequest, nameToUuid, removeSectionSymbols, uuidToName } from '../../helper/utils.js';
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
@@ -84,9 +84,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.deferReply({ ephemeral: true });
       try {
         ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id));
-        playerData = (
-          await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json()
-        ).player;
+        playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
       } catch (e) {
         await member.roles.add(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         const embed = new EmbedBuilder()
@@ -251,13 +249,11 @@ export default async function execute(client: Client, interaction: Interaction) 
   } else if (interaction.type === InteractionType.ModalSubmit) {
     if (interaction.customId === 'verification') {
       await interaction.deferReply({ ephemeral: true });
-      let uuid;
       let disc;
       let name;
       const ign = interaction.fields.getTextInputValue('verificationInput');
-      try {
-        uuid = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player.raw_id;
-      } catch (e) {
+      const uuid = await nameToUuid(ign);
+      if (uuid === null) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
@@ -265,9 +261,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      const { player } = await (
-        await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)
-      ).json();
+      const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`);
       try {
         name = player.displayname;
         disc = player.socialMedia.links.DISCORD;
@@ -294,9 +288,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         let guildInfo;
         await member.roles.remove(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         await member.roles.add(interaction.guild!.roles.cache.get('445669382539051008') as Role);
-        const { guild } = await (
-          await fetch(`https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&player=${uuid}`)
-        ).json();
+        const { guild } = await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`);
         if (guild === null) {
           guildInfo = 'is not in Dominance';
         } else if (guild.name_lower === 'dominance') {
@@ -331,9 +323,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const q3 = interaction.fields.getTextInputValue('q3Input');
 
       const { uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id);
-      const playerData = (
-        await (await fetch(`https://api.hypixel.net/player?key=${config.keys.hypixelApiKey}&uuid=${uuid}`)).json()
-      ).player;
+      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
       const requirementData = await requirements(uuid, playerData);
       const name = await uuidToName(uuid);
 
