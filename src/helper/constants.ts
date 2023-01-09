@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/extensions
 import { StringObject } from '../types/global.d.js';
 
 export const levelingXp = [

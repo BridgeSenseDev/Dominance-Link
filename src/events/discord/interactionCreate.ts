@@ -69,7 +69,6 @@ export default async function execute(client: Client, interaction: Interaction) 
       const roleId = roles[interaction.customId];
       let msg;
       await interaction.deferReply({ ephemeral: true });
-      // eslint-disable-next-line no-underscore-dangle
       if (member.roles.resolve(roleId)) {
         await member.roles.remove(roleId);
         msg = `<:minus:1005843963686686730> <@&${roleId}>`;
