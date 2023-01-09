@@ -258,6 +258,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     }
     try {
       const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
+      db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discord, uuid);
       await channels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
