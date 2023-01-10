@@ -49,17 +49,17 @@ async function generateLeaderboardImage(message: string[]) {
 }
 
 async function generateLeaderboard(message: Message, order: string) {
-  const data = db.prepare(`SELECT uuid, nameColor, "${order}" FROM guildMembers ORDER BY "${order}" DESC`).all();
+  const data = db.prepare(`SELECT uuid, nameColor, "${order}" FROM guildMembers ORDER BY "${order}" ASC`).all();
   const leaderboard = [];
   const images = [];
 
   if (order === 'networth') {
     for (let i = 0; i < data.length; i++) {
-      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
+      leaderboard.push(`§e${data.length - i}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
     }
   } else if (order === 'playtime') {
     for (let i = 0; i < data.length; i++) {
-      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)}H`);
+      leaderboard.push(`§e${data.length - i}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)}H`);
     }
   } else if (
     order === 'weeklyGexp' ||
@@ -69,11 +69,11 @@ async function generateLeaderboard(message: Message, order: string) {
       ]
   ) {
     for (let i = 0; i < data.length; i++) {
-      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
+      leaderboard.push(`§e${data.length - i}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
     }
   } else {
     for (let i = 0; i < data.length; i++) {
-      leaderboard.push(`§e${i + 1}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
+      leaderboard.push(`§e${data.length - i}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
     }
   }
   for (let i = 12; i < 130; i += 13) {
