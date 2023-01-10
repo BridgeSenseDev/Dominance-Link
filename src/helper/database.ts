@@ -178,6 +178,7 @@ export async function gsrun(sheets: JWT, client: Client) {
       }
       array.push(Object.values(data[i]));
     }
+    array.sort((a: any, b: any) => b[4] - a[4]);
     const options = {
       spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
       range: 'Guild API!A2',
