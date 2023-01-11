@@ -102,9 +102,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     }
     try {
       waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
-    } catch (err) {
-      // Continue regardless of error
-    }
+    } catch (err) { /* empty */ }
     if (waitlist !== undefined) {
       await chat(`/g invite ${name}`);
       const channel = client.channels.cache.get(waitlist.channel) as TextChannel;
@@ -253,9 +251,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid);
       await client.channels.cache.get(channel)!.delete();
       db.prepare('DELETE FROM waitlist WHERE uuid = ?').run(uuid);
-    } catch (e) {
-      // Continue regardless of error
-    }
+    } catch (e) { /* empty */ }
     try {
       const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discord, uuid);
