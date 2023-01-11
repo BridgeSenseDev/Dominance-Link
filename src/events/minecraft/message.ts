@@ -70,10 +70,12 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
-    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+    try {
+      const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+      addXp(discordId);
+    } catch (e) { /* empty */ }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-    addXp(discordId);
   } else if (msg.includes('Officer >')) {
     await ocWebhook.send({
       username: 'Dominance',
