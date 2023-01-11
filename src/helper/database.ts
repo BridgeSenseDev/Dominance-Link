@@ -206,10 +206,14 @@ export async function players() {
       .prepare('SELECT discord FROM guildMembers')
       .all()
       .map((i) => i.discord);
-    const members = Array.from(memberRole.members);
+    const members = Array.from(memberRole.members).concat(
+      Array.from(activeRole.members),
+      Array.from(proRole.members),
+      Array.from(staffRole.members)
+    );
     for (let i = 0; i < members.length; i++) {
       if (!discordId.includes(members[i][0])) {
-        await members[i][1].roles.remove(memberRole);
+        await members[i][1].roles.remove([memberRole, activeRole, proRole]);
       }
     }
   }, 5 * 60 * 1000);
