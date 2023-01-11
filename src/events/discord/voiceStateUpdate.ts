@@ -1,11 +1,16 @@
 import { ChannelType, Client, Collection, GuildMember, VoiceState } from 'discord.js';
+import { sleep } from '../../helper/utils.js';
 import { channels } from './ready.js';
 
 export default async function execute(client: Client, oldState: VoiceState, newState: VoiceState) {
-  if (newState.guild.channels.cache.some(channel => channel.type === ChannelType.GuildVoice && channel.members.has(client.user!.id))) {
+  if (
+    newState.guild.channels.cache.some(
+      (channel) => channel.type === ChannelType.GuildVoice && channel.members.has(client.user!.id)
+    )
+  ) {
     newState.guild.channels.cache.forEach((channel) => {
-      if (!channel.isVoiceBased()) return
-      for (const member of  channel.members as Collection<string, GuildMember>) {
+      if (!channel.isVoiceBased()) return;
+      for (const member of channel.members as Collection<string, GuildMember>) {
         if (member[1].id !== client.user!.id) continue;
         if (channel.members.size > 1) {
           const queue = client.distube.getQueue(newState.guild);
@@ -21,8 +26,9 @@ export default async function execute(client: Client, oldState: VoiceState, newS
           }
         }
       }
-    })
+    });
   } else {
+    await sleep(5000);
     await client.distube.play(
       channels.music,
       'https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4FyS8kM?si=86cc479f1d954174'
