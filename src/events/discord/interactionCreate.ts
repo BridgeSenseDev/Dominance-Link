@@ -348,8 +348,8 @@ export default async function execute(client: Client, interaction: Interaction) 
         )
         .setDescription(
           `<:keycap_1_3d:1029711346297737277> **What games do you mainly play?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> ` +
-            `**Why should we accept you? (4 sentences)**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> **Do you know anyone from ` +
-            `the guild?**\n${q3}\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n${requirementData.requirementEmbed}`
+            `**Why should we accept you?**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> **Do you know anyone from the guild?**\n${q3}` +
+            `\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n${requirementData.requirementEmbed}`
         )
         .addFields(
           { name: '<:user:1029703318924165120> IGN: ', value: name, inline: true },
@@ -396,9 +396,9 @@ export default async function execute(client: Client, interaction: Interaction) 
         )
         .setDescription(
           `<:keycap_1_3d:1029711346297737277> **What games do you mainly play?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> ` +
-            `**Why should we accept you? (4 sentences)**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> **Do you know anyone from the ` +
-            `guild?**\n${q3}\n\n════ ⋆★⋆ ════\n\n**[Info]**\nApplications usually receive a response within 24 hours\nYou will be ` +
-            `**pinged** in this server if you have been accepted\nYou will receive a dm if you are rejected **unless** your dm's are closed`
+            `**Why should we accept you?**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> **Do you know anyone from the guild?**\n${q3}` +
+            `\n\n════ ⋆★⋆ ════\n\n**[Info]**\nApplications usually receive a response within 24 hours\nYou will be **pinged** in this ` +
+            `server if you have been accepted\nYou will receive a dm if you are rejected **unless** your dm's are closed`
         );
       await interaction.editReply({ embeds: [replyEmbed] });
     } else if (interaction.customId === 'breakModal') {
