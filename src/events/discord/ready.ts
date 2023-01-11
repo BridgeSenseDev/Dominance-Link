@@ -3,11 +3,11 @@ import { fileURLToPath } from 'url';
 import { Client, Message, TextChannel, VoiceChannel } from 'discord.js';
 import { database, gsrun, players, sheet, weekly } from '../../helper/database.js';
 import gexpWatch from '../../helper/gexpWatch.js';
-import unverified from '../../helper/unverified.js';
 import channelUpdate from '../../helper/channelUpdate.js';
 import { autoRejoin, startBot } from '../../handlers/workerHandler.js';
 import config from '../../config.json' assert { type: 'json' };
 import leaderboards from '../../helper/leaderboards.js';
+import { breakUpdate, unverifiedUpdate } from '../../helper/messageUpdate.js';
 
 let worker: Worker;
 
@@ -57,7 +57,8 @@ export default async function execute(client: Client) {
   weekly(client);
   gsrun(sheet, client);
   startBot();
-  unverified();
+  unverifiedUpdate();
+  breakUpdate();
   players();
   leaderboards();
 

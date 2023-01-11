@@ -16,7 +16,7 @@ import {
   Guild
 } from 'discord.js';
 import Database from 'better-sqlite3';
-import { hypixelRequest, nameToUuid, removeSectionSymbols, uuidToName } from '../../helper/utils.js';
+import { formatNumber, hypixelRequest, nameToUuid, removeSectionSymbols, uuidToName } from '../../helper/utils.js';
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
@@ -244,6 +244,20 @@ export default async function execute(client: Client, interaction: Interaction) 
         );
       await channels.applicationLogs.send({ embeds: [applicationEmbed] });
       await interaction.message.delete();
+    } else if (interaction.customId === 'break') {
+      const modal = new ModalBuilder().setCustomId('breakModal').setTitle('Break Form');
+      const q1Input = new TextInputBuilder()
+        .setCustomId('q1Input')
+        .setLabel('How long will you be inactive for?')
+        .setStyle(TextInputStyle.Short);
+      const q2Input = new TextInputBuilder()
+        .setCustomId('q2Input')
+        .setLabel('What is your reason for inactivity?')
+        .setStyle(TextInputStyle.Paragraph);
+      const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(q1Input);
+      const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(q2Input);
+      modal.addComponents(firstActionRow, secondActionRow);
+      await interaction.showModal(modal);
     }
   } else if (interaction.type === InteractionType.ModalSubmit) {
     if (interaction.customId === 'verification') {
@@ -387,6 +401,56 @@ export default async function execute(client: Client, interaction: Interaction) 
             `**pinged** in this server if you have been accepted\nYou will receive a dm if you are rejected **unless** your dm's are closed`
         );
       await interaction.editReply({ embeds: [replyEmbed] });
+    } else if (interaction.customId === 'breakModal') {
+      await interaction.deferReply({ ephemeral: true });
+      const q1 = interaction.fields.getTextInputValue('q1Input');
+      const q2 = interaction.fields.getTextInputValue('q2Input');
+
+      const { uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id);
+      const { joined, weeklyGexp } = db
+        .prepare('SELECT joined, weeklyGexp FROM guildMembers WHERE discord = ?')
+        .get(interaction.user.id);
+      const name = await uuidToName(uuid);
+
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.discordGray)
+        .setTitle(`${name}'s Break Application`)
+        .setThumbnail(
+          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+        )
+        .setDescription(
+          `<:keycap_1_3d:1029711346297737277> **How long will you be inactive for?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> ` +
+            `**What is your reason for inactivity?**\n${q2}`
+        )
+        .addFields(
+          {
+            name: '<:calendar_3d:1029713106550657055> Days in Guild: ',
+            value: `<t:${Math.floor(joined / 1000)}:R>`,
+            inline: true
+          },
+          { name: '<:mention:913408059425058817> Discord: ', value: `<@${interaction.user.id}>`, inline: true },
+          { name: '<:gexp:1062398074573574226> Weekly Gexp: ', value: `\`${formatNumber(weeklyGexp)!}\``, inline: true }
+        );
+      await channels.break.send({ embeds: [embed] });
+
+      const replyEmbed = new EmbedBuilder()
+        .setColor(config.colors.discordGray)
+        .setTitle(`${name}'s break form has been received`)
+        .setThumbnail(
+          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+        )
+        .setDescription(
+          `<:keycap_1_3d:1029711346297737277> **How long will you be inactive for?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> ` +
+            `**What is your reason for inactivity?**\n${q2}`
+        );
+      await interaction.editReply({ embeds: [replyEmbed] });
+      db.prepare('INSERT INTO breaks (uuid, discord, time, reason) VALUES (?, ?, ?, ?)').run(
+        uuid,
+        interaction.user.id,
+        q1,
+        q2
+      );
+      await (interaction.member as GuildMember).roles.add(interaction.guild!.roles.cache.get(roles.Break) as Role);
     }
   }
 }
