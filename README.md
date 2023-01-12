@@ -24,13 +24,24 @@
 
 ## Features
 
-- Bridges a Discord channel to Hypixel guild chat.
-  > <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Discord.png" alt="Hypixel Guild Chat Bot Discord Example" width="300" height="auto">
-- `/reqs` command to check whether you meet guild requirements.
-  > <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Requirements.png" alt="Discord Bot Requirements Example" width="300" height="auto">
-- `/online` command to show all online members from `/guild online` ingame.
-  > <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Online.png" alt="Discord Bot Online Example" width="300" height="auto">
-- Logs **All** ingame messages into a seperate log channel.
-  > <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Logs.png" alt="Discord Bot Logs Example" width="300" height="auto">
-- Automatic restart and joins, making for zero down-time.
+- Bridges a Discord channel to Hypixel guild chat
+- Logs all ingame messages into a seperate log channel
+- Automatic restart and joins, making for zero down-time
 - Automatically updates discord roles to match in-game ranks
+- Self updating google spreadsheet
+- Semi automatic applications and breaks 
+
+## Commands
+`/member` View individual guild member stats<br>
+`/online` Llst all the online members in the guild<br>
+`/reqs` Check if you meet our guild requirements
+<details>
+<summary>Music Commands</summary>
+<br>
+<code>/play</code> Play a track or playlist by proving a link or search query<br>
+<code>/skip</code> Skip the current song<br>
+<code>/queue</code> Lists the music queue<br>
+<code>/shuffle</code> Shuffle the queue<br>
+<code>/repeat</code> Repeat songs in the queue<br>
+<code>/clear</code> Clear the queue<br>
+</details>
