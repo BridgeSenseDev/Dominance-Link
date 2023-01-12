@@ -1,7 +1,7 @@
 <br />
 <p align="center">
   <a href="https://dominance.cf/discord">
-    <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Dominace Banner.png" alt="Dominance" width="400" height="auto">
+    <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Dominance Banner.png" alt="Dominance" width="400" height="auto">
   </a>
 </p>
   <h1 align="center">
