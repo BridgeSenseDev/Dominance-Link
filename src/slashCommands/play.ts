@@ -4,7 +4,7 @@ import { channels } from '../events/discord/ready.js';
 
 export const data = new SlashCommandBuilder()
   .setName('play')
-  .setDescription('Play a track of playlist by proving a link or search query')
+  .setDescription('Play a track or playlist by proving a link or search query')
   .addStringOption((option) =>
     option.setName('link-or-query').setDescription('Link or search query').setRequired(true)
   );
