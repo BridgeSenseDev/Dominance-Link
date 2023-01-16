@@ -299,6 +299,8 @@ export default async function execute(client: Client, interaction: Interaction) 
       }
       if (disc === interaction.user.tag) {
         let guildInfo;
+        db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
+        db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
         await member.roles.remove(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         await member.roles.add(interaction.guild!.roles.cache.get('445669382539051008') as Role);
         const { guild } = await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`);
@@ -306,12 +308,11 @@ export default async function execute(client: Client, interaction: Interaction) 
           guildInfo = 'is not in Dominance';
         } else if (guild.name_lower === 'dominance') {
           await member.roles.add(interaction.guild!.roles.cache.get(roles['[Member]']) as Role);
+          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(interaction.user.id, uuid);
           guildInfo = 'is in Dominance';
         } else {
           guildInfo = 'is not in Dominance';
         }
-        db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
-        db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
         const embed = new EmbedBuilder()
           .setColor(config.colors.green)
           .setTitle('Verification Successful')
