@@ -122,9 +122,5 @@ export default async function leaderboards() {
     generateLeaderboard(messages.networth, 'networth');
     await sleep(3000);
     generateLeaderboard(messages.skillAverage, 'skillAverage');
-    await sleep(3000);
-    generateLeaderboard(messages.swLevel, 'swLevel');
-    await sleep(3000);
-    generateLeaderboard(messages.swKdr, 'swKdr');
   }, 10 * 60 * 1000);
 }
