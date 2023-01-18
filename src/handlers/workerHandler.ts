@@ -42,7 +42,9 @@ export async function autoRejoin() {
       await channels.botStatus.send({ embeds: [embed] });
       try {
         quit();
-      } catch (err) { /* empty */ }
+      } catch (err) {
+        /* empty */
+      }
       worker.postMessage({ type: 'restartBot' });
     }
   }, 60 * 1000);

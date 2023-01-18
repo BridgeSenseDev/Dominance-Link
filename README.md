@@ -29,12 +29,14 @@
 - Automatic restart and joins, making for zero down-time
 - Automatically updates discord roles to match in-game ranks
 - Self updating google spreadsheet
-- Semi automatic applications and breaks 
+- Semi automatic applications and breaks
 
 ## Commands
+
 `/member` View individual guild member stats<br>
 `/online` Llst all the online members in the guild<br>
 `/reqs` Check if you meet our guild requirements
+
 <details>
 <summary>Music Commands</summary>
 <br>
