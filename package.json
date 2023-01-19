@@ -31,7 +31,7 @@
     "node-cron": "^3.0.2",
     "opusscript": "^0.0.8",
     "skia-canvas": "^1.0.1",
-    "skyhelper-networth": "^1.9.0",
+    "skyhelper-networth": "^1.10.0",
     "ytdl-core": "^4.11.2"
   },
   "devDependencies": {
