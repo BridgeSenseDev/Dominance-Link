@@ -31,8 +31,6 @@ if (fileURLToPath(import.meta.url).slice(-2) === 'js') {
 }
 
 export default async function execute(client: Client) {
-  console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
-
   for (let i = 0; i < Object.keys(config.messages).length; i++) {
     const channel = client.channels.cache.get(Object.values(config.messages)[i][0])!;
     messages[Object.keys(config.messages)[i]] = await (channel as TextChannel).messages.fetch(
@@ -69,6 +67,8 @@ export default async function execute(client: Client) {
   );
   client.distube.getQueue(channels.music.guild).setRepeatMode(2);
   await client.distube.shuffle(channels.music.guild);
+
+  console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
 }
 
 export { worker, channels, messages };
