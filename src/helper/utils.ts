@@ -250,6 +250,6 @@ export async function hypixelRequest(url: string) {
       })
     ).json();
   } catch (e) {
-    return null;
+    throw new Error("Couldn't get a response from the API");
   }
 }
