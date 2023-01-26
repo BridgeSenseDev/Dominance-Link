@@ -1,4 +1,4 @@
-import { Client, EmbedBuilder, TextChannel, WebhookClient } from 'discord.js';
+import { Client, EmbedBuilder, Role, TextChannel, ThreadChannel, WebhookClient } from 'discord.js';
 import Database from 'better-sqlite3';
 import { addXp, nameToUuid } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
@@ -232,9 +232,6 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         break;
       }
     }
-    await chat(
-      `/gc Welcome to Dominance, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`
-    );
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
@@ -260,6 +257,33 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     } catch (e) {
       /* empty */
     }
+    try {
+      const breakData = db.prepare('SELECT * FROM breaks WHERE uuid = ?').get(uuid);
+      const member = await channels.guildChat.guild.members.fetch(breakData.discord);
+      const thread = client.channels.cache.get(breakData.thread) as ThreadChannel;
+      db.prepare('DELETE FROM breaks WHERE uuid = ?').run(uuid);
+      await member.roles.remove(thread.guild!.roles.cache.get(roles.Break) as Role);
+      await member.roles.add(roles['[Member]']);
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.discordGray)
+        .setTitle(`Welcome back, ${name}!`)
+        .setDescription(`This thread has been archived. Enjoy your stay!`);
+      await thread.send({ embeds: [embed] });
+      await thread.setArchived();
+      db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(breakData.discord, uuid);
+      await chat(
+        `/gc Welcome back from your break, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`
+      );
+      await channels.guildChat.send(
+        `<a:wave_animated:1036265311390928897> Welcome back from your break, <@${breakData.discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
+      );
+      return;
+    } catch (e) {
+      /* empty */
+    }
+    await chat(
+      `/gc Welcome to Dominance, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`
+    );
     try {
       const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discord, uuid);

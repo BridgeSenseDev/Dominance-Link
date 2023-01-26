@@ -188,6 +188,7 @@ export async function gsrun(sheets: JWT, client: Client) {
 export async function players() {
   const client = (await import('../index.js')).default;
   const guild = client.guilds.cache.get('242357942664429568') as Guild;
+  const breakRole = guild.roles.cache.get(roles.Break) as Role;
   const memberRole = guild.roles.cache.get(roles['[Member]']) as Role;
   const activeRole = guild.roles.cache.get(roles['[Active]']) as Role;
   const proRole = guild.roles.cache.get(roles['[Pro]']) as Role;
@@ -330,4 +331,15 @@ export async function players() {
       count = 0;
     }
   }, 7 * 1000);
+  setInterval(async () => {
+    const breakMembers = db
+      .prepare('SELECT discord FROM breaks')
+      .all()
+      .map((i) => i.discord);
+    for (const member of Array.from(breakRole.members)) {
+      if (!breakMembers.includes(member[0])) {
+        await member[1].roles.remove(breakRole);
+      }
+    }
+  }, 5 * 60 * 1000);
 }

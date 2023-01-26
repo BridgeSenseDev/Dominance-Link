@@ -13,7 +13,9 @@ import {
   Interaction,
   GuildMember,
   Role,
-  Guild
+  Guild,
+  TextChannel,
+  ThreadChannel
 } from 'discord.js';
 import Database from 'better-sqlite3';
 import { formatNumber, hypixelRequest, nameToUuid, removeSectionSymbols, uuidToName } from '../../helper/utils.js';
@@ -258,6 +260,34 @@ export default async function execute(client: Client, interaction: Interaction) 
       const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(q2Input);
       modal.addComponents(firstActionRow, secondActionRow);
       await interaction.showModal(modal);
+    } else if (interaction.customId === 'endBreak') {
+      await interaction.deferReply();
+      const breakData = db.prepare('SELECT * FROM breaks WHERE discord = ?').get(interaction.user.id);
+      if (!breakData) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.discordGray)
+          .setDescription(`Only the owner can close this break form`);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+      console.log(db.prepare('SELECT uuid FROM guildMembers WHERE uuid = ?').get(breakData.uuid));
+      if (!db.prepare('SELECT uuid FROM guildMembers WHERE uuid = ?').get(breakData.uuid)) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.discordGray)
+          .setDescription(
+            `Please rejoin the guild before closing the break form.\nYou can rejoin by messaging DominanceLink in Hypixel`
+          );
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+      db.prepare('DELETE FROM breaks WHERE discord = ?').run(interaction.user.id);
+      await member.roles.remove(interaction.guild!.roles.cache.get(roles.Break) as Role);
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.discordGray)
+        .setTitle(`Welcome back, ${await uuidToName(breakData.uuid)}!`)
+        .setDescription(`This thread has been archived. Enjoy your stay!`);
+      await interaction.editReply({ embeds: [embed] });
+      await (interaction.channel as ThreadChannel).setArchived();
     }
   } else if (interaction.type === InteractionType.ModalSubmit) {
     if (interaction.customId === 'verification') {
@@ -406,8 +436,19 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.deferReply({ ephemeral: true });
       const q1 = interaction.fields.getTextInputValue('q1Input');
       const q2 = interaction.fields.getTextInputValue('q2Input');
-
       const { uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id);
+      let thread = db.prepare('SELECT thread FROM breaks WHERE discord = ?').get(interaction.user.id);
+      if (thread) {
+        const replyEmbed = new EmbedBuilder()
+          .setColor(config.colors.discordGray)
+          .setTitle(`Error!`)
+          .setDescription(`You already have an active break form in <#${thread.thread}>`)
+          .setThumbnail(
+            `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+          );
+        await interaction.editReply({ embeds: [replyEmbed] });
+        return;
+      }
       const { joined, weeklyGexp } = db
         .prepare('SELECT joined, weeklyGexp FROM guildMembers WHERE discord = ?')
         .get(interaction.user.id);
@@ -432,26 +473,40 @@ export default async function execute(client: Client, interaction: Interaction) 
           { name: '<:mention:913408059425058817> Discord: ', value: `<@${interaction.user.id}>`, inline: true },
           { name: '<:gexp:1062398074573574226> Weekly Gexp: ', value: `\`${formatNumber(weeklyGexp)!}\``, inline: true }
         );
-      await channels.break.send({ embeds: [embed] });
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId('endBreak')
+          .setLabel('End Break')
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji(':calendar_3d:1029713106550657055')
+      );
+      thread = await (interaction.channel as TextChannel).threads.create({
+        name,
+        type: ChannelType.PrivateThread,
+        invitable: false
+      });
+      await thread.join();
+      await thread.members.add(interaction.user);
+      await thread.send({ embeds: [embed], components: [row] });
 
       const replyEmbed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`${name}'s break form has been received`)
+        .setDescription(`You may update your break status in <#${thread.id}>`)
         .setThumbnail(
           `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-        )
-        .setDescription(
-          `<:keycap_1_3d:1029711346297737277> **How long will you be inactive for?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> ` +
-            `**What is your reason for inactivity?**\n${q2}`
         );
       await interaction.editReply({ embeds: [replyEmbed] });
-      db.prepare('INSERT INTO breaks (uuid, discord, time, reason) VALUES (?, ?, ?, ?)').run(
+      db.prepare('INSERT INTO breaks (uuid, discord, thread, time, reason) VALUES (?, ?, ?, ?, ?)').run(
         uuid,
         interaction.user.id,
+        thread.id,
         q1,
         q2
       );
-      await (interaction.member as GuildMember).roles.add(interaction.guild!.roles.cache.get(roles.Break) as Role);
+      await member.roles.add(interaction.guild!.roles.cache.get(roles.Break) as Role);
+
+      await channels.break.send({ embeds: [embed] });
     }
   }
 }

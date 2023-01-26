@@ -47,7 +47,11 @@ export async function breakUpdate() {
       });
 
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setCustomId('break').setLabel('Break Form').setStyle(ButtonStyle.Secondary).setEmoji('💤')
+      new ButtonBuilder()
+        .setCustomId('break')
+        .setLabel('Break Form')
+        .setStyle(ButtonStyle.Success)
+        .setEmoji(':moon:1067803032944922624')
     );
     await messages.break.edit({ embeds: [embed], components: [row] });
   }, 30 * 1000);
