@@ -274,4 +274,22 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       );
     }
   }
+  if (msg.includes('left the guild!') || msg.includes('was kicked')) {
+    let name = msg.substring(msg.search(/ (.*?) left/g) + 1, msg.lastIndexOf(' left'));
+    if (!name) {
+      name = msg.substring(msg.search(/ (.*?) was/g) + 1, msg.lastIndexOf(' was'));
+    }
+    const uuid = await nameToUuid(name);
+    const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
+    db.prepare('DELETE FROM guildMembers WHERE uuid = ?').run(uuid);
+    try {
+      const member = await channels.guildChat.guild.members.fetch(discord);
+      await member.roles.remove(roles['[Member]']);
+      await member.roles.remove(roles['[Active]']);
+      await member.roles.remove(roles['[Pro]']);
+      await member.roles.remove(roles['[Staff]']);
+    } catch (e) {
+      /* empty */
+    }
+  }
 }
