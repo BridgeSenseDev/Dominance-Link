@@ -270,7 +270,6 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      console.log(db.prepare('SELECT uuid FROM guildMembers WHERE uuid = ?').get(breakData.uuid));
       if (!db.prepare('SELECT uuid FROM guildMembers WHERE uuid = ?').get(breakData.uuid)) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
