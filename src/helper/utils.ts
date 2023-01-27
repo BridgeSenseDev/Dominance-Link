@@ -145,7 +145,7 @@ export function removeSectionSymbols(message: string) {
 }
 
 export function formatNumber(number: number) {
-  if (number === null) {
+  if (!number) {
     return null;
   }
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -164,7 +164,7 @@ export function nameColor(player: any) {
   }
   if (player.monthlyPackageRank && player.monthlyPackageRank !== 'NONE') {
     let monthlyPlusColor = rankColor[player.rankPlusColor];
-    if (monthlyPlusColor === undefined) {
+    if (!monthlyPlusColor) {
       monthlyPlusColor = '§c';
     }
     if (player.monthlyRankColor === 'GOLD') {
@@ -176,7 +176,7 @@ export function nameColor(player: any) {
   }
   if (player.newPackageRank === 'MVP_PLUS') {
     let monthlyPlusColor = rankColor[player.rankPlusColor];
-    if (monthlyPlusColor === undefined) {
+    if (!monthlyPlusColor) {
       monthlyPlusColor = '§c';
     }
     return `§b[MVP${monthlyPlusColor}+§b] ${player.displayname}`;

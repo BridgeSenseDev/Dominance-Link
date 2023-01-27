@@ -19,7 +19,7 @@ export default async function execute(client: Client, message: Message) {
     await chat(message.content);
   } else if (message.channel.id === channels.minecraftLink.id) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
-    if (user === undefined) {
+    if (!user) {
       try {
         ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(message.author.id));
       } catch (err) {
@@ -53,7 +53,7 @@ export default async function execute(client: Client, message: Message) {
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
   } else if (message.channel.id === channels.officerChat.id) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
-    if (user === undefined) {
+    if (!user) {
       try {
         ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(message.author.id));
       } catch (e) {

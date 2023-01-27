@@ -29,7 +29,7 @@ const db = new Database('guild.db');
 const names = db.prepare('SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC').all();
 const choices: string[] = [];
 for (let i = 0; i < names.length; i++) {
-  if (names[i].nameColor !== null) {
+  if (names[i].nameColor) {
     choices.push(
       removeSectionSymbols(names[i].nameColor).split(' ')[
         removeSectionSymbols(names[i].nameColor).split(' ').length - 1
@@ -114,7 +114,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId === 'apply') {
-      if (db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id) === undefined) {
+      if (!db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id)) {
         await member.roles.add(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
@@ -296,7 +296,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       let name;
       const ign = interaction.fields.getTextInputValue('verificationInput');
       const uuid = await nameToUuid(ign);
-      if (uuid === null) {
+      if (!uuid) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
@@ -309,7 +309,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         name = player.displayname;
         disc = player.socialMedia.links.DISCORD;
       } catch (e) {
-        if (name === undefined) {
+        if (!name) {
           const embed = new EmbedBuilder()
             .setColor(config.colors.red)
             .setTitle('Verification Unsuccessful')
@@ -334,7 +334,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         await member.roles.remove(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         await member.roles.add(interaction.guild!.roles.cache.get('445669382539051008') as Role);
         const { guild } = await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`);
-        if (guild === null) {
+        if (!guild) {
           guildInfo = 'is not in Dominance';
         } else if (guild.name_lower === 'dominance') {
           await member.roles.add(interaction.guild!.roles.cache.get(roles['[Member]']) as Role);

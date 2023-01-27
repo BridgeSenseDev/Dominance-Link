@@ -14,13 +14,13 @@ export default async function execute(client: Client, oldState: VoiceState, newS
         if (member[1].id !== client.user!.id) continue;
         if (channel.members.size > 1) {
           const queue = client.distube.getQueue(newState.guild);
-          if (queue === undefined) return;
+          if (!queue) return;
           if (queue.paused) {
             queue.resume(newState.guild);
           }
         } else if (channel.members.size === 1) {
           const queue = client.distube.getQueue(newState.guild);
-          if (queue === undefined) return;
+          if (!queue) return;
           if (!queue.paused) {
             queue.pause(newState.guild);
           }

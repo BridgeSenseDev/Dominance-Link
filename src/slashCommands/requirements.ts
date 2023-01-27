@@ -15,7 +15,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   try {
     uuid = await nameToUuid(ign!);
     playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
-    if (playerData.displayname === undefined) {
+    if (!playerData.displayname) {
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle('Error')

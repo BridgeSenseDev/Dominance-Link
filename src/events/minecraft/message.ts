@@ -40,7 +40,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   if (msg.includes('joined.')) {
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
-    if (uuid === null) {
+    if (!uuid) {
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
@@ -48,7 +48,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   } else if (msg.includes('left.')) {
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
-    if (uuid === null) {
+    if (!uuid) {
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
@@ -66,7 +66,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     });
     let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
-    if (uuid === null) {
+    if (!uuid) {
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
@@ -99,7 +99,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     let [, , name] = msg.split(' ');
     name = name.slice(0, -1);
     let uuid = await nameToUuid(name);
-    if (uuid === null) {
+    if (!uuid) {
       [, name] = msg.split(' ');
       name = name.slice(0, -1);
       uuid = await nameToUuid(name);
@@ -109,7 +109,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     } catch (err) {
       /* empty */
     }
-    if (waitlist !== undefined) {
+    if (waitlist) {
       await chat(`/g invite ${name}`);
       const channel = client.channels.cache.get(waitlist.channel) as TextChannel;
       const embed = new EmbedBuilder()

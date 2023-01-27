@@ -27,7 +27,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const uuid = await nameToUuid(interaction.options.getString('name')!);
   const member = db.prepare('SELECT * FROM guildMembers WHERE uuid = (?)').get(uuid);
-  if (member === undefined) {
+  if (!member) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
@@ -122,7 +122,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const date = new Date();
   for (let i = 0; i < 30; i++) {
     const gexp = member[`${date.getFullYear()}-${doubleDigits(date.getMonth() + 1)}-${doubleDigits(date.getDate())}`];
-    if (gexp !== null && gexp !== undefined) {
+    if (gexp && gexp) {
       monthlyGexp += gexp;
     }
     date.setDate(date.getDate() - 1);
@@ -136,11 +136,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   let dcMessages;
-  if (member.discord === null) {
+  if (member.discord!) {
     dcMessages = 0;
   } else {
     dcMessages = db.prepare('SELECT messages FROM members WHERE discord = ?').get(member.discord).messages;
-    if (dcMessages === null) {
+    if (!dcMessages) {
       dcMessages = 0;
     }
   }

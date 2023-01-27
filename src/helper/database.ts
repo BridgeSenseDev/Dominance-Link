@@ -57,7 +57,7 @@ export async function weekly(client: Client) {
       .prepare('SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC')
       .all('[Active]');
     for (let i = 0; i < pro.length; i++) {
-      if (pro[i].discord !== null) {
+      if (pro[i].discord) {
         proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} (${await client.users.fetch(
           pro[i].discord
         )}) - ${formatNumber(pro[i].weeklyGexp)}`;
@@ -66,7 +66,7 @@ export async function weekly(client: Client) {
       }
     }
     for (let i = 0; i < active.length; i++) {
-      if (active[i].discord !== null) {
+      if (active[i].discord) {
         activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} (${await client.users.fetch(
           active[i].discord
         )}) - ${formatNumber(active[i].weeklyGexp)}`;
@@ -156,7 +156,7 @@ export async function gsrun(sheets: JWT, client: Client) {
         }
       } else {
         const discordId = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(data[i].uuid);
-        if (discordId !== undefined) {
+        if (discordId) {
           db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId.discord, data[i].uuid);
           data[i].discord = discordId.discord;
           try {
@@ -213,17 +213,17 @@ export async function players() {
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
     let member;
-    if (data !== undefined) {
-      if (data.discord !== null) {
+    if (data) {
+      if (data.discord) {
         try {
           member = await guild.members.fetch(data.discord);
         } catch (e) {
           db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
         }
-        if (!['[Owner]', '[GM]'].includes(data.tag) && member !== undefined) {
+        if (!['[Owner]', '[GM]'].includes(data.tag) && member) {
           const ign = await uuidToName(data.uuid);
           await member.roles.add(memberRole);
-          if (data.targetRank !== null && data.tag !== '[Staff]' && data.targetRank !== data.tag) {
+          if (data.targetRank && data.tag !== '[Staff]' && data.targetRank !== data.tag) {
             if (data.targetRank === '[Pro]') {
               await chat(`/g promote ${ign}`);
             } else if (data.targetRank === '[Active]') {
@@ -280,7 +280,7 @@ export async function players() {
       } catch (e) {
         duelsWins = 0;
       }
-      if (duelsWins === undefined) {
+      if (!duelsWins) {
         duelsWins = 0;
       }
       try {
@@ -296,7 +296,7 @@ export async function players() {
       let networth;
       let sa = 0;
       const { profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${data.uuid}`);
-      if (profiles === null) {
+      if (!profiles) {
         networth = 0;
       } else {
         profiles.forEach((i: any) => {
@@ -305,7 +305,7 @@ export async function players() {
             bankBalance = i.banking?.balance;
           }
         });
-        if (profileData === undefined) {
+        if (!profileData) {
           networth = 0;
         } else {
           ({ networth } = await getNetworth(profileData, bankBalance));

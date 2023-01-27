@@ -12,7 +12,7 @@ export async function unverifiedUpdate() {
     const data = db.prepare('SELECT * FROM guildMembers').all();
     let description = 'List of guild members who are unverified / not in the discord\n';
     for (let i = data.length - 1; i >= 0; i--) {
-      if (data[i].discord === null) {
+      if (!data[i].discord) {
         description += `\n${await uuidToName(data[i].uuid)}`;
       }
     }

@@ -34,7 +34,7 @@ export default async function requirements(uuid: string, playerData: any) {
   let profileData;
   let bankBalance;
   const { profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${uuid}`);
-  if (profiles === null) {
+  if (!profiles) {
     skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
   } else {
     profiles.forEach((i: any) => {
@@ -43,7 +43,7 @@ export default async function requirements(uuid: string, playerData: any) {
         bankBalance = i.banking?.balance;
       }
     });
-    if (profileData === undefined) {
+    if (!profileData) {
       skyblock = ['No Skyblock Data / API Disabled', 'No Skyblock Data / API Disabled'];
     } else {
       const { networth } = await getNetworth(profileData, bankBalance);
@@ -69,7 +69,7 @@ export default async function requirements(uuid: string, playerData: any) {
   } catch (e) {
     bedwars = ['No Bedwars Data', 'No Bedwars Data', 'No Bedwars Data'];
   }
-  if (bedwars[2] === undefined) {
+  if (!bedwars[2]) {
     bedwars = ['No Bedwars Data', 'No Bedwars Data', 'No Bedwars Data'];
   }
 
@@ -77,7 +77,7 @@ export default async function requirements(uuid: string, playerData: any) {
     playerData.stats.Duels.wins,
     Math.round((playerData.stats.Duels.wins / playerData.stats.Duels.losses) * 100) / 100
   ];
-  if (duels[0] === undefined) {
+  if (!duels[0]) {
     duels = ['No Duels Data', 'No Duels Data'];
   }
 
@@ -108,7 +108,7 @@ export default async function requirements(uuid: string, playerData: any) {
   let color;
   let reqs;
 
-  if (playerData.achievementPoints === undefined) {
+  if (!playerData.achievementPoints) {
     requirementEmbed +=
       ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `No Achievements Data`\n\n';
   } else if (playerData.achievementPoints >= 9000) {
