@@ -28,10 +28,7 @@ export async function weekly(client: Client) {
   schedule('00 50 11 * * 0', async () => {
     const guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
     for (let i = 0; i < guild.length; i++) {
-      let weeklyGexp = 0;
-      for (let j = 0; j < 7; j++) {
-        weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
-      }
+      const weeklyGexp = (Object.values(guild[i].expHistory) as number[]).reduce((acc, cur) => acc + cur, 0)
       const tag = ranks[guild[i].rank];
       if (['[Staff]', '[Pro]', '[Active]', '[Member]'].includes(tag)) {
         if (weeklyGexp > 250000) {
@@ -98,10 +95,7 @@ export async function database() {
     for (let i = 0; i < guild.length; i++) {
       members.push(guild[i].uuid);
       const tag = ranks[guild[i].rank];
-      let weeklyGexp = 0;
-      for (let j = 0; j < 7; j++) {
-        weeklyGexp += Number(Object.values(guild[i].expHistory)[j]);
-      }
+      const weeklyGexp = (Object.values(guild[i].expHistory) as number[]).reduce((acc, cur) => acc + cur, 0)
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime, tag) VALUES (?, ?, ?, ?)').run(
         guild[i].uuid,
         0,
@@ -194,6 +188,7 @@ export async function players() {
   const proRole = guild.roles.cache.get(roles['[Pro]']) as Role;
   const staffRole = guild.roles.cache.get(roles['[Staff]']) as Role;
   let count = 0;
+
   setInterval(async () => {
     const discordId = db
       .prepare('SELECT discord FROM guildMembers')
@@ -210,127 +205,114 @@ export async function players() {
       }
     }
   }, 5 * 60 * 1000);
+
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
-    let member;
-    if (data) {
-      if (data.discord) {
-        try {
-          member = await guild.members.fetch(data.discord);
-        } catch (e) {
-          db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
-        }
-        if (!['[Owner]', '[GM]'].includes(data.tag) && member) {
-          const ign = await uuidToName(data.uuid);
-          await member.roles.add(memberRole);
-          if (data.targetRank && data.tag !== '[Staff]' && data.targetRank !== data.tag) {
-            if (data.targetRank === '[Pro]') {
-              await chat(`/g promote ${ign}`);
-            } else if (data.targetRank === '[Active]') {
-              if (data.tag === '[Member]') {
-                await chat(`/g promote ${ign}`);
-              } else if (data.tag === '[Pro]') {
-                await chat(`/g demote ${ign}`);
-              }
-            } else if (data.targetRank === '[Member]') {
-              await chat(`/g demote ${ign}`);
-            }
-          }
-          if (!member.displayName.includes(ign)) {
-            await member.setNickname(ign);
-          }
-          if (!data.tag.includes(['[Member]'])) {
-            await member.roles.add(guild.roles.cache.get(roles[data.tag]) as Role);
-          }
-          if (data.tag === '[Member]') {
-            await member.roles.remove(activeRole);
-            await member.roles.remove(proRole);
-            await member.roles.remove(staffRole);
-          }
-          if (data.tag === '[Active]') {
-            await member.roles.remove(proRole);
-            await member.roles.remove(staffRole);
-          }
-          if (data.tag === '[Pro]') {
-            await member.roles.remove(staffRole);
-          }
-        }
-      }
-      const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${data.uuid}`);
-      const { stats } = player;
-      let bwStars;
-      let bwFkdr;
-      let duelsWins;
-      let duelsWlr;
-      try {
-        bwStars = player.achievements.bedwars_level;
-      } catch (e) {
-        bwStars = 0;
-      }
-      try {
-        bwFkdr = (stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars).toFixed(1);
-      } catch (e) {
-        bwFkdr = 0;
-      }
-      if (Number.isNaN(Number(bwFkdr))) {
-        bwFkdr = 0;
-      }
-      try {
-        duelsWins = stats.Duels.wins;
-      } catch (e) {
-        duelsWins = 0;
-      }
-      if (!duelsWins) {
-        duelsWins = 0;
-      }
-      try {
-        duelsWlr = (stats.Duels.wins / stats.Duels.losses).toFixed(1);
-      } catch (e) {
-        duelsWlr = 0;
-      }
-      if (Number.isNaN(Number(duelsWlr))) {
-        duelsWlr = 0;
-      }
-      let profileData;
-      let bankBalance;
-      let networth;
-      let sa = 0;
-      const { profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${data.uuid}`);
-      if (!profiles) {
-        networth = 0;
-      } else {
-        profiles.forEach((i: any) => {
-          if (i.selected === true) {
-            profileData = i.members[data.uuid];
-            bankBalance = i.banking?.balance;
-          }
-        });
-        if (!profileData) {
-          networth = 0;
-        } else {
-          ({ networth } = await getNetworth(profileData, bankBalance));
-          sa = await skillAverage(profileData);
-        }
-      }
-
-      db.prepare(
-        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
-      ).run(
-        nameColor(player),
-        bwStars,
-        bwFkdr,
-        duelsWins,
-        duelsWlr,
-        Math.round(networth * 100) / 100,
-        Math.round(sa * 100) / 100,
-        data.uuid
-      );
+    if (!data) {
+      return;
     }
     count++;
+    let profiles;
+    let player;
+    try {
+      ({ profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${data.uuid}`));
+      ({ player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${data.uuid}`));
+    } catch (e) {
+      return;
+    }
+    if (data.discord) {
+      let member;
+      try {
+        member = await guild.members.fetch(data.discord);
+      } catch (e) {
+        db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
+      }
+      if (!['[Owner]', '[GM]'].includes(data.tag) && member) {
+        const ign = await uuidToName(data.uuid);
+        await member.roles.add(memberRole);
+        if (data.targetRank && data.tag !== '[Staff]' && data.targetRank !== data.tag) {
+          if (data.targetRank === '[Pro]') {
+            await chat(`/g promote ${ign}`);
+          } else if (data.targetRank === '[Active]') {
+            if (data.tag === '[Member]') {
+              await chat(`/g promote ${ign}`);
+            } else if (data.tag === '[Pro]') {
+              await chat(`/g demote ${ign}`);
+            }
+          } else if (data.targetRank === '[Member]') {
+            await chat(`/g demote ${ign}`);
+          }
+        }
+        if (!member.displayName.includes(ign)) {
+          await member.setNickname(ign);
+        }
+        if (!data.tag.includes(['[Member]'])) {
+          await member.roles.add(guild.roles.cache.get(roles[data.tag]) as Role);
+        }
+        if (data.tag === '[Member]') {
+          await member.roles.remove(activeRole);
+          await member.roles.remove(proRole);
+          await member.roles.remove(staffRole);
+        }
+        if (data.tag === '[Active]') {
+          await member.roles.remove(proRole);
+          await member.roles.remove(staffRole);
+        }
+        if (data.tag === '[Pro]') {
+          await member.roles.remove(staffRole);
+        }
+      }
+    }
+    const { stats } = player;
+    let bwStars = '0';
+    let bwFkdr = '0';
+    let duelsWins = '0';
+    let duelsWlr = '0';
+    let networth = 0;
+    let sa = 0;
+
+    if (player.achievements.bedwars_level) {
+      bwStars = player.achievements.bedwars_level;
+    }
+    if (stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars) {
+      bwFkdr = (stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars).toFixed(1);
+    } else if (Number.isNaN(stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars) && stats.Bedwars.final_kills_bedwars) {
+      bwFkdr = stats.Bedwars.final_kills_bedwars
+    }
+    if (stats.Duels.wins) {
+      duelsWins = stats.Duels.wins;
+    }
+    if (stats.Duels.wins / stats.Duels.losses) {
+      duelsWlr = (stats.Duels.wins / stats.Duels.losses).toFixed(1);
+    } else if (Number.isNaN(stats.Duels.wins / stats.Duels.losses) && stats.Duels.wins) {
+      duelsWlr = stats.Duels.wins
+    }
+
+    if (profiles) {
+      const profile = profiles.find((i: any) => i.selected);
+      const profileData = profile.members[data.uuid];
+      const bankBalance = profile.banking?.balance;
+      ({ networth } = await getNetworth(profileData, bankBalance));
+      sa = await skillAverage(profileData);
+    }
+
+    db.prepare(
+      'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
+    ).run(
+      nameColor(player),
+      bwStars,
+      bwFkdr,
+      duelsWins,
+      duelsWlr,
+      Math.round(networth * 100) / 100,
+      Math.round(sa * 100) / 100,
+      data.uuid
+    );
     if (count === 126) {
       count = 0;
     }
   }, 7 * 1000);
+
   setInterval(async () => {
     const breakMembers = db
       .prepare('SELECT discord FROM breaks')

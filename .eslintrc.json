@@ -27,6 +27,7 @@
     "no-console": "off",
     "no-param-reassign": "off",
     "no-plusplus": "off",
-    "guard-for-in": "off"
+    "guard-for-in": "off",
+    "no-unsafe-optional-chaining": "off"
   }
 }
