@@ -26,18 +26,6 @@ import { roles } from '../../helper/constants.js';
 
 const db = new Database('guild.db');
 
-const names = db.prepare('SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC').all();
-const choices: string[] = [];
-for (let i = 0; i < names.length; i++) {
-  if (names[i].nameColor) {
-    choices.push(
-      removeSectionSymbols(names[i].nameColor).split(' ')[
-        removeSectionSymbols(names[i].nameColor).split(' ').length - 1
-      ]
-    );
-  }
-}
-
 export default async function execute(client: Client, interaction: Interaction) {
   const member = interaction.member as GuildMember;
   if (interaction.isChatInputCommand()) {
@@ -52,6 +40,13 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
   } else if (interaction.isAutocomplete()) {
+    const names = db.prepare('SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC').all();
+    const choices: string[] = [];
+    for (const name of names) {
+      if (name.nameColor) {
+        choices.push(removeSectionSymbols(name.nameColor).split(' ')[name.nameColor.split(' ').length - 1]);
+      }
+    }
     const focusedValue = interaction.options.getFocused();
     const filtered = choices
       .filter((choice) => choice.toLowerCase().startsWith(focusedValue.toLowerCase()))

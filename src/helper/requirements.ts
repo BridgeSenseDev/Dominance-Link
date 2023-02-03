@@ -12,7 +12,7 @@ import config from '../config.json' assert { type: 'json' };
 export default async function requirements(uuid: string, playerData: any) {
   let guildData;
   let profiles;
-  let guild: [number, number] | undefined;
+  let guild: [string, string] | undefined;
   let bedwars: [number, number, number] | undefined;
   let duels: [number, number] | undefined;
   let skywars: [string, number] | undefined;
@@ -22,7 +22,7 @@ export default async function requirements(uuid: string, playerData: any) {
     guildData = (await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`)).guild;
     ({ profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${uuid}`));
   } catch (e) {
-    return;
+    /* empty */
   }
 
   // Get gamemode data
@@ -57,14 +57,16 @@ export default async function requirements(uuid: string, playerData: any) {
   const kdr = Math.round((playerData.stats.SkyWars?.kills / playerData.stats.SkyWars?.deaths) * 100) / 100;
   if (kdr) {
     skywars = [removeSectionSymbols(playerData.stats.SkyWars.levelFormatted), kdr];
-  } else if (!kdr && playerData.stats.Skwars?.kills) {
+  } else if (!kdr && playerData.stats.Skywars?.kills) {
     skywars = [removeSectionSymbols(playerData.stats.SkyWars.levelFormatted), playerData.stats.Skywars?.kills];
   }
 
   if (guildData) {
     const member = guildData.members.find((i: any) => i.uuid === uuid);
-    const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0)
-    guild = [guildData.name, weeklyGexp];
+    const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
+    guild = [guildData.name, weeklyGexp.toString()];
+  } else {
+    guild = ['None', 'Not in a guild'];
   }
 
   // Check requirements

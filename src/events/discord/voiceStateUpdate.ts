@@ -1,4 +1,4 @@
-import { ChannelType, Client, Collection, GuildMember, VoiceState } from 'discord.js';
+import { ChannelType, Client, VoiceState } from 'discord.js';
 import { sleep } from '../../helper/utils.js';
 import { channels } from './ready.js';
 
@@ -8,10 +8,10 @@ export default async function execute(client: Client, oldState: VoiceState, newS
       (channel) => channel.type === ChannelType.GuildVoice && channel.members.has(client.user!.id)
     )
   ) {
-    newState.guild.channels.cache.forEach((channel) => {
+    for (const channel of Array.from(newState.guild.channels.cache.values())) {
       if (!channel.isVoiceBased()) return;
-      for (const member of channel.members as Collection<string, GuildMember>) {
-        if (member[1].id !== client.user!.id) continue;
+      for (const member of Array.from(channel.members.values())) {
+        if (member.id !== client.user!.id) continue;
         if (channel.members.size > 1) {
           const queue = client.distube.getQueue(newState.guild);
           if (!queue) return;
@@ -26,7 +26,7 @@ export default async function execute(client: Client, oldState: VoiceState, newS
           }
         }
       }
-    });
+    }
   } else {
     await sleep(5000);
     await client.distube.play(

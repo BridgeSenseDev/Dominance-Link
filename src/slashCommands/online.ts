@@ -13,9 +13,9 @@ function formatMembers(message: string[] | string[][]) {
       }
     } else if (message[i].includes('●')) {
       message[i] = (message[i] as string).split(/\s+/);
-      for (let j = 0; j < message[i].length; j++) {
-        if (!(message[i][j].includes('●') || message[i][j].includes('[') || message[i][j] === '')) {
-          online += `\`${message[i][j]}\`, `;
+      for (const subString of message[i]) {
+        if (!(subString.includes('●') || subString.includes('[') || subString === '')) {
+          online += `\`${subString}\`, `;
         }
       }
     }

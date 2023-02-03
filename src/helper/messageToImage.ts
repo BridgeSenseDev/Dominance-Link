@@ -7,9 +7,10 @@ function getHeight(message: string) {
   const canvas = new Canvas(1, 1);
   const ctx = canvas.getContext('2d');
   const splitMessageSpace = message.split(' ');
-  splitMessageSpace.forEach((msg, i) => {
-    if (!msg.startsWith('§')) splitMessageSpace[i] = `§r${msg}`;
-  });
+  for (const msg in splitMessageSpace) {
+    if (!splitMessageSpace[msg].startsWith('§')) splitMessageSpace[msg] = `§r${splitMessageSpace[msg]}`;
+  }
+
   const splitMessage = splitMessageSpace.join(' ').split(/§|\n/g);
   splitMessage.shift();
   ctx.font = '40px Uni Sans Heavy';
@@ -17,14 +18,14 @@ function getHeight(message: string) {
   let width = 5;
   let height = 35;
 
-  Object.values(splitMessage).forEach((msg) => {
+  for (const msg of splitMessage) {
     const currentMessage = msg.substring(1);
     if (width + ctx.measureText(currentMessage).width > 1000 || msg.charAt(0) === 'n') {
       width = 5;
       height += 40;
     }
     width += ctx.measureText(currentMessage).width;
-  });
+  }
   if (width === 5) height -= 40;
 
   return height + 10;
@@ -35,9 +36,9 @@ export default async function generateMessageImage(message: string) {
   const canvas = new Canvas(1000, canvasHeight);
   const ctx = canvas.getContext('2d');
   const splitMessageSpace = message.split(' ');
-  splitMessageSpace.forEach((msg, i) => {
-    if (!msg.startsWith('§')) splitMessageSpace[i] = `§r${msg}`;
-  });
+  for (const msg in splitMessageSpace) {
+    if (!splitMessageSpace[msg].startsWith('§')) splitMessageSpace[msg] = `§r${splitMessageSpace[msg]}`;
+  }
   const splitMessage = splitMessageSpace.join(' ').split(/§|\n/g);
   splitMessage.shift();
   ctx.shadowOffsetX = 4;
@@ -47,7 +48,8 @@ export default async function generateMessageImage(message: string) {
 
   let width = 5;
   let height = 35;
-  Object.values(splitMessage).forEach((msg) => {
+
+  for (const msg of splitMessage) {
     const colorCode = rgbaColor[msg.charAt(0)];
     const currentMessage = msg.substring(1);
     if (width + ctx.measureText(currentMessage).width > 1000 || msg.charAt(0) === 'n') {
@@ -59,7 +61,7 @@ export default async function generateMessageImage(message: string) {
     }
     ctx.fillText(currentMessage, width, height);
     width += ctx.measureText(currentMessage).width;
-  });
+  }
   const buffer = await canvas.toBuffer('png');
   return buffer;
 }

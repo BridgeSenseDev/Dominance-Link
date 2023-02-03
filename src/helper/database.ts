@@ -27,19 +27,19 @@ sheet.authorize((err) => {
 export async function weekly(client: Client) {
   schedule('00 50 11 * * 0', async () => {
     const guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
-    for (let i = 0; i < guild.length; i++) {
-      const weeklyGexp = (Object.values(guild[i].expHistory) as number[]).reduce((acc, cur) => acc + cur, 0)
-      const tag = ranks[guild[i].rank];
+    for (const member of guild) {
+      const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
+      const tag = ranks[member.rank];
       if (['[Staff]', '[Pro]', '[Active]', '[Member]'].includes(tag)) {
         if (weeklyGexp > 250000) {
-          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Pro]', guild[i].uuid);
+          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Pro]', member.uuid);
         } else if (weeklyGexp > 150000) {
-          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Active]', guild[i].uuid);
+          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Active]', member.uuid);
         } else {
-          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Member]', guild[i].uuid);
+          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Member]', member.uuid);
         }
       } else {
-        db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(tag, guild[i].uuid);
+        db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(tag, member.uuid);
       }
     }
   });
@@ -53,7 +53,7 @@ export async function weekly(client: Client) {
     const active = db
       .prepare('SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC')
       .all('[Active]');
-    for (let i = 0; i < pro.length; i++) {
+    for (const i in pro) {
       if (pro[i].discord) {
         proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} (${await client.users.fetch(
           pro[i].discord
@@ -62,7 +62,7 @@ export async function weekly(client: Client) {
         proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} - ${formatNumber(pro[i].weeklyGexp)}`;
       }
     }
-    for (let i = 0; i < active.length; i++) {
+    for (const i in active) {
       if (active[i].discord) {
         activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} (${await client.users.fetch(
           active[i].discord
@@ -92,12 +92,12 @@ export async function database() {
   setInterval(async () => {
     const members = [];
     const guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
-    for (let i = 0; i < guild.length; i++) {
-      members.push(guild[i].uuid);
-      const tag = ranks[guild[i].rank];
-      const weeklyGexp = (Object.values(guild[i].expHistory) as number[]).reduce((acc, cur) => acc + cur, 0)
+    for (const member of guild) {
+      members.push(member.uuid);
+      const tag = ranks[member.rank];
+      const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime, tag) VALUES (?, ?, ?, ?)').run(
-        guild[i].uuid,
+        member.uuid,
         0,
         0,
         tag
@@ -105,22 +105,20 @@ export async function database() {
       try {
         db.prepare(
           `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${
-            Object.keys(guild[i].expHistory)[0]
+            Object.keys(member.expHistory)[0]
           }") = (?, ?, ?, ?) WHERE uuid = (?)`
-        ).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
+        ).run(tag, weeklyGexp, member.joined, Object.values(member.expHistory)[0], member.uuid);
       } catch {
-        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(guild[i].expHistory)[0]}" INTEGER`).run();
+        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(member.expHistory)[0]}" INTEGER`).run();
         db.prepare(
           `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${
-            Object.keys(guild[i].expHistory)[0]
+            Object.keys(member.expHistory)[0]
           }") = (?, ?, ?, ?) WHERE uuid = (?)`
-        ).run(tag, weeklyGexp, guild[i].joined, Object.values(guild[i].expHistory)[0], guild[i].uuid);
+        ).run(tag, weeklyGexp, member.joined, Object.values(member.expHistory)[0], member.uuid);
       }
     }
     let placeholders = '?';
-    for (let i = 0; i < members.length - 1; i++) {
-      placeholders += ', ?';
-    }
+    placeholders += ', ?'.repeat(members.length - 1);
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
     db.prepare('DELETE FROM guildMembers WHERE uuid IS NULL').run();
   }, 1 * 60 * 1000);
@@ -199,9 +197,9 @@ export async function players() {
       Array.from(proRole.members),
       Array.from(staffRole.members)
     );
-    for (let i = 0; i < members.length; i++) {
-      if (!discordId.includes(members[i][0])) {
-        await members[i][1].roles.remove([memberRole, activeRole, proRole]);
+    for (const member of members) {
+      if (!discordId.includes(member[0])) {
+        await member[1].roles.remove([memberRole, activeRole, proRole]);
       }
     }
   }, 5 * 60 * 1000);
@@ -276,8 +274,11 @@ export async function players() {
     }
     if (stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars) {
       bwFkdr = (stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars).toFixed(1);
-    } else if (Number.isNaN(stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars) && stats.Bedwars.final_kills_bedwars) {
-      bwFkdr = stats.Bedwars.final_kills_bedwars
+    } else if (
+      Number.isNaN(stats.Bedwars.final_kills_bedwars / stats.Bedwars.final_deaths_bedwars) &&
+      stats.Bedwars.final_kills_bedwars
+    ) {
+      bwFkdr = stats.Bedwars.final_kills_bedwars;
     }
     if (stats.Duels.wins) {
       duelsWins = stats.Duels.wins;
@@ -285,7 +286,7 @@ export async function players() {
     if (stats.Duels.wins / stats.Duels.losses) {
       duelsWlr = (stats.Duels.wins / stats.Duels.losses).toFixed(1);
     } else if (Number.isNaN(stats.Duels.wins / stats.Duels.losses) && stats.Duels.wins) {
-      duelsWlr = stats.Duels.wins
+      duelsWlr = stats.Duels.wins;
     }
 
     if (profiles) {

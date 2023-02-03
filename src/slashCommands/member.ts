@@ -129,9 +129,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   let lifetimeGexp = 0;
-  for (let i = 0; i < Object.keys(member).length; i++) {
-    if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(member)[i])) {
-      lifetimeGexp += Number(Object.values(member)[i]);
+  for (const i in member) {
+    if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(i)) {
+      lifetimeGexp += Number(member[i]);
     }
   }
 
@@ -187,8 +187,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   let totalWeeklyGexp = 0;
   const allWeeklyGexp = db.prepare('SELECT weeklyGexp FROM guildMembers').all();
-  for (let i = 0; i < allWeeklyGexp.length; i++) {
-    totalWeeklyGexp += allWeeklyGexp[i].weeklyGexp;
+  for (const i of allWeeklyGexp) {
+    totalWeeklyGexp += i.weeklyGexp;
   }
 
   renderBox(
@@ -209,10 +209,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   let totalLifetimeGexp = 0;
   const allLifetimeGexp = db.prepare('SELECT * FROM guildMembers').all();
-  for (let i = 0; i < allLifetimeGexp.length; i++) {
-    for (let j = 0; j < Object.keys(allLifetimeGexp[i]).length; j++) {
-      if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(allLifetimeGexp[i])[j])) {
-        totalLifetimeGexp += Number(Object.values(allLifetimeGexp[i])[j]);
+  for (const memberData of allLifetimeGexp) {
+    for (const i in memberData) {
+      if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(i)) {
+        totalLifetimeGexp += Number(memberData[i]);
       }
     }
   }

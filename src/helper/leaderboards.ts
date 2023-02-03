@@ -21,9 +21,9 @@ async function generateLeaderboardImage(message: string[]) {
     } catch (e) {
       continue;
     }
-    splitMessageSpace.forEach((msg, j) => {
-      if (!msg.startsWith('§')) splitMessageSpace[j] = `§r${msg}`;
-    });
+    for (const msg in splitMessageSpace) {
+      if (!splitMessageSpace[msg].startsWith('§')) splitMessageSpace[msg] = `§r${splitMessageSpace[msg]}`;
+    }
     const splitMessage = splitMessageSpace.join(' ').split(/§|\n/g);
     splitMessage.shift();
     ctx.shadowOffsetX = 4;
@@ -31,8 +31,7 @@ async function generateLeaderboardImage(message: string[]) {
     ctx.shadowColor = '#131313';
     ctx.font = '40px Minecraft';
 
-    // eslint-disable-next-line no-loop-func
-    Object.values(splitMessage).forEach((msg: string) => {
+    for (const msg of splitMessage) {
       const colorCode = rgbaColor[msg.charAt(0)];
       const currentMessage = msg.substring(1);
       if (colorCode) {
@@ -40,7 +39,7 @@ async function generateLeaderboardImage(message: string[]) {
       }
       ctx.fillText(currentMessage, width, height);
       width += ctx.measureText(currentMessage).width;
-    });
+    }
     width = 5;
     height += 40;
   }
@@ -54,12 +53,14 @@ async function generateLeaderboard(message: Message, order: string) {
   const images = [];
 
   if (order === 'networth') {
-    for (let i = 0; i < data.length; i++) {
-      leaderboard.push(`§e${data.length - i}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
+    for (const i in data) {
+      leaderboard.push(`§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
     }
   } else if (order === 'playtime') {
-    for (let i = 0; i < data.length; i++) {
-      leaderboard.push(`§e${data.length - i}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)}H`);
+    for (const i in data) {
+      leaderboard.push(
+        `§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)}H`
+      );
     }
   } else if (
     order === 'weeklyGexp' ||
@@ -68,12 +69,12 @@ async function generateLeaderboard(message: Message, order: string) {
         Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1
       ]
   ) {
-    for (let i = 0; i < data.length; i++) {
-      leaderboard.push(`§e${data.length - i}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
+    for (const i in data) {
+      leaderboard.push(`§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
     }
   } else {
-    for (let i = 0; i < data.length; i++) {
-      leaderboard.push(`§e${data.length - i}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
+    for (const i in data) {
+      leaderboard.push(`§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
     }
   }
   for (let i = 12; i < 130; i += 13) {

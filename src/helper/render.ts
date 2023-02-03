@@ -32,14 +32,13 @@ function renderText(
     x += width / 2 - ctx.measureText(removeSectionSymbols(text)).width / 2;
     y += height / 2;
     const splitMessageSpace = text.split(' ');
-
-    splitMessageSpace.forEach((msg, i) => {
-      if (!msg.startsWith('§')) splitMessageSpace[i] = `§r${msg}`;
-    });
+    for (const msg in splitMessageSpace) {
+      if (!splitMessageSpace[msg].startsWith('§')) splitMessageSpace[msg] = `§r${splitMessageSpace[msg]}`;
+    }
     const splitMessage = splitMessageSpace.join(' ').split(/§|\n/g);
     splitMessage.shift();
 
-    Object.values(splitMessage).forEach((msg) => {
+    for (const msg of splitMessage) {
       const colorCode = rgbaColor[msg.charAt(0)];
       const currentMessage = msg.substring(1);
       if (colorCode) {
@@ -53,7 +52,7 @@ function renderText(
       }
       ctx.fillText(currentMessage, Math.round(x), y);
       x += ctx.measureText(currentMessage).width;
-    });
+    }
   } else {
     let wordX = x;
     let splitMessageSpace = header.split(' ');
@@ -62,13 +61,13 @@ function renderText(
     ctx.shadowOffsetX = 2;
     ctx.shadowOffsetY = 2;
 
-    splitMessageSpace.forEach((msg, i) => {
-      if (!msg.startsWith('§')) splitMessageSpace[i] = `§r${msg}`;
-    });
+    for (const msg in splitMessageSpace) {
+      if (!splitMessageSpace[msg].startsWith('§')) splitMessageSpace[msg] = `§r${splitMessageSpace[msg]}`;
+    }
     let splitMessage = splitMessageSpace.join(' ').split(/§|\n/g);
     splitMessage.shift();
 
-    Object.values(splitMessage).forEach((msg) => {
+    for (const msg of splitMessage) {
       const colorCode = rgbaColor[msg.charAt(0)];
       const currentMessage = msg.substring(1);
       if (colorCode) {
@@ -86,7 +85,7 @@ function renderText(
         y + textY[0]
       );
       wordX += ctx.measureText(currentMessage).width;
-    });
+    }
 
     ctx.font = font;
     ctx.shadowOffsetX = 3;
@@ -94,13 +93,13 @@ function renderText(
 
     splitMessageSpace = text.split(' ');
 
-    splitMessageSpace.forEach((msg, i) => {
-      if (!msg.startsWith('§')) splitMessageSpace[i] = `§r${msg}`;
-    });
+    for (const msg in splitMessageSpace) {
+      if (!splitMessageSpace[msg].startsWith('§')) splitMessageSpace[msg] = `§r${splitMessageSpace[msg]}`;
+    }
     splitMessage = splitMessageSpace.join(' ').split(/§|\n/g);
     splitMessage.shift();
 
-    Object.values(splitMessage).forEach((msg) => {
+    for (const msg of splitMessage) {
       const colorCode = rgbaColor[msg.charAt(0)];
       const currentMessage = msg.substring(1);
       if (colorCode) {
@@ -118,7 +117,7 @@ function renderText(
         y + textY[1]
       );
       x += ctx.measureText(currentMessage).width;
-    });
+    }
   }
 
   ctx.shadowOffsetX = 0;

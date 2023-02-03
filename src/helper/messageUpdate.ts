@@ -28,7 +28,7 @@ export async function breakUpdate() {
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM breaks').all();
     let description = '';
-    for (let i = 0; i < data.length; i++) {
+    for (const i in data) {
       description += `\n${bullet} ${await uuidToName(data[i].uuid)}`;
     }
 

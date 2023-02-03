@@ -27,7 +27,7 @@ export default async function gexpWatch() {
     const gexpUrls: StringObject = {
       dominance: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`,
       rebel: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Rebel`,
-      cronos: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Cronos`,
+      cronos: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Sailor%20Moon`,
       dawns: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=The%20Dawns%20Awakening`,
       abyss: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=The%20Abyss`,
       lucid: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Lucid`

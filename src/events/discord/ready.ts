@@ -31,20 +31,20 @@ if (fileURLToPath(import.meta.url).slice(-2) === 'js') {
 }
 
 export default async function execute(client: Client) {
-  for (let i = 0; i < Object.keys(config.messages).length; i++) {
-    const channel = client.channels.cache.get(Object.values(config.messages)[i][0])!;
-    messages[Object.keys(config.messages)[i]] = await (channel as TextChannel).messages.fetch(
-      Object.values(config.messages)[i][1]
-    );
+  for (const message in config.messages) {
+    type ConfigMessages = keyof typeof config.messages;
+    const channel = client.channels.cache.get(config.messages[message as ConfigMessages][0]);
+    messages[message] = await (channel as TextChannel).messages.fetch(config.messages[message as ConfigMessages][1]);
   }
 
-  for (let i = 0; i < Object.keys(config.channels).length; i++) {
-    const channel = client.channels.cache.get(Object.values(config.channels)[i])!;
+  for (const channelName in config.channels) {
+    type ConfigChannels = keyof typeof config.channels;
+    const channel = client.channels.cache.get(config.channels[channelName as ConfigChannels])!;
     if (channel.isTextBased()) {
-      channels[Object.keys(config.channels)[i]] = channel as TextChannel;
+      channels[channelName] = channel as TextChannel;
     }
     if (channel.isVoiceBased()) {
-      channels[Object.keys(config.channels)[i]] = channel as VoiceChannel;
+      channels[channelName] = channel as VoiceChannel;
     }
   }
 

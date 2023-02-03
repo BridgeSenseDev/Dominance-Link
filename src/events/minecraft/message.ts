@@ -87,7 +87,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
     const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
-    if (uuid == null) {
+    if (!uuid) {
       [name] = msg.replace(/Officer > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
@@ -213,9 +213,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         headers: { 'X-Api-Key': config.keys.apiNinjasKey }
       })
     ).json();
-    for (let i = 0; i < funFacts.length; i++) {
-      if (funFacts[i].fact.length < 150) {
-        funFact = funFacts[i].fact;
+    for (const i of funFacts) {
+      if (i.fact.length < 150) {
+        funFact = i.fact;
         break;
       }
     }
