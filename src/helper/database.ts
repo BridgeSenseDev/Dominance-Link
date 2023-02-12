@@ -161,8 +161,15 @@ export async function players() {
       if (!['[Owner]', '[GM]'].includes(data.tag) && member) {
         const ign = await uuidToName(data.uuid);
         await member.roles.add(memberRole);
-        if (!member.displayName.includes(ign)) {
-          await member.setNickname(ign);
+        const { displayName } = member;
+        if (!displayName.toUpperCase().includes(ign.toUpperCase())) {
+          if (/\(.*?\)/.test(displayName.split(' ')[1])) {
+            await member.setNickname(displayName.replace(displayName.split(' ')[0], ign));
+          } else {
+            await member.setNickname(ign);
+          }
+        } else if (!displayName.includes(ign)) {
+          await member.setNickname(displayName.replace(new RegExp(ign, 'gi'), ign));
         }
         if (!data.tag.includes(['[Member]', '[Staff]'])) {
           await member.roles.add(guild.roles.cache.get(roles[data.tag]) as Role);

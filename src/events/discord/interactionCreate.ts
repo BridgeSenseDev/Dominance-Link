@@ -327,6 +327,16 @@ export default async function execute(client: Client, interaction: Interaction) 
         db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
         await member.roles.remove(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         await member.roles.add(interaction.guild!.roles.cache.get('445669382539051008') as Role);
+        const { displayName } = member;
+        if (!displayName.toUpperCase().includes(name.toUpperCase())) {
+          if (/\(.*?\)/.test(displayName.split(' ')[1])) {
+            await member.setNickname(displayName.replace(displayName.split(' ')[0], name));
+          } else {
+            await member.setNickname(name);
+          }
+        } else if (!displayName.includes(name)) {
+          await member.setNickname(displayName.replace(new RegExp(name, 'gi'), name));
+        }
         const { guild } = await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`);
         if (!guild) {
           guildInfo = 'is not in Dominance';
