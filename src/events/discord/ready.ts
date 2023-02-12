@@ -1,7 +1,7 @@
 import { Worker } from 'worker_threads';
 import { fileURLToPath } from 'url';
 import { Client, Message, TextChannel, VoiceChannel } from 'discord.js';
-import { database, gsrun, players, sheet, weekly } from '../../helper/database.js';
+import { database, gsrun, players, sheet } from '../../helper/database.js';
 import gexpWatch from '../../helper/gexpWatch.js';
 import channelUpdate from '../../helper/channelUpdate.js';
 import { autoRejoin, startBot } from '../../handlers/workerHandler.js';
@@ -52,7 +52,6 @@ export default async function execute(client: Client) {
   channelUpdate(client);
   autoRejoin();
   database();
-  weekly(client);
   gsrun(sheet, client);
   startBot();
   unverifiedUpdate();

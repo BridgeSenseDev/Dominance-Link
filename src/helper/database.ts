@@ -1,14 +1,11 @@
-import { schedule } from 'node-cron';
 import { google } from 'googleapis';
 import Database from 'better-sqlite3';
 import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
-import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
+import { Client, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { doubleDigits, formatNumber, nameColor, uuidToName, skillAverage, hypixelRequest } from './utils.js';
+import { nameColor, uuidToName, skillAverage, hypixelRequest } from './utils.js';
 import { ranks, roles } from './constants.js';
-import { channels } from '../events/discord/ready.js';
-import { chat } from '../handlers/workerHandler.js';
 
 const db = new Database('guild.db');
 
@@ -23,70 +20,6 @@ sheet.authorize((err) => {
     console.log('[SHEETS] Successfully connected to spreadsheet');
   }
 });
-
-export async function weekly(client: Client) {
-  schedule('00 50 11 * * 0', async () => {
-    const guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
-    for (const member of guild) {
-      const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
-      const tag = ranks[member.rank];
-      if (['[Staff]', '[Pro]', '[Active]', '[Member]'].includes(tag)) {
-        if (weeklyGexp > 250000) {
-          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Pro]', member.uuid);
-        } else if (weeklyGexp > 150000) {
-          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Active]', member.uuid);
-        } else {
-          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Member]', member.uuid);
-        }
-      } else {
-        db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(tag, member.uuid);
-      }
-    }
-  });
-
-  schedule('00 55 11 * * 0', async () => {
-    let proDesc = '';
-    let activeDesc = '';
-    const pro = db
-      .prepare('SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC')
-      .all('[Pro]');
-    const active = db
-      .prepare('SELECT uuid, discord, weeklyGexp FROM guildMembers WHERE targetRank = ? ORDER BY weeklyGexp DESC')
-      .all('[Active]');
-    for (const i in pro) {
-      if (pro[i].discord) {
-        proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} (${await client.users.fetch(
-          pro[i].discord
-        )}) - ${formatNumber(pro[i].weeklyGexp)}`;
-      } else {
-        proDesc += `\n\`${i + 1}.\` ${await uuidToName(pro[i].uuid)} - ${formatNumber(pro[i].weeklyGexp)}`;
-      }
-    }
-    for (const i in active) {
-      if (active[i].discord) {
-        activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} (${await client.users.fetch(
-          active[i].discord
-        )}) - ${formatNumber(active[i].weeklyGexp)}`;
-      } else {
-        activeDesc += `\n\`${i + 1}.\` ${await uuidToName(active[i].uuid)} - ${formatNumber(active[i].weeklyGexp)}`;
-      }
-    }
-    const date = new Date();
-    date.setDate(date.getDate() - 1);
-    const previous = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
-    date.setDate(date.getDate() - 6);
-    const prevWeek = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
-    const embed = new EmbedBuilder()
-      .setColor(config.colors.discordGray)
-      .setTitle(`Weekly Roles Update ${previous} - ${prevWeek}`)
-      .setDescription(
-        `Congrats to the following **PRO** members${proDesc}\n\nCongrats to the following **ACTIVE** members${activeDesc}\n\n**Detailed ` +
-          `stats can be found in https://dominance.cf/sheets**`
-      )
-      .setImage(config.guild.banner);
-    await channels.announcements.send({ content: '<@&1031926129822539786>', embeds: [embed] });
-  });
-}
 
 export async function database() {
   setInterval(async () => {
@@ -228,19 +161,6 @@ export async function players() {
       if (!['[Owner]', '[GM]'].includes(data.tag) && member) {
         const ign = await uuidToName(data.uuid);
         await member.roles.add(memberRole);
-        if (data.targetRank && data.tag !== '[Staff]' && data.targetRank !== data.tag) {
-          if (data.targetRank === '[Pro]') {
-            await chat(`/g promote ${ign}`);
-          } else if (data.targetRank === '[Active]') {
-            if (data.tag === '[Member]') {
-              await chat(`/g promote ${ign}`);
-            } else if (data.tag === '[Pro]') {
-              await chat(`/g demote ${ign}`);
-            }
-          } else if (data.targetRank === '[Member]') {
-            await chat(`/g demote ${ign}`);
-          }
-        }
         if (!member.displayName.includes(ign)) {
           await member.setNickname(ign);
         }
