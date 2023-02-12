@@ -164,7 +164,7 @@ export async function players() {
         if (!member.displayName.includes(ign)) {
           await member.setNickname(ign);
         }
-        if (!data.tag.includes(['[Member]'])) {
+        if (!data.tag.includes(['[Member]', '[Staff]'])) {
           await member.roles.add(guild.roles.cache.get(roles[data.tag]) as Role);
         }
         if (data.tag === '[Member]') {
