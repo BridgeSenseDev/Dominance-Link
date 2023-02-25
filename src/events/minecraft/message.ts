@@ -254,9 +254,10 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`Welcome back, ${name}!`)
-        .setDescription(`This thread has been archived. Enjoy your stay!`);
+        .setDescription(`This thread has been archived and closed. Enjoy your stay!`);
       await thread.send({ embeds: [embed] });
       await thread.setArchived();
+      await thread.setLocked();
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(breakData.discord, uuid);
       await chat(
         `/gc Welcome back from your break, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`
