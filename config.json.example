@@ -1,0 +1,65 @@
+{
+  "keys": {
+    "discordBotToken": "",
+    "hypixelApiKey": "",
+    "logWebhookUrl": "",
+    "gcWebhookUrl": "",
+    "ocWebhookUrl": "",
+    "apiNinjasKey": ""
+  },
+  "messages": {
+    "weeklyGexp": ["", ""],
+    "dailyGexp": ["", ""],
+    "playtime": ["", ""],
+    "guildMessages": ["", ""],
+    "bwStars": ["", ""],
+    "bwFkdr": ["", ""],
+    "duelsWins": ["", ""],
+    "duelsWlr": ["", ""],
+    "networth": ["", ""],
+    "skillAverage": ["", ""],
+    "swLevel": ["", ""],
+    "swKdr": ["", ""],
+    "unverified": ["", ""]
+  },
+  "channels": {
+    "botStatus": "",
+    "chatLogs": "",
+    "minecraftLink": "",
+    "online": "",
+    "members": "",
+    "level": "",
+    "applications": "",
+    "officerChat": "",
+    "music": "",
+    "guildLogs": "",
+    "applicationLogs": "",
+    "guildWatch": "",
+    "welcome": "",
+    "guildChat": "",
+    "announcements": "",
+    "guildAnnouncements": ""
+  },
+  "minecraft": {
+    "ign": ""
+  },
+  "guild": {
+    "gexpReq": "",
+    "gexpReqNum": 0,
+    "icon": "",
+    "banner": ""
+  },
+  "colors": {
+    "yellow": 16572208,
+    "red": 14171198,
+    "discordGray": 3092790,
+    "green": 2981190
+  },
+  "emojis": {
+    "bullet": ""
+  },
+  "sheets": {
+    "privateKey": "",
+    "clientEmail": ""
+  }
+}
