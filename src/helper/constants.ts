@@ -1,4 +1,5 @@
 import { StringObject } from '../types/global.d.js';
+import config from '../config.json' assert { type: 'json' };
 
 export const levelingXp = [
   50, 125, 200, 300, 500, 750, 1000, 1500, 2000, 3500, 5000, 7500, 10000, 15000, 20000, 30000, 50000, 75000, 100000,
@@ -80,8 +81,8 @@ export function dividers(amount: number) {
   return '<:divider:1053686643380461618>'.repeat(amount);
 }
 
-export const bullet = '<:bullet:1053696563773456485>';
+export const { bullet } = config.emojis;
 
-export const sub = '<:sub:1053696986177609808>';
+export const { sub } = config.emojis;
 
-export const invis = '<:invis:1053698615903785010>';
+export const { invis } = config.emojis;

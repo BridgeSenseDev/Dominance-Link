@@ -22,7 +22,7 @@ import { formatNumber, hypixelRequest, nameToUuid, removeSectionSymbols, uuidToN
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
-import { roles } from '../../helper/constants.js';
+import { bullet, roles } from '../../helper/constants.js';
 
 const db = new Database('guild.db');
 
@@ -158,9 +158,9 @@ export default async function execute(client: Client, interaction: Interaction) 
             .setColor(config.colors.green)
             .setTitle(`Congrats ${name}, your application has been accepted!`)
             .setDescription(
-              `**How to get started:**\n${config.emojis.bullet} **Join The Guild**\nYou can be invited to the guild anytime without ` +
+              `**How to get started:**\n${bullet} **Join The Guild**\nYou can be invited to the guild anytime without ` +
                 `staff. Just type \`/msg DominanceLink .\` in-game or if you are muted, type \`/immuted DominanceLink\`\n\n` +
-                `You won't be able to see guild channels until you have joined in-game\n\n${config.emojis.bullet} **Confused?**\n` +
+                `You won't be able to see guild channels until you have joined in-game\n\n${bullet} **Confused?**\n` +
                 `Feel free to ask any questions here, only ping staff if needed!`
             )
             .setThumbnail(

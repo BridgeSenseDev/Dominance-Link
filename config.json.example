@@ -56,7 +56,9 @@
     "green": 2981190
   },
   "emojis": {
-    "bullet": ""
+    "bullet": "",
+    "sub": "",
+    "invis": ""
   },
   "sheets": {
     "privateKey": "",

@@ -8,6 +8,7 @@ import {
   TextChannel
 } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
+import { bullet } from '../helper/constants.js';
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
@@ -22,23 +23,23 @@ client.on('ready', async () => {
       {
         name: '<a:economy:1006182871314219169> Economy Roles',
         value:
-          `${config.emojis.bullet} <@&800074267944681512>\n${config.emojis.bullet} <@&488352639671599125>\n` +
-          `${config.emojis.bullet} <@&488352623884500992>\n${config.emojis.bullet} <@&488352607807733791>\n` +
-          `${config.emojis.bullet} <@&1028890537979297853>\n${config.emojis.bullet} <@&488352576568557568>\n` +
-          `${config.emojis.bullet} <@&488352546579152907>\n${config.emojis.bullet} <@&488352526110818304>\n` +
-          `${config.emojis.bullet} <@&488352505953255440>\n${config.emojis.bullet} <@&488352481634418710>\n` +
-          `${config.emojis.bullet} <@&488352447819939861>\n${config.emojis.bullet} <@&488352345613271070>\n` +
-          `${config.emojis.bullet} <@&477063574309830667>\n${config.emojis.bullet} <@&465226964677165056>\n` +
-          `${config.emojis.bullet} <@&1028900715189514350>\n${config.emojis.bullet} <@&349212066164244480>\n` +
-          `${config.emojis.bullet} <@&348946342707462144>\n${config.emojis.bullet} <@&348938634227089411>`,
+          `${bullet} <@&800074267944681512>\n${bullet} <@&488352639671599125>\n` +
+          `${bullet} <@&488352623884500992>\n${bullet} <@&488352607807733791>\n` +
+          `${bullet} <@&1028890537979297853>\n${bullet} <@&488352576568557568>\n` +
+          `${bullet} <@&488352546579152907>\n${bullet} <@&488352526110818304>\n` +
+          `${bullet} <@&488352505953255440>\n${bullet} <@&488352481634418710>\n` +
+          `${bullet} <@&488352447819939861>\n${bullet} <@&488352345613271070>\n` +
+          `${bullet} <@&477063574309830667>\n${bullet} <@&465226964677165056>\n` +
+          `${bullet} <@&1028900715189514350>\n${bullet} <@&349212066164244480>\n` +
+          `${bullet} <@&348946342707462144>\n${bullet} <@&348938634227089411>`,
         inline: true
       },
       {
         name: '<a:talking:1004962079154896967> Discord Activity Roles',
         value:
-          `${config.emojis.bullet} <@&755123430256279633>\n${config.emojis.bullet} <@&932285657903161374>\n` +
-          `${config.emojis.bullet} <@&919688791361466368>\n${config.emojis.bullet} <@&932284834791960628>\n` +
-          `${config.emojis.bullet} <@&755122545488822534>\n${config.emojis.bullet} <@&755123236114792468>`,
+          `${bullet} <@&755123430256279633>\n${bullet} <@&932285657903161374>\n` +
+          `${bullet} <@&919688791361466368>\n${bullet} <@&932284834791960628>\n` +
+          `${bullet} <@&755122545488822534>\n${bullet} <@&755123236114792468>`,
         inline: true
       },
       {
@@ -49,8 +50,8 @@ client.on('ready', async () => {
       {
         name: '<:staff:1006186955941347419> Guild Member Roles',
         value:
-          `${config.emojis.bullet} <@&1005725104430395452>\n${config.emojis.bullet} <@&1031566725432492133>\n` +
-          `${config.emojis.bullet} <@&950083054326677514>\n${config.emojis.bullet} <@&1031926129822539786>`,
+          `${bullet} <@&1005725104430395452>\n${bullet} <@&1031566725432492133>\n` +
+          `${bullet} <@&950083054326677514>\n${bullet} <@&1031926129822539786>`,
         inline: true
       }
     );
