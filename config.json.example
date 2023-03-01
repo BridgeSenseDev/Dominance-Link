@@ -58,7 +58,8 @@
   "emojis": {
     "bullet": "",
     "sub": "",
-    "invis": ""
+    "invis": "",
+    "divider": ""
   },
   "sheets": {
     "privateKey": "",

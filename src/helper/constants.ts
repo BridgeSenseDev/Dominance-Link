@@ -78,7 +78,7 @@ export const roles: StringObject = {
 };
 
 export function dividers(amount: number) {
-  return '<:divider:1053686643380461618>'.repeat(amount);
+  return config.emojis.divider.repeat(amount);
 }
 
 export const { bullet } = config.emojis;
