@@ -1,5 +1,6 @@
 import { Client, EmbedBuilder, Message, Role } from 'discord.js';
 import Database from 'better-sqlite3';
+import Filter from 'bad-words';
 import { addXp, formatMentions, uuidToName } from '../../helper/utils.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
@@ -36,8 +37,8 @@ export default async function execute(client: Client, message: Message) {
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(message.author.id, uuid);
       user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     }
-    message.content = (await formatMentions(client, message))!;
-    message.content = message.content.replace(/\n/g, '');
+    message.content = (await formatMentions(client, message))!.replace(/\n/g, '');
+    message.content = new Filter().clean(message.content.replace(/[^\x00-\x7F]/g, '*'));
     let length;
     try {
       ({ length } = `/gc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`);
@@ -70,8 +71,8 @@ export default async function execute(client: Client, message: Message) {
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(message.author.id, uuid);
       user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     }
-    message.content = (await formatMentions(client, message))!;
-    message.content = message.content.replace(/\n/g, '');
+    message.content = (await formatMentions(client, message))!.replace(/\n/g, '');
+    message.content = new Filter().clean(message.content.replace(/[^\x00-\x7F]/g, '*'));
     let length;
     try {
       ({ length } = `/oc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`);
