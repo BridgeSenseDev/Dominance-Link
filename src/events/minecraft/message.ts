@@ -1,6 +1,6 @@
-import { Client, EmbedBuilder, Role, TextChannel, ThreadChannel, WebhookClient } from 'discord.js';
+import { Client, EmbedBuilder, Guild, Role, TextChannel, ThreadChannel, WebhookClient } from 'discord.js';
 import Database from 'better-sqlite3';
-import { addXp, nameToUuid } from '../../helper/utils.js';
+import { addXp, nameToUuid, timeStringToSeconds } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
@@ -174,6 +174,13 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
+    const uuid = await nameToUuid(msg.split(' ')[msg.split(' ').indexOf('for') - 1]);
+    const time = timeStringToSeconds(msg.split(' ')[msg.split(' ').length - 1]);
+    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+    if (!discordId) return;
+    const guild = client.guilds.cache.get('242357942664429568') as Guild;
+    const member = await guild.members.fetch(discordId);
+    await member.timeout(time, 'Muted in-game');
   } else if (msg.includes(' has unmuted ')) {
     await channels.guildLogs.send({
       files: [
@@ -182,6 +189,12 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
+    const uuid = await nameToUuid(msg.split(' ')[msg.split(' ').length - 1]);
+    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+    if (!discordId) return;
+    const guild = client.guilds.cache.get('242357942664429568') as Guild;
+    const member = await guild.members.fetch(discordId);
+    await member.timeout(null, 'Unmuted in-game');
   } else if (
     msg.includes('left the guild!') ||
     msg.includes('was promoted') ||

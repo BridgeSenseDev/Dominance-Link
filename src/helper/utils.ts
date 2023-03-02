@@ -253,3 +253,22 @@ export async function hypixelRequest(url: string) {
     throw new Error("Couldn't get a response from the API");
   }
 }
+
+export function timeStringToSeconds(time: string) {
+  const timeValue = parseInt(time, 10) * 1000;
+  if (Number.isNaN(timeValue)) {
+    return null;
+  }
+  switch (time.charAt(time.length - 1)) {
+    case 's':
+      return timeValue;
+    case 'm':
+      return timeValue * 60;
+    case 'h':
+      return timeValue * 60 * 60;
+    case 'd':
+      return timeValue * 60 * 60 * 24;
+    default:
+      return null;
+  }
+}
