@@ -11,10 +11,35 @@ const db = new Database('guild.db');
 db.defaultSafeIntegers(true);
 
 global.playtime = {};
+let logMessages = '';
 const logWebhook = new WebhookClient({ url: config.keys.logWebhookUrl });
 const gcWebhook = new WebhookClient({ url: config.keys.gcWebhookUrl });
 const ocWebhook = new WebhookClient({ url: config.keys.ocWebhookUrl });
 const messageCache: string[] = [];
+
+export async function logInterval() {
+  setInterval(async () => {
+    if (logMessages.length === 0) return;
+    if (logMessages.includes('@')) {
+      logMessages.replace('@', '');
+    }
+    if (logMessages.length > 2000) {
+      await logWebhook.send({
+        content: logMessages.substring(0, 2000),
+        username: 'Dominance',
+        avatarURL: config.guild.icon
+      });
+      logMessages = logMessages.substring(2000);
+      return;
+    }
+    await logWebhook.send({
+      content: logMessages,
+      username: 'Dominance',
+      avatarURL: config.guild.icon
+    });
+    logMessages = '';
+  }, 5 * 1000);
+}
 
 export default async function execute(client: Client, msg: string, rawMsg: string, messagePosition: string) {
   if (messagePosition !== 'chat') return;
@@ -29,9 +54,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     }
   }
   if (msg.includes('@everyone') || msg.includes('@here')) {
-    await logWebhook.send({ content: msg.replace('@', ''), username: 'Dominance', avatarURL: config.guild.icon });
+    logMessages += `${msg.replace('@', '')}\n`;
   } else {
-    await logWebhook.send({ content: msg, username: 'Dominance', avatarURL: config.guild.icon });
+    logMessages += `${msg}\n`;
   }
   if (messageCache.length >= 20) messageCache.shift();
   messageCache.push(msg);

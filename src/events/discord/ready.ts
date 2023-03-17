@@ -8,6 +8,7 @@ import { autoRejoin, startBot } from '../../handlers/workerHandler.js';
 import config from '../../config.json' assert { type: 'json' };
 import leaderboards from '../../helper/leaderboards.js';
 import { breakUpdate, unverifiedUpdate } from '../../helper/messageUpdate.js';
+import { logInterval } from '../minecraft/message.js';
 
 let worker: Worker;
 
@@ -58,6 +59,7 @@ export default async function execute(client: Client) {
   breakUpdate();
   players();
   leaderboards();
+  logInterval();
 
   // Music
   await client.distube.play(
