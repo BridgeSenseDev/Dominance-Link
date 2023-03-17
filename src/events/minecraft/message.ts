@@ -1,6 +1,6 @@
 import { Client, EmbedBuilder, Guild, Role, TextChannel, ThreadChannel, WebhookClient } from 'discord.js';
 import Database from 'better-sqlite3';
-import { addXp, nameToUuid, timeStringToSeconds } from '../../helper/utils.js';
+import { addXp, nameToUuid, timeStringToSeconds, uuidToDiscord } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
@@ -70,11 +70,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
-    try {
-      const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+    const discordId = uuidToDiscord(uuid);
+    if (discordId) {
       addXp(discordId);
-    } catch (e) {
-      /* empty */
     }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
@@ -86,14 +84,16 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     });
     let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
-    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+    const discordId = uuidToDiscord(uuid);
     if (!uuid) {
       [name] = msg.replace(/Officer > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-    addXp(discordId);
+    if (discordId) {
+      addXp(discordId);
+    }
   } else if (msg.includes('From')) {
     let [, , name] = msg.split(' ');
     name = name.slice(0, -1);
@@ -176,7 +176,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     });
     const uuid = await nameToUuid(msg.split(' ')[msg.split(' ').indexOf('for') - 1]);
     const time = timeStringToSeconds(msg.split(' ')[msg.split(' ').length - 1]);
-    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+    const discordId = uuidToDiscord(uuid);
     if (!discordId) return;
     const guild = client.guilds.cache.get('242357942664429568') as Guild;
     const member = await guild.members.fetch(discordId);
@@ -190,7 +190,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       ]
     });
     const uuid = await nameToUuid(msg.split(' ')[msg.split(' ').length - 1]);
-    const discordId = db.prepare('SELECT discord FROM members WHERE uuid = (?)').get(uuid).discord;
+    const discordId = uuidToDiscord(uuid);
     if (!discordId) return;
     const guild = client.guilds.cache.get('242357942664429568') as Guild;
     const member = await guild.members.fetch(discordId);
@@ -285,15 +285,15 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     await chat(
       `/gc Welcome to Dominance, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`
     );
-    try {
-      const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
-      db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discord, uuid);
+    const discordId = uuidToDiscord(uuid);
+    if (discordId) {
+      db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId, uuid);
       await channels.guildChat.send(
-        `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
+        `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discordId}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
-      const member = await channels.guildChat.guild.members.fetch(discord);
+      const member = await channels.guildChat.guild.members.fetch(discordId);
       await member.roles.add(roles['[Member]']);
-    } catch (e) {
+    } else {
       await channels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
@@ -341,16 +341,14 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       name = msg.split(' ')[msg.split(' ').indexOf('was') - 1];
     }
     const uuid = await nameToUuid(name);
-    const { discord } = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
+    const discordId = uuidToDiscord(uuid);
     db.prepare('DELETE FROM guildMembers WHERE uuid = ?').run(uuid);
-    try {
-      const member = await channels.guildChat.guild.members.fetch(discord);
+    if (discordId) {
+      const member = await channels.guildChat.guild.members.fetch(discordId);
       await member.roles.remove(roles['[Member]']);
       await member.roles.remove(roles['[Active]']);
       await member.roles.remove(roles['[Pro]']);
       await member.roles.remove(roles['[Staff]']);
-    } catch (e) {
-      /* empty */
     }
   }
 }

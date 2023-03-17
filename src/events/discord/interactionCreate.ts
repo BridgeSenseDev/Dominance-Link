@@ -18,7 +18,14 @@ import {
   ThreadChannel
 } from 'discord.js';
 import Database from 'better-sqlite3';
-import { formatNumber, hypixelRequest, nameToUuid, removeSectionSymbols, uuidToName } from '../../helper/utils.js';
+import {
+  discordToUuid,
+  formatNumber,
+  hypixelRequest,
+  nameToUuid,
+  removeSectionSymbols,
+  uuidToName
+} from '../../helper/utils.js';
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
@@ -75,11 +82,10 @@ export default async function execute(client: Client, interaction: Interaction) 
       }
       await interaction.editReply({ content: msg });
     } else if (interaction.customId === 'requirements') {
-      let uuid;
+      const uuid = discordToUuid(interaction.user.id);
       let playerData;
       await interaction.deferReply({ ephemeral: true });
       try {
-        ({ uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id));
         playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
       } catch (e) {
         await member.roles.add(interaction.guild!.roles.cache.get('907911526118223912') as Role);
@@ -90,7 +96,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      const requirementData = await requirements(uuid, playerData);
+      const requirementData = await requirements(uuid!, playerData);
       const embed = new EmbedBuilder()
         .setColor(requirementData.color)
         .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
@@ -109,7 +115,8 @@ export default async function execute(client: Client, interaction: Interaction) 
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId === 'apply') {
-      if (!db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id)) {
+      const uuid = discordToUuid(interaction.user.id);
+      if (!uuid) {
         await member.roles.add(interaction.guild!.roles.cache.get('907911526118223912') as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
@@ -370,7 +377,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const q2 = interaction.fields.getTextInputValue('q2Input');
       const q3 = interaction.fields.getTextInputValue('q3Input');
 
-      const { uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id);
+      const uuid = discordToUuid(interaction.user.id) as string;
       const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
       const requirementData = await requirements(uuid, playerData);
       const name = await uuidToName(uuid);
@@ -440,7 +447,8 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.deferReply({ ephemeral: true });
       const q1 = interaction.fields.getTextInputValue('q1Input');
       const q2 = interaction.fields.getTextInputValue('q2Input');
-      const { uuid } = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(interaction.user.id);
+      const uuid = discordToUuid(interaction.user.id) as string;
+      const name = await uuidToName(uuid);
       let thread = db.prepare('SELECT thread FROM breaks WHERE discord = ?').get(interaction.user.id);
       if (thread) {
         const replyEmbed = new EmbedBuilder()
@@ -456,7 +464,6 @@ export default async function execute(client: Client, interaction: Interaction) 
       const { joined, weeklyGexp } = db
         .prepare('SELECT joined, weeklyGexp FROM guildMembers WHERE discord = ?')
         .get(interaction.user.id);
-      const name = await uuidToName(uuid);
 
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)

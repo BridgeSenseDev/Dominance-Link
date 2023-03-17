@@ -4,7 +4,7 @@ import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { nameColor, uuidToName, skillAverage, hypixelRequest } from './utils.js';
+import { nameColor, uuidToName, skillAverage, hypixelRequest, uuidToDiscord } from './utils.js';
 import { ranks, roles } from './constants.js';
 
 const db = new Database('guild.db');
@@ -72,7 +72,8 @@ export async function gsrun(sheets: JWT, client: Client) {
           delete data[i][Object.keys(data[i])[j]];
         }
       }
-      data[i].name = await uuidToName(data[i].uuid);
+      const { uuid } = data[i];
+      data[i].name = await uuidToName(uuid);
       if (data[i].discord) {
         try {
           data[i].discordTag = (await client.users.fetch(data[i].discord)).tag;
@@ -80,10 +81,10 @@ export async function gsrun(sheets: JWT, client: Client) {
           data[i].discordTag = null;
         }
       } else {
-        const discordId = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(data[i].uuid);
+        const discordId = uuidToDiscord(uuid);
         if (discordId) {
-          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId.discord, data[i].uuid);
-          data[i].discord = discordId.discord;
+          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId, uuid);
+          data[i].discord = discordId;
           try {
             data[i].discordTag = (await client.users.fetch(data[i].discord)).tag;
           } catch (e) {

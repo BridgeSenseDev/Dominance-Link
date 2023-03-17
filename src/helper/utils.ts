@@ -272,3 +272,19 @@ export function timeStringToSeconds(time: string) {
       return null;
   }
 }
+
+export function uuidToDiscord(uuid: string): string | null {
+  const discord: { discord: string } | undefined = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
+  if (discord) {
+    return discord.discord;
+  }
+  return null;
+}
+
+export function discordToUuid(discordId: string): string | null {
+  const uuid: { uuid: string } | undefined = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(discordId);
+  if (uuid) {
+    return uuid.uuid;
+  }
+  return null;
+}
