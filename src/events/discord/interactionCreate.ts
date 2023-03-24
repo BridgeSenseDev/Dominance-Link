@@ -8,7 +8,6 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
-  SelectMenuBuilder,
   Client,
   Interaction,
   GuildMember,
@@ -17,7 +16,7 @@ import {
   TextChannel,
   ThreadChannel,
   ComponentType,
-  ThreadChannel
+  StringSelectMenuBuilder
 } from 'discord.js';
 import Database from 'better-sqlite3';
 import {
@@ -109,6 +108,14 @@ export default async function execute(client: Client, interaction: Interaction) 
         );
       await interaction.editReply({ embeds: [embed] });
     } else if (interaction.customId === 'verify') {
+      if ((interaction.member as GuildMember).roles.cache.has(roles.verified)) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Verification Unsuccessful')
+          .setDescription(`<a:across:986170696512204820> <@${interaction.user.id}> is already verified`);
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+        return;
+      }
       const modal = new ModalBuilder().setCustomId('verification').setTitle('Verification');
       const name = new TextInputBuilder()
         .setCustomId('verificationInput')
@@ -117,6 +124,26 @@ export default async function execute(client: Client, interaction: Interaction) 
       const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(name);
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
+    } else if (interaction.customId === 'unverify') {
+      await interaction.deferReply({ ephemeral: true });
+      if (!member.roles.cache.has(roles.verified)) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setDescription(`<a:across:986170696512204820> <@${interaction.user.id}> is already unverified`);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+      db.prepare('DELETE FROM members WHERE discord = ?').run(interaction.user.id);
+      db.prepare('UPDATE guildMembers SET discord = NULL WHERE discord = ?').run(interaction.user.id);
+      await member.roles.remove(roles.verified);
+      await member.roles.remove(roles['[Member]']);
+      await member.roles.remove(roles['[Active]']);
+      await member.roles.remove(roles['[Pro]']);
+      await member.roles.remove(roles['[Staff]']);
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.green)
+        .setDescription(`<a:atick:986173414723162113> <@${interaction.user.id}> has been successfully unverified`);
+      await interaction.editReply({ embeds: [embed] });
     } else if (interaction.customId === 'apply') {
       const uuid = discordToUuid(interaction.user.id);
       if (!uuid) {
@@ -331,6 +358,14 @@ export default async function execute(client: Client, interaction: Interaction) 
           .setColor(config.colors.red)
           .setTitle('Error')
           .setDescription(`<a:across:986170696512204820> **${ign}** is an invalid IGN`);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+      if (db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id)) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Verification Unsuccessful')
+          .setDescription(`<a:across:986170696512204820> <@${interaction.user.id}> is already verified`);
         await interaction.editReply({ embeds: [embed] });
         return;
       }
