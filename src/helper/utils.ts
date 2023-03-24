@@ -146,7 +146,7 @@ export function removeSectionSymbols(message: string) {
 
 export function formatNumber(number: number) {
   if (!number) {
-    return null;
+    return 0;
   }
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
