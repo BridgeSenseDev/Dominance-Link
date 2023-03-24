@@ -30,7 +30,7 @@ import {
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
-import { bullet, roles } from '../../helper/constants.js';
+import { bullet, dividers, roles } from '../../helper/constants.js';
 import { updateWeeklyChallenges } from '../../helper/challenges.js';
 
 const db = new Database('guild.db');
@@ -61,15 +61,6 @@ export default async function execute(client: Client, interaction: Interaction) 
       .filter((choice) => choice.toLowerCase().startsWith(focusedValue.toLowerCase()))
       .slice(0, 25);
     await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
-  } else if (interaction.isStringSelectMenu()) {
-    await interaction.deferReply({ ephemeral: true });
-    const user = await client.users.fetch(interaction.customId);
-    const embed = new EmbedBuilder()
-      .setColor(config.colors.red)
-      .setTitle('Your Dominance application has been denied')
-      .setDescription(`**Reason:** ${interaction.values}`);
-    await user.send({ embeds: [embed] });
-    await interaction.editReply({ content: 'Successfully denied', components: [] });
   } else if (interaction.isButton()) {
     if (interaction.customId in roles) {
       const roleId = roles[interaction.customId];
@@ -162,7 +153,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setStyle(TextInputStyle.Short);
       const q2Input = new TextInputBuilder()
         .setCustomId('q2Input')
-        .setLabel('Why should we accept you? (4+ sentences)')
+        .setLabel('Why should we accept you?')
         .setStyle(TextInputStyle.Paragraph);
       const q3Input = new TextInputBuilder()
         .setCustomId('q3Input')
@@ -175,8 +166,8 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.showModal(modal);
     } else if (interaction.customId === 'accept') {
       await interaction.deferReply({ ephemeral: true });
-      const name = await interaction.message.embeds[0].data.fields![0].value;
-      const discordId = await interaction.message.embeds[0].data.fields![3].value.slice(2, -1);
+      const name = interaction.message.embeds[0].data.fields![0].value;
+      const discordId = interaction.message.embeds[0].data.fields![3].value.slice(2, -1);
       const uuid = await nameToUuid(name);
       const user = await client.users.fetch(discordId);
       (interaction.guild as Guild).channels
@@ -195,7 +186,7 @@ export default async function execute(client: Client, interaction: Interaction) 
             .setColor(config.colors.green)
             .setTitle(`Congrats ${name}, your application has been accepted!`)
             .setDescription(
-              `**How to get started:**\n${bullet} **Join The Guild**\nYou can be invited to the guild anytime without ` +
+              `**How to get started:**\n\n${bullet} **Join The Guild**\nYou can be invited to the guild anytime without ` +
                 `staff. Just type \`/msg DominanceLink .\` in-game or if you are muted, type \`/immuted DominanceLink\`\n\n` +
                 `You won't be able to see guild channels until you have joined in-game\n\n${bullet} **Confused?**\n` +
                 `Feel free to ask any questions here, only ping staff if needed!`
@@ -203,13 +194,20 @@ export default async function execute(client: Client, interaction: Interaction) 
             .setThumbnail(
               `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
             );
+          const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setCustomId('closeApplication')
+              .setStyle(ButtonStyle.Danger)
+              .setLabel('Close Application')
+              .setEmoji(':locked_3d:1088398545092083792')
+          );
           db.prepare('INSERT INTO waitlist (uuid, discord, time, channel) VALUES (?, ?, ?, ?)').run(
             uuid,
             discordId,
             Math.floor(Date.now() / 1000),
             channel.id
           );
-          await channel.send({ content: user.toString(), embeds: [embed] });
+          await channel.send({ content: user.toString(), embeds: [embed], components: [row] });
           const applicationEmbed = new EmbedBuilder()
             .setColor(config.colors.green)
             .setTitle(`${name}'s application has been accepted`)
@@ -228,14 +226,14 @@ export default async function execute(client: Client, interaction: Interaction) 
               }
             );
           await channels.applicationLogs.send({ embeds: [applicationEmbed] });
-          await interaction.editReply('Application accepted');
+          await interaction.deleteReply();
           await interaction.message.delete();
         });
     } else if (interaction.customId === 'deny') {
-      const discordId = await interaction.message.embeds[0].data.fields![3].value.slice(2, -1);
-      const name = await interaction.message.embeds[0].data.fields![0].value;
-      const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-        new SelectMenuBuilder().setCustomId(discordId).setPlaceholder('Select a reason').addOptions(
+      const discordId = interaction.message.embeds[0].data.fields![3].value.slice(2, -1);
+      const name = interaction.message.embeds[0].data.fields![0].value;
+      const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+        new StringSelectMenuBuilder().setCustomId(discordId).setPlaceholder('Select a reason').addOptions(
           {
             label: 'Not meeting guild requirements',
             value: 'Not meeting guild requirements'
@@ -258,26 +256,45 @@ export default async function execute(client: Client, interaction: Interaction) 
           }
         )
       );
-      await interaction.reply({ components: [row], ephemeral: true });
-      const applicationEmbed = new EmbedBuilder()
-        .setColor(config.colors.red)
-        .setTitle(`${name}'s application has been denied`)
-        .setDescription(interaction.message.embeds[0].data.description!)
-        .addFields(
-          { name: '<:user:1029703318924165120> Denied By', value: interaction.user.toString(), inline: true },
-          {
-            name: '<:page_with_curl_3d:1029706324881199126> Meeting Reqs',
-            value: interaction.message.embeds[0].data.fields![1].value,
-            inline: true
-          },
-          {
-            name: '<:three_oclock_3d:1029704628310388796> Application Made',
-            value: interaction.message.embeds[0].data.fields![5].value,
-            inline: true
-          }
-        );
-      await channels.applicationLogs.send({ embeds: [applicationEmbed] });
-      await interaction.message.delete();
+      const message = await interaction.reply({ components: [row], ephemeral: true });
+      const collector = message.createMessageComponentCollector({
+        componentType: ComponentType.StringSelect,
+        time: 60 * 1000
+      });
+
+      collector.on('collect', async (collectorInteraction) => {
+        if (collectorInteraction.isStringSelectMenu()) {
+          await collectorInteraction.deferReply({ ephemeral: true });
+          const user = await client.users.fetch(collectorInteraction.customId);
+          const embed = new EmbedBuilder()
+            .setColor(config.colors.red)
+            .setTitle('Your Dominance application has been denied')
+            .setDescription(`**Reason:** ${collectorInteraction.values}`);
+          await user.send({ embeds: [embed] });
+          const applicationEmbed = new EmbedBuilder()
+            .setColor(config.colors.red)
+            .setTitle(`${name}'s application has been denied`)
+            .setDescription(interaction.message.embeds[0].data.description!)
+            .addFields(
+              { name: '<:user:1029703318924165120> Denied By', value: interaction.user.toString(), inline: true },
+              {
+                name: '<:page_with_curl_3d:1029706324881199126> Meeting Reqs',
+                value: interaction.message.embeds[0].data.fields![1].value,
+                inline: true
+              },
+              {
+                name: '<:three_oclock_3d:1029704628310388796> Application Made',
+                value: interaction.message.embeds[0].data.fields![5].value,
+                inline: true
+              }
+            );
+          await channels.applicationLogs.send({ embeds: [applicationEmbed] });
+          await interaction.deleteReply();
+          await interaction.message.delete();
+          await collectorInteraction.deleteReply();
+          collector.stop();
+        }
+      });
     } else if (interaction.customId === 'break') {
       const modal = new ModalBuilder().setCustomId('breakModal').setTitle('Break Form');
       const q1Input = new TextInputBuilder()
@@ -319,6 +336,37 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setDescription(`This thread has been archived. Enjoy your stay!`);
       await interaction.editReply({ embeds: [embed] });
       await (interaction.channel as ThreadChannel).setArchived();
+    } else if (interaction.customId === 'closeApplication') {
+      if (!(interaction.member as GuildMember).roles.cache.has(roles['[Staff]'])) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.discordGray)
+          .setDescription(`Only staff can close this application`);
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+      }
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.discordGray)
+        .setTitle(`Close Confirmation`)
+        .setDescription(`Please confirm that you want to close this application`);
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId('confirm')
+          .setStyle(ButtonStyle.Success)
+          .setLabel('Confirm')
+          .setEmoji('a:checkmark:1011799454959022081')
+      );
+      const message = await interaction.reply({ embeds: [embed], components: [row] });
+      const collector = message.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        time: 60 * 1000
+      });
+
+      collector.on('collect', async (collectorInteraction) => {
+        if (collectorInteraction.customId === 'confirm') {
+          db.prepare('DELETE FROM waitlist WHERE channel = ?').run(collectorInteraction.channelId);
+          await collectorInteraction.channel?.delete();
+          collector.stop();
+        }
+      });
     } else if (interaction.customId === 'joinChallenge') {
       await interaction.deferReply({ ephemeral: true });
       const uuid = discordToUuid(interaction.user.id);
@@ -455,7 +503,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setDescription(
           `<:keycap_1_3d:1029711346297737277> **What games do you mainly play?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> ` +
             `**Why should we accept you?**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> **Do you know anyone from the guild?**\n${q3}` +
-            `\n\n════ ⋆★⋆ ════\n\n**[Requirements]**\n${requirementData.requirementEmbed}`
+            `\n\n${dividers(21)}\n\n**Requirements:**\n\n${requirementData.requirementEmbed}`
         )
         .addFields(
           { name: '<:user:1029703318924165120> IGN: ', value: name, inline: true },
@@ -503,8 +551,11 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setDescription(
           `<:keycap_1_3d:1029711346297737277> **What games do you mainly play?**\n${q1}\n\n<:keycap_2_3d:1029711344414507038> ` +
             `**Why should we accept you?**\n${q2}\n\n<:keycap_3_3d:1029711342468345888> **Do you know anyone from the guild?**\n${q3}` +
-            `\n\n════ ⋆★⋆ ════\n\n**[Info]**\nApplications usually receive a response within 24 hours\nYou will be **pinged** in this ` +
-            `server if you have been accepted\nYou will receive a dm if you are rejected **unless** your dm's are closed`
+            `\n\n${dividers(
+              21
+            )}\n\n**Info:**\n\n${bullet} Applications usually receive a response within 24 hours\n${bullet} You will ` +
+            `be **pinged** in this server if you have been accepted\n${bullet} You will receive a dm if rejected **unless** your dm's ` +
+            `are closed`
         );
       await interaction.editReply({ embeds: [replyEmbed] });
     } else if (interaction.customId === 'breakModal') {
