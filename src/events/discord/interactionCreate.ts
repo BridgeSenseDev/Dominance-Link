@@ -15,6 +15,8 @@ import {
   Role,
   Guild,
   TextChannel,
+  ThreadChannel,
+  ComponentType,
   ThreadChannel
 } from 'discord.js';
 import Database from 'better-sqlite3';
@@ -30,6 +32,7 @@ import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
 import { bullet, roles } from '../../helper/constants.js';
+import { updateWeeklyChallenges } from '../../helper/challenges.js';
 
 const db = new Database('guild.db');
 
@@ -289,6 +292,32 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setDescription(`This thread has been archived. Enjoy your stay!`);
       await interaction.editReply({ embeds: [embed] });
       await (interaction.channel as ThreadChannel).setArchived();
+    } else if (interaction.customId === 'joinChallenge') {
+      await interaction.deferReply({ ephemeral: true });
+      const uuid = discordToUuid(interaction.user.id);
+      const name = await uuidToName(uuid!);
+      if (db.prepare('SELECT * FROM weeklyChallenges WHERE uuid = ?').get(uuid)) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Error')
+          .setDescription(
+            `<a:across:986170696512204820> **${name}** is already participating in this weekly challenge`
+          );
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+      let current = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
+      for (const obj of config.guild.weeklyChallenges.stat) {
+        current = current[obj];
+      }
+      db.prepare('INSERT INTO weeklyChallenges (uuid, discord, initial, current) VALUES (?, ?, ?, ?)').run(
+        uuid,
+        interaction.user.id,
+        current,
+        current
+      );
+      updateWeeklyChallenges();
+      await interaction.deleteReply();
     }
   } else if (interaction.type === InteractionType.ModalSubmit) {
     if (interaction.customId === 'verification') {

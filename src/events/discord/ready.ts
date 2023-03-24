@@ -9,6 +9,7 @@ import config from '../../config.json' assert { type: 'json' };
 import leaderboards from '../../helper/leaderboards.js';
 import { breakUpdate, unverifiedUpdate } from '../../helper/messageUpdate.js';
 import { logInterval } from '../minecraft/message.js';
+import { weeklyChallengesInterval } from '../../helper/challenges.js';
 
 let worker: Worker;
 
@@ -60,6 +61,7 @@ export default async function execute(client: Client) {
   players();
   leaderboards();
   logInterval();
+  weeklyChallengesInterval();
 
   // Music
   await client.distube.play(
