@@ -81,7 +81,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       try {
         playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
       } catch (e) {
-        await member.roles.add(interaction.guild!.roles.cache.get('907911526118223912') as Role);
+        await member.roles.add(interaction.guild!.roles.cache.get(roles.unverified) as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
@@ -126,11 +126,12 @@ export default async function execute(client: Client, interaction: Interaction) 
       }
       db.prepare('DELETE FROM members WHERE discord = ?').run(interaction.user.id);
       db.prepare('UPDATE guildMembers SET discord = NULL WHERE discord = ?').run(interaction.user.id);
-      await member.roles.remove(roles.verified);
-      await member.roles.remove(roles['[Member]']);
-      await member.roles.remove(roles['[Active]']);
-      await member.roles.remove(roles['[Pro]']);
-      await member.roles.remove(roles['[Staff]']);
+      await member.roles.add(roles.unverified);
+      for (const role of [roles.verified, roles['[Member]'], roles['[Active]'], roles['[Pro]'], roles['[Staff]']]) {
+        if (member.roles.cache.has(role)) {
+          await member.roles.remove(role);
+        }
+      }
       const embed = new EmbedBuilder()
         .setColor(config.colors.green)
         .setDescription(`<a:atick:986173414723162113> <@${interaction.user.id}> has been successfully unverified`);
@@ -138,7 +139,7 @@ export default async function execute(client: Client, interaction: Interaction) 
     } else if (interaction.customId === 'apply') {
       const uuid = discordToUuid(interaction.user.id);
       if (!uuid) {
-        await member.roles.add(interaction.guild!.roles.cache.get('907911526118223912') as Role);
+        await member.roles.add(interaction.guild!.roles.cache.get(roles.unverified) as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
@@ -417,6 +418,15 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
+      if (db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid)) {
+        name = await uuidToName(uuid);
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Verification Unsuccessful')
+          .setDescription(`<a:across:986170696512204820> **${name}** is already verified`);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
       const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`);
       try {
         name = player.displayname;
@@ -444,8 +454,8 @@ export default async function execute(client: Client, interaction: Interaction) 
         let guildInfo;
         db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
         db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
-        await member.roles.remove(interaction.guild!.roles.cache.get('907911526118223912') as Role);
-        await member.roles.add(interaction.guild!.roles.cache.get('445669382539051008') as Role);
+        await member.roles.remove(interaction.guild!.roles.cache.get(roles.unverified) as Role);
+        await member.roles.add(interaction.guild!.roles.cache.get(roles.verified) as Role);
         const { displayName } = member;
         if (!displayName.toUpperCase().includes(name.toUpperCase())) {
           if (/\(.*?\)/.test(displayName.split(' ')[1])) {
@@ -471,7 +481,7 @@ export default async function execute(client: Client, interaction: Interaction) 
           .setTitle('Verification Successful')
           .setDescription(
             `<a:atick:986173414723162113> **${name}** ${guildInfo}\n<:add:1005843961652453487>\
-                    Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&907911526118223912>`
+                    Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
           )
           .setThumbnail(
             `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`

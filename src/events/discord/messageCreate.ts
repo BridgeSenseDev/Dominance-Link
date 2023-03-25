@@ -4,6 +4,7 @@ import { addXp, discordToUuid, formatMentions, uuidToName } from '../../helper/u
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { channels } from './ready.js';
+import { roles } from '../../helper/constants.js';
 
 const db = new Database('guild.db');
 
@@ -21,7 +22,7 @@ export default async function execute(client: Client, message: Message) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     if (!user) {
       if (!uuid) {
-        await message.member!.roles.add(message.guild!.roles.cache.get('907911526118223912') as Role);
+        await message.member!.roles.add(message.guild!.roles.cache.get(roles.unverified) as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
@@ -52,7 +53,7 @@ export default async function execute(client: Client, message: Message) {
     let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     if (!user) {
       if (!uuid) {
-        await message.member!.roles.add(message.guild!.roles.cache.get('907911526118223912') as Role);
+        await message.member!.roles.add(message.guild!.roles.cache.get(roles.unverified) as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
