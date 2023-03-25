@@ -451,7 +451,6 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
       if (disc === interaction.user.tag) {
-        let guildInfo;
         db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
         db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
         await member.roles.remove(interaction.guild!.roles.cache.get(roles.unverified) as Role);
@@ -467,26 +466,33 @@ export default async function execute(client: Client, interaction: Interaction) 
           await member.setNickname(displayName.replace(new RegExp(name, 'gi'), name));
         }
         const { guild } = await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`);
-        if (!guild) {
-          guildInfo = 'is not in Dominance';
-        } else if (guild.name_lower === 'dominance') {
+        if (!guild || guild.name_lower !== 'dominance') {
+          const embed = new EmbedBuilder()
+            .setColor(config.colors.green)
+            .setTitle('Verification Successful')
+            .setDescription(
+              `<a:atick:986173414723162113> **${name}** is not in Dominance\n<:add:1005843961652453487>\
+                  Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
+            )
+            .setThumbnail(
+              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+            );
+          await interaction.editReply({ embeds: [embed] });
+        } else {
           await member.roles.add(interaction.guild!.roles.cache.get(roles['[Member]']) as Role);
           db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(interaction.user.id, uuid);
-          guildInfo = 'is in Dominance';
-        } else {
-          guildInfo = 'is not in Dominance';
+          const embed = new EmbedBuilder()
+            .setColor(config.colors.green)
+            .setTitle('Verification Successful')
+            .setDescription(
+              `<a:atick:986173414723162113> **${name}** is in Dominance\n<:add:1005843961652453487>\
+                    Added: <@&445669382539051008>, <@&1031926129822539786>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
+            )
+            .setThumbnail(
+              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+            );
+          await interaction.editReply({ embeds: [embed] });
         }
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.green)
-          .setTitle('Verification Successful')
-          .setDescription(
-            `<a:atick:986173414723162113> **${name}** ${guildInfo}\n<:add:1005843961652453487>\
-                    Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
-          )
-          .setThumbnail(
-            `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-          );
-        await interaction.editReply({ embeds: [embed] });
       } else {
         const embed = new EmbedBuilder().setColor(config.colors.red).setTitle('Verification Unsuccessful')
           .setDescription(`<a:across:986170696512204820>${name} has a different discord account linked on hypixel\nThe discord tag **${disc}**\
