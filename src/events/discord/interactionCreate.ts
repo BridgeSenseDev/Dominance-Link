@@ -312,12 +312,53 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.showModal(modal);
     } else if (interaction.customId === 'endBreak') {
       await interaction.deferReply();
-      const breakData = db.prepare('SELECT * FROM breaks WHERE discord = ?').get(interaction.user.id);
-      if (!breakData) {
-        const embed = new EmbedBuilder()
+      const breakData = db
+        .prepare('SELECT * FROM breaks WHERE discord = ?')
+        .get(interaction.message.embeds[0].fields[1].value.slice(2, -1));
+      const name = await uuidToName(breakData.uuid);
+      if (interaction.user.id !== breakData.discord) {
+        const breakMember = interaction.guild?.members.cache.get(breakData.discord) as GuildMember;
+        if (!(interaction.member as GuildMember).roles.cache.has(roles['[Staff]'])) {
+          const embed = new EmbedBuilder()
+            .setColor(config.colors.discordGray)
+            .setDescription(`Only staff can close this application`);
+          await interaction.reply({ embeds: [embed], ephemeral: true });
+          return;
+        }
+        const confirmationEmbed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
-          .setDescription(`Only the owner can close this break form`);
-        await interaction.editReply({ embeds: [embed] });
+          .setTitle(`End Break Confirmation`)
+          .setDescription(`Please confirm that you want to end **${name}'s** break`);
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId('confirm')
+            .setStyle(ButtonStyle.Success)
+            .setLabel('Confirm')
+            .setEmoji('a:checkmark:1011799454959022081')
+        );
+        const message = await interaction.editReply({ embeds: [confirmationEmbed], components: [row] });
+        const collector = message.createMessageComponentCollector({
+          componentType: ComponentType.Button,
+          time: 60 * 1000
+        });
+
+        collector.on('collect', async (collectorInteraction) => {
+          if (collectorInteraction.customId === 'confirm') {
+            await collectorInteraction.deferReply();
+            if (breakMember !== undefined) {
+              await breakMember.roles.remove(interaction.guild!.roles.cache.get(roles.Break) as Role);
+            }
+            db.prepare('DELETE FROM breaks WHERE discord = ?').run(breakData.discord);
+            const embed = new EmbedBuilder()
+              .setColor(config.colors.discordGray)
+              .setTitle(`${await uuidToName(breakData.uuid)}'s Break has Been Ended`)
+              .setDescription(`This thread has been archived.`);
+            await interaction.deleteReply();
+            await collectorInteraction.editReply({ embeds: [embed] });
+            await (collectorInteraction.channel as ThreadChannel).setLocked();
+            collector.stop();
+          }
+        });
         return;
       }
       if (!db.prepare('SELECT uuid FROM guildMembers WHERE uuid = ?').get(breakData.uuid)) {
@@ -336,13 +377,14 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setTitle(`Welcome back, ${await uuidToName(breakData.uuid)}!`)
         .setDescription(`This thread has been archived. Enjoy your stay!`);
       await interaction.editReply({ embeds: [embed] });
-      await (interaction.channel as ThreadChannel).setArchived();
+      await (interaction.channel as ThreadChannel).setLocked();
     } else if (interaction.customId === 'closeApplication') {
       if (!(interaction.member as GuildMember).roles.cache.has(roles['[Staff]'])) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
           .setDescription(`Only staff can close this application`);
         await interaction.reply({ embeds: [embed], ephemeral: true });
+        return;
       }
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
