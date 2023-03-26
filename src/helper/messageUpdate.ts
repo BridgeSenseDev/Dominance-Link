@@ -21,7 +21,7 @@ export async function unverifiedUpdate() {
       .setTitle('Unlinked Members')
       .setDescription(escapeMarkdown(description));
     await messages.unverified.edit({ embeds: [embed] });
-  }, 30 * 1000);
+  }, 60 * 1000);
 }
 
 export async function breakUpdate() {
@@ -29,7 +29,7 @@ export async function breakUpdate() {
     const data = db.prepare('SELECT * FROM breaks').all();
     let description = '';
     for (const i in data) {
-      description += `\n${bullet} ${await uuidToName(data[i].uuid)}`;
+      description += `\n${bullet} ${await uuidToName(data[i].uuid)} <#${data[i].thread}>`;
     }
 
     const embed = new EmbedBuilder()
@@ -54,5 +54,5 @@ export async function breakUpdate() {
         .setEmoji(':moon:1067803032944922624')
     );
     await messages.break.edit({ embeds: [embed], components: [row] });
-  }, 30 * 1000);
+  }, 60 * 1000);
 }

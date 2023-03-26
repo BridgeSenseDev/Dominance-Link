@@ -32,16 +32,23 @@ export default async function execute(client: Client, message: Message) {
         message.reply({ embeds: [embed] });
         return;
       }
+      if (message.member?.roles.cache.has(roles.Break)) {
+        const name = await uuidToName(uuid);
+        message.content = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');
+        const { length } = `/gc ${await uuidToName(name)} [Break]: ${message.content}`;
+        if (length > 256) {
+          await channels.minecraftLink.send(`Character limit exceeded (${length})`);
+          return;
+        }
+        await chat(`/gc ${await uuidToName(name)} [Break]: ${message.content}`);
+        await message.delete();
+        return;
+      }
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(message.author.id, uuid);
       user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     }
     message.content = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');
-    let length;
-    try {
-      ({ length } = `/gc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`);
-    } catch (e) {
-      return;
-    }
+    const { length } = `/gc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`;
     if (length > 256) {
       await channels.minecraftLink.send(`Character limit exceeded (${length})`);
       return;
@@ -67,12 +74,7 @@ export default async function execute(client: Client, message: Message) {
       user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(message.author.id);
     }
     message.content = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');
-    let length;
-    try {
-      ({ length } = `/oc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`);
-    } catch (e) {
-      return;
-    }
+    const { length } = `/oc ${await uuidToName(user.uuid)} ${user.tag}: ${message.content}`;
     if (length > 256) {
       await channels.minecraftLink.send(`Character limit exceeded (${length})`);
       return;
