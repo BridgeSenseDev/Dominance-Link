@@ -1,7 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { channels, worker } from '../events/discord/ready.js';
-import { hypixelRequest } from '../helper/utils.js';
+import { hypixelRequest, nameToUuid } from '../helper/utils.js';
 
 export async function startBot() {
   const client = (await import('../index.js')).default;
@@ -30,8 +30,9 @@ export async function quit() {
 
 export async function autoRejoin() {
   setInterval(async () => {
-    const status = (await hypixelRequest(`https://api.hypixel.net/status?uuid=5760aae2-d977-467c-bf62-048469d5f507`))
-      .session.online;
+    const status = (
+      await hypixelRequest(`https://api.hypixel.net/status?uuid=${await nameToUuid(config.minecraft.ign)}`)
+    ).session.online;
     if (!status) {
       console.log('[MINECRAFT] Restarting bot');
       const embed = new EmbedBuilder()

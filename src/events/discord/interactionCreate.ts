@@ -188,9 +188,9 @@ export default async function execute(client: Client, interaction: Interaction) 
             .setTitle(`Congrats ${name}, your application has been accepted!`)
             .setDescription(
               `**How to get started:**\n\n${bullet} **Join The Guild**\nYou can be invited to the guild anytime without ` +
-                `staff. Just type \`/msg DominanceLink .\` in-game or if you are muted, type \`/immuted DominanceLink\`\n\n` +
-                `You won't be able to see guild channels until you have joined in-game\n\n${bullet} **Confused?**\n` +
-                `Feel free to ask any questions here, only ping staff if needed!`
+                `staff. Just type \`/msg ${config.minecraft.ign} .\` in-game or if you are muted, type \`/immuted ` +
+                `${config.minecraft.ign}\`\n\nYou won't be able to see guild channels until you have joined in-game\n\n${bullet} ` +
+                `**Confused?**\nFeel free to ask any questions here, only ping staff if needed!`
             )
             .setThumbnail(
               `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
@@ -365,7 +365,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
           .setDescription(
-            `Please rejoin the guild before closing the break form.\nYou can rejoin by messaging DominanceLink in Hypixel`
+            `Please rejoin the guild before closing the break form.\nYou can rejoin by messaging ${config.minecraft.ign} in Hypixel`
           );
         await interaction.editReply({ embeds: [embed] });
         return;
