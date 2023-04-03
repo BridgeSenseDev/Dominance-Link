@@ -26,6 +26,7 @@
     "ffmpeg-static": "^5.1.0",
     "google-auth-library": "^8.7.0",
     "googleapis": "^113.0.0",
+    "https-proxy-agent": "^5.0.1",
     "libsodium-wrappers": "^0.7.11",
     "mineflayer": "^4.8.1",
     "node-cron": "^3.0.2",

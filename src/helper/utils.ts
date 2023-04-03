@@ -1,5 +1,6 @@
 import { Client, Message } from 'discord.js';
 import Database from 'better-sqlite3';
+import HttpsProxyAgent from 'https-proxy-agent';
 import { rankColor, levelingXp } from './constants.js';
 import config from '../config.json' assert { type: 'json' };
 
@@ -287,4 +288,32 @@ export function discordToUuid(discordId: string): string | null {
     return uuid.uuid;
   }
   return null;
+}
+
+interface Proxy {
+  flag: string;
+  features: {
+    openvpn_udp: boolean;
+    proxy: boolean;
+  };
+  domain: string;
+}
+
+let agent: HttpsProxyAgent.HttpsProxyAgent;
+
+(async () => {
+  const taiwanProxies: Proxy[] = await fetch('https://api.nordvpn.com/server')
+    .then((response) => response.json())
+    .then((data) =>
+      data.filter((proxy: Proxy) => proxy.flag === 'TW' && proxy.features.openvpn_udp && !proxy.features.proxy)
+    );
+  const proxyOptions: HttpsProxyAgent.HttpsProxyAgentOptions = {
+    host: `https://${taiwanProxies[Math.floor(Math.random() * taiwanProxies.length)].domain}:443`,
+    auth: config.keys.nordVpn
+  };
+  agent = await new HttpsProxyAgent.HttpsProxyAgent(proxyOptions);
+})();
+
+export function getProxy() {
+  return agent;
 }
