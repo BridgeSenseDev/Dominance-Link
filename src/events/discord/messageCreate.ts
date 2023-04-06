@@ -1,4 +1,4 @@
-import { Client, EmbedBuilder, Message } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Message } from 'discord.js';
 import Database from 'better-sqlite3';
 import { addXp, discordToUuid, formatMentions, getProxy, uuidToName } from '../../helper/utils.js';
 import config from '../../config.json' assert { type: 'json' };
@@ -51,16 +51,27 @@ export default async function execute(client: Client, message: Message) {
       await message.reply({ embeds: [embed] });
       return;
     }
-    
+
     if (member?.roles.cache.has(roles.Break)) {
       if (await checkProfanity(content)) {
-        await message.member!.timeout(12 * 60 * 60 * 1000);
+        try {
+          await message.member!.timeout(12 * 60 * 60 * 1000);
+        } catch (e) {
+          /* empty */
+        }
         const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
           .setDescription(`**<@${author.id}> has been timed out until <t:${timestamp}:f>**\n**Message: **${content}`);
-        await channels.automod.send({ embeds: [embed] });
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId('removeTimeout')
+            .setLabel('Remove Timeout')
+            .setStyle(ButtonStyle.Danger)
+            .setEmoji(':three_oclock_3d:1029704628310388796')
+        );
+        await channels.automod.send({ embeds: [embed], components: [row] });
         return;
       }
 
@@ -87,13 +98,24 @@ export default async function execute(client: Client, message: Message) {
 
   if (channel.id === channels.minecraftLink.id) {
     if (await checkProfanity(content)) {
-      await message.member!.timeout(12 * 60 * 60 * 1000);
+      try {
+        await message.member!.timeout(12 * 60 * 60 * 1000);
+      } catch (e) {
+        /* empty */
+      }
       const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
         .setDescription(`**<@${author.id}> has been timed out until <t:${timestamp}:f>**\n**Message: **${content}`);
-      await channels.automod.send({ embeds: [embed] });
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId('removeTimeout')
+          .setLabel('Remove Timeout')
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji(':three_oclock_3d:1029704628310388796')
+      );
+      await channels.automod.send({ embeds: [embed], components: [row] });
       return;
     }
 
@@ -106,13 +128,24 @@ export default async function execute(client: Client, message: Message) {
     await message.delete();
   } else if (channel.id === channels.officerChat.id) {
     if (await checkProfanity(content)) {
-      await message.member!.timeout(12 * 60 * 60 * 1000);
+      try {
+        await message.member!.timeout(12 * 60 * 60 * 1000);
+      } catch (e) {
+        /* empty */
+      }
       const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
         .setDescription(`**<@${author.id}> has been timed out until <t:${timestamp}:f>**\n**Message: **${content}`);
-      await channels.automod.send({ embeds: [embed] });
+      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId('removeTimeout')
+          .setLabel('Remove Timeout')
+          .setStyle(ButtonStyle.Danger)
+          .setEmoji(':three_oclock_3d:1029704628310388796')
+      );
+      await channels.automod.send({ embeds: [embed], components: [row] });
       return;
     }
 

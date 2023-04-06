@@ -436,6 +436,20 @@ export default async function execute(client: Client, interaction: Interaction) 
       );
       updateWeeklyChallenges();
       await interaction.deleteReply();
+    } else if (interaction.customId === 'removeTimeout') {
+      await interaction.deferReply()
+      const timeoutMember = await interaction.guild!.members.fetch(
+        interaction.message.embeds[0].description!.match(/<@(\d+)>/)?.[1]!
+      );
+      await timeoutMember.timeout(null);
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.red)
+        .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
+        .setDescription(
+          `**<@${timeoutMember.id}> timeout has been removed by ${interaction.user}**\n${interaction.message.embeds[0].description!.split("\n")[1]}`
+        );
+      await interaction.message.edit({ embeds: [embed], components: [] })
+      await interaction.deleteReply()
     }
   } else if (interaction.type === InteractionType.ModalSubmit) {
     if (interaction.customId === 'verification') {
