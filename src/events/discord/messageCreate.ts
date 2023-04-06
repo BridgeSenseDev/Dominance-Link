@@ -87,6 +87,7 @@ export default async function execute(client: Client, message: Message) {
   if (channel.id === channels.minecraftLink.id) {
     if (await checkProfanity(content)) {
       const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
+      await message.member!.timeout(timestamp);
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
