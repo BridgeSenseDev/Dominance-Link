@@ -10,7 +10,7 @@ const db = new Database('guild.db');
 
 const tagColor: StringObject = {
   '[Member]': '§2[Member]',
-  '[Active]': '§6[Active]',
+  '[NoLifer]': '§6[NoLifer]',
   '[Pro]': '§5[Pro]',
   '[Staff]': '§c[Staff]',
   '[Owner]': '§4[Owner]',

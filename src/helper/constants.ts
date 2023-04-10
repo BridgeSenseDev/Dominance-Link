@@ -56,14 +56,14 @@ export const ranks: StringObject = {
   Owner: '[Owner]',
   Staff: '[Staff]',
   Pro: '[Pro]',
-  Active: '[Active]',
+  NoLifer: '[NoLifer]',
   Member: '[Member]'
 };
 
 export const roles: StringObject = {
   '[Staff]': '1005725104430395452',
   '[Pro]': '1031566725432492133',
-  '[Active]': '950083054326677514',
+  '[NoLifer]': '950083054326677514',
   '[Member]': '1031926129822539786',
   verified: '445669382539051008',
   unverified: '907911526118223912',

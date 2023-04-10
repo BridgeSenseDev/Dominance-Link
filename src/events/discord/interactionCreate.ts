@@ -127,7 +127,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       db.prepare('DELETE FROM members WHERE discord = ?').run(interaction.user.id);
       db.prepare('UPDATE guildMembers SET discord = NULL WHERE discord = ?').run(interaction.user.id);
       await member.roles.add(roles.unverified);
-      for (const role of [roles.verified, roles['[Member]'], roles['[Active]'], roles['[Pro]'], roles['[Staff]']]) {
+      for (const role of [roles.verified, roles['[Member]'], roles['[NoLifer]'], roles['[Pro]'], roles['[Staff]']]) {
         if (member.roles.cache.has(role)) {
           await member.roles.remove(role);
         }
@@ -437,7 +437,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       updateWeeklyChallenges();
       await interaction.deleteReply();
     } else if (interaction.customId === 'removeTimeout') {
-      await interaction.deferReply()
+      await interaction.deferReply();
       const timeoutMember = await interaction.guild!.members.fetch(
         interaction.message.embeds[0].description!.match(/<@(\d+)>/)?.[1]!
       );
@@ -446,10 +446,12 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setColor(config.colors.red)
         .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
         .setDescription(
-          `**<@${timeoutMember.id}> timeout has been removed by ${interaction.user}**\n${interaction.message.embeds[0].description!.split("\n")[1]}`
+          `**<@${timeoutMember.id}> timeout has been removed by ${interaction.user}**\n${
+            interaction.message.embeds[0].description!.split('\n')[1]
+          }`
         );
-      await interaction.message.edit({ embeds: [embed], components: [] })
-      await interaction.deleteReply()
+      await interaction.message.edit({ embeds: [embed], components: [] });
+      await interaction.deleteReply();
     }
   } else if (interaction.type === InteractionType.ModalSubmit) {
     if (interaction.customId === 'verification') {

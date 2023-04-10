@@ -116,7 +116,7 @@ export async function players() {
   const guild = client.guilds.cache.get('242357942664429568') as Guild;
   const breakRole = guild.roles.cache.get(roles.Break) as Role;
   const memberRole = guild.roles.cache.get(roles['[Member]']) as Role;
-  const activeRole = guild.roles.cache.get(roles['[Active]']) as Role;
+  const noLiferRole = guild.roles.cache.get(roles['[NoLifer]']) as Role;
   const proRole = guild.roles.cache.get(roles['[Pro]']) as Role;
   const staffRole = guild.roles.cache.get(roles['[Staff]']) as Role;
   let count = 0;
@@ -127,13 +127,13 @@ export async function players() {
       .all()
       .map((i) => i.discord);
     const members = Array.from(memberRole.members).concat(
-      Array.from(activeRole.members),
+      Array.from(noLiferRole.members),
       Array.from(proRole.members),
       Array.from(staffRole.members)
     );
     for (const member of members) {
       if (!discordId.includes(member[0])) {
-        await member[1].roles.remove([memberRole, activeRole, proRole]);
+        await member[1].roles.remove([memberRole, noLiferRole, proRole]);
       }
     }
   }, 5 * 60 * 1000);
@@ -176,11 +176,11 @@ export async function players() {
           await member.roles.add(guild.roles.cache.get(roles[data.tag]) as Role);
         }
         if (data.tag === '[Member]') {
-          await member.roles.remove(activeRole);
+          await member.roles.remove(noLiferRole);
           await member.roles.remove(proRole);
           await member.roles.remove(staffRole);
         }
-        if (data.tag === '[Active]') {
+        if (data.tag === '[NoLifer]') {
           await member.roles.remove(proRole);
           await member.roles.remove(staffRole);
         }

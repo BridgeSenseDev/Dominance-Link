@@ -371,7 +371,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     if (discordId) {
       const member = await channels.guildChat.guild.members.fetch(discordId);
       await member.roles.remove(roles['[Member]']);
-      await member.roles.remove(roles['[Active]']);
+      await member.roles.remove(roles['[NoLifer]']);
       await member.roles.remove(roles['[Pro]']);
       await member.roles.remove(roles['[Staff]']);
     }
