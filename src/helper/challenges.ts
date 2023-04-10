@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Message } from 'discord.js';
-import config from '../config.json';
+import config from '../config.json' assert { type: 'json' };
 import { messages } from '../events/discord/ready.js';
 import { dividers } from './constants.js';
 import { formatNumber, hypixelRequest, uuidToName } from './utils.js';
