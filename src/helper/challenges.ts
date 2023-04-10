@@ -22,7 +22,7 @@ export async function updateWeeklyChallenges() {
 
   let participants = '';
   for (let i = 0; i < members.length; i++) {
-    participants += `\n${i + 1}. <@${members[i].discord}> - \`${formatNumber(members[i].difference)}\``;
+    participants += `\n${i + 1}. **${await uuidToName(members[i].uuid)}** - \`${formatNumber(members[i].difference)}\``;
   }
   const time =
     new Date(
