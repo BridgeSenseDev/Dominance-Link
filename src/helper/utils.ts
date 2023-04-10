@@ -3,6 +3,7 @@ import Database from 'better-sqlite3';
 import HttpsProxyAgent from 'https-proxy-agent';
 import { rankColor, levelingXp } from './constants.js';
 import config from '../config.json' assert { type: 'json' };
+import { DiscordMember } from '../types/global.d.js';
 
 const db = new Database('guild.db');
 
@@ -275,7 +276,9 @@ export function timeStringToSeconds(time: string) {
 }
 
 export function uuidToDiscord(uuid: string): string | null {
-  const discord: { discord: string } | undefined = db.prepare('SELECT discord FROM members WHERE uuid = ?').get(uuid);
+  const discord: { discord: string } | undefined = db
+    .prepare('SELECT discord FROM members WHERE uuid = ?')
+    .get(uuid) as DiscordMember;
   if (discord) {
     return discord.discord;
   }
@@ -283,7 +286,9 @@ export function uuidToDiscord(uuid: string): string | null {
 }
 
 export function discordToUuid(discordId: string): string | null {
-  const uuid: { uuid: string } | undefined = db.prepare('SELECT uuid FROM members WHERE discord = ?').get(discordId);
+  const uuid: { uuid: string } | undefined = db
+    .prepare('SELECT uuid FROM members WHERE discord = ?')
+    .get(discordId) as DiscordMember;
   if (uuid) {
     return uuid.uuid;
   }

@@ -8,6 +8,13 @@ import { NumberObject, StringObject } from '../types/global.d.js';
 
 const db = new Database('guild.db');
 
+interface GuildWatch {
+  date: string;
+  gexp: number;
+  separation: number;
+  gained: number;
+}
+
 function gexpGained(gained: number): [string, number] {
   if (gained >= 0) {
     return ['<:up1:969182381485482064> Gained', config.colors.green];
@@ -48,7 +55,9 @@ export default async function gexpWatch() {
     const embeds = [];
 
     // Dominance
-    let gained = guildGexp.dominance - db.prepare('SELECT gexp FROM dominanceWatch WHERE date=?').get(previous).gexp;
+    let gained =
+      guildGexp.dominance -
+      (db.prepare('SELECT gexp FROM dominanceWatch WHERE date = ?').get(previous) as GuildWatch).gexp;
     db.prepare('INSERT INTO dominanceWatch (date, gexp, gained) VALUES (?, ?, ?)').run(
       today,
       guildGexp.dominance,
@@ -59,9 +68,12 @@ export default async function gexpWatch() {
       if (i === 'dominance') {
         continue;
       }
-      const daily = db.prepare(`SELECT separation FROM ${i}Watch WHERE date=?`).get(previous).separation;
-      const weekly = db.prepare(`SELECT separation FROM ${i}Watch WHERE date=?`).get(prevWeek).separation;
-      const monthly = db.prepare(`SELECT separation FROM ${i}Watch WHERE date=?`).get(prevMonth).separation;
+      const daily = (db.prepare(`SELECT separation FROM ${i}Watch WHERE date=?`).get(previous) as GuildWatch)
+        .separation;
+      const weekly = (db.prepare(`SELECT separation FROM ${i}Watch WHERE date=?`).get(prevWeek) as GuildWatch)
+        .separation;
+      const monthly = (db.prepare(`SELECT separation FROM ${i}Watch WHERE date=?`).get(prevMonth) as GuildWatch)
+        .separation;
       const difference = guildGexp.dominance - guildGexp[i];
       gained = difference - daily;
       db.prepare(`INSERT INTO ${i}Watch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)`).run(

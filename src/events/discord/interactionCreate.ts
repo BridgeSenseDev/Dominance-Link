@@ -32,6 +32,7 @@ import config from '../../config.json' assert { type: 'json' };
 import { channels } from './ready.js';
 import { bullet, dividers, roles } from '../../helper/constants.js';
 import { updateWeeklyChallenges } from '../../helper/challenges.js';
+import { BreakMember, HypixelGuildMember } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
 
@@ -49,11 +50,15 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
   } else if (interaction.isAutocomplete()) {
-    const names = db.prepare('SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC').all();
+    const members = db
+      .prepare('SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC')
+      .all() as HypixelGuildMember[];
     const choices: string[] = [];
-    for (const name of names) {
-      if (name.nameColor) {
-        choices.push(removeSectionSymbols(name.nameColor).split(' ')[name.nameColor.split(' ').length - 1]);
+    for (const guildmember of members) {
+      if (guildmember.nameColor) {
+        choices.push(
+          removeSectionSymbols(guildmember.nameColor).split(' ')[guildmember.nameColor.split(' ').length - 1]
+        );
       }
     }
     const focusedValue = interaction.options.getFocused();
@@ -314,7 +319,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.deferReply();
       const breakData = db
         .prepare('SELECT * FROM breaks WHERE discord = ?')
-        .get(interaction.message.embeds[0].fields[1].value.slice(2, -1));
+        .get(interaction.message.embeds[0].fields[1].value.slice(2, -1)) as BreakMember;
       const name = await uuidToName(breakData.uuid);
       if (interaction.user.id !== breakData.discord) {
         const breakMember = interaction.guild?.members.cache.get(breakData.discord) as GuildMember;
@@ -468,15 +473,11 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      if (db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id)) {
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle('Verification Unsuccessful')
-          .setDescription(`<a:across:986170696512204820> <@${interaction.user.id}> is already verified`);
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
-      if (db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid)) {
+      if (
+        db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) &&
+        member.roles.cache.has(roles.verified) &&
+        !member.roles.cache.has(roles.unverified)
+      ) {
         name = await uuidToName(uuid);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
@@ -638,7 +639,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const q2 = interaction.fields.getTextInputValue('q2Input');
       const uuid = discordToUuid(interaction.user.id) as string;
       const name = await uuidToName(uuid);
-      let thread = db.prepare('SELECT thread FROM breaks WHERE discord = ?').get(interaction.user.id);
+      const thread = db.prepare('SELECT thread FROM breaks WHERE discord = ?').get(interaction.user.id) as BreakMember;
       if (thread) {
         const replyEmbed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
@@ -652,7 +653,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       }
       const { joined, weeklyGexp } = db
         .prepare('SELECT joined, weeklyGexp FROM guildMembers WHERE discord = ?')
-        .get(interaction.user.id);
+        .get(interaction.user.id) as HypixelGuildMember;
 
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
@@ -680,19 +681,19 @@ export default async function execute(client: Client, interaction: Interaction) 
           .setStyle(ButtonStyle.Danger)
           .setEmoji(':calendar_3d:1029713106550657055')
       );
-      thread = await (interaction.channel as TextChannel).threads.create({
+      const threadChannel = await (interaction.channel as TextChannel).threads.create({
         name,
         type: ChannelType.PrivateThread,
         invitable: false
       });
-      await thread.join();
-      await thread.members.add(interaction.user);
-      await thread.send({ embeds: [embed], components: [row] });
+      await threadChannel.join();
+      await threadChannel.members.add(interaction.user);
+      await threadChannel.send({ embeds: [embed], components: [row] });
 
       const replyEmbed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`${name}'s break form has been received`)
-        .setDescription(`You may update your break status in <#${thread.id}>`)
+        .setDescription(`You may update your break status in <#${threadChannel.id}>`)
         .setThumbnail(
           `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
         );
@@ -700,7 +701,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       db.prepare('INSERT INTO breaks (uuid, discord, thread, time, reason) VALUES (?, ?, ?, ?, ?)').run(
         uuid,
         interaction.user.id,
-        thread.id,
+        threadChannel.id,
         q1,
         q2
       );

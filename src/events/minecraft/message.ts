@@ -6,6 +6,7 @@ import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { channels } from '../discord/ready.js';
 import { roles } from '../../helper/constants.js';
+import { BreakMember, WaitlistMember } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
 db.defaultSafeIntegers(true);
@@ -276,14 +277,14 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     const uuid = await nameToUuid(name);
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     try {
-      const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid);
+      const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid) as WaitlistMember;
       await client.channels.cache.get(channel)!.delete();
       db.prepare('DELETE FROM waitlist WHERE uuid = ?').run(uuid);
     } catch (e) {
       /* empty */
     }
     try {
-      const breakData = db.prepare('SELECT * FROM breaks WHERE uuid = ?').get(uuid);
+      const breakData = db.prepare('SELECT * FROM breaks WHERE uuid = ?').get(uuid) as BreakMember;
       const member = await channels.guildChat.guild.members.fetch(breakData.discord);
       const thread = client.channels.cache.get(breakData.thread) as ThreadChannel;
       db.prepare('DELETE FROM breaks WHERE uuid = ?').run(uuid);
@@ -331,8 +332,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       name = msg.split(' ')[msg.split(' ').indexOf('to') - 1];
     }
     const uuid = await nameToUuid(name);
-    const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
-    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(uuid);
+    const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid) as WaitlistMember;
+    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(uuid) as BreakMember;
     const embed = new EmbedBuilder()
       .setColor(config.colors.discordGray)
       .setDescription(`${name} has been invited to the guild`);
@@ -346,8 +347,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   } else if (msg.includes('is already in another guild!')) {
     const name = msg.split(' ')[msg.split(' ').indexOf('is') - 1];
     const uuid = await nameToUuid(name);
-    const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
-    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(uuid);
+    const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid) as WaitlistMember;
+    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(uuid) as BreakMember;
     const embed = new EmbedBuilder()
       .setColor(config.colors.discordGray)
       .setTitle(`${name} is in another guild`)

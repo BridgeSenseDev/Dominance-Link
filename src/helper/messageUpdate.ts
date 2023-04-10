@@ -4,12 +4,13 @@ import { formatDate, uuidToName } from './utils.js';
 import config from '../config.json' assert { type: 'json' };
 import { messages } from '../events/discord/ready.js';
 import { bullet, sub, invis, dividers } from './constants.js';
+import { BreakMember, HypixelGuildMember } from '../types/global.d.js';
 
 const db = new Database('guild.db');
 
 export async function unverifiedUpdate() {
   setInterval(async () => {
-    const data = db.prepare('SELECT * FROM guildMembers').all();
+    const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
     let description = 'List of guild members who are unverified / not in the discord\n';
     for (let i = data.length - 1; i >= 0; i--) {
       if (!data[i].discord) {
@@ -26,7 +27,7 @@ export async function unverifiedUpdate() {
 
 export async function breakUpdate() {
   setInterval(async () => {
-    const data = db.prepare('SELECT * FROM breaks').all();
+    const data = db.prepare('SELECT * FROM breaks').all() as BreakMember[];
     let description = '';
     for (const i in data) {
       description += `\n${bullet} ${await uuidToName(data[i].uuid)} <#${data[i].thread}>`;

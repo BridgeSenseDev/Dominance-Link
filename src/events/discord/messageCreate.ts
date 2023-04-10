@@ -5,6 +5,7 @@ import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { channels } from './ready.js';
 import { roles } from '../../helper/constants.js';
+import { HypixelGuildMember } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
 
@@ -39,7 +40,7 @@ export default async function execute(client: Client, message: Message) {
   if (![channels.minecraftLink.id, channels.officerChat.id].includes(channel.id)) return;
 
   const uuid = discordToUuid(author.id);
-  let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(author.id);
+  let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(author.id) as HypixelGuildMember;
 
   if (!user) {
     if (!uuid) {
@@ -90,7 +91,7 @@ export default async function execute(client: Client, message: Message) {
     }
 
     db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(author.id, uuid);
-    user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(author.id);
+    user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(author.id) as HypixelGuildMember;
   }
 
   const messageContent = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');

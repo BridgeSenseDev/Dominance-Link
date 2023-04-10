@@ -5,6 +5,7 @@ import { ButtonStyle, Message } from 'discord.js';
 import { rgbaColor } from './constants.js';
 import { abbreviateNumber, formatNumber, sleep } from './utils.js';
 import { messages } from '../events/discord/ready.js';
+import { HypixelGuildMember } from '../types/global.d.js';
 
 const db = new Database('guild.db');
 FontLibrary.use('Minecraft', './fonts/Minecraft Regular.ttf');
@@ -47,9 +48,11 @@ async function generateLeaderboardImage(message: string[]) {
   return buffer;
 }
 
-async function generateLeaderboard(message: Message, order: string) {
-  const data = db.prepare(`SELECT uuid, nameColor, "${order}" FROM guildMembers ORDER BY "${order}" ASC`).all();
-  const leaderboard = [];
+async function generateLeaderboard(message: Message, order: keyof HypixelGuildMember) {
+  const data = db
+    .prepare(`SELECT uuid, nameColor, "${order}" FROM guildMembers ORDER BY "${order}" ASC`)
+    .all() as HypixelGuildMember[];
+  const leaderboard: string[] = [];
   const images = [];
 
   if (order === 'networth') {
@@ -65,9 +68,9 @@ async function generateLeaderboard(message: Message, order: string) {
   } else if (
     order === 'weeklyGexp' ||
     order ===
-      Object.keys(db.prepare('SELECT * FROM guildMembers').get())[
-        Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1
-      ]
+      (Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember)[
+        Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember).length - 1
+      ] as keyof HypixelGuildMember)
   ) {
     for (const i in data) {
       leaderboard.push(`§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`);
@@ -101,8 +104,8 @@ export default async function leaderboards() {
     await sleep(1000);
     generateLeaderboard(
       messages.dailyGexp,
-      Object.keys(db.prepare('SELECT * FROM guildMembers').get())[
-        Object.keys(db.prepare('SELECT * FROM guildMembers').get()).length - 1
+      Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember[])[
+        Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember[]).length - 1
       ]
     );
     await sleep(3000);

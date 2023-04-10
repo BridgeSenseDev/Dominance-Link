@@ -3,7 +3,7 @@ import Database from 'better-sqlite3';
 import { Canvas, Image } from 'skia-canvas';
 import renderBox, { renderSkin } from '../helper/render.js';
 import { abbreviateNumber, doubleDigits, hypixelRequest, nameToUuid, uuidToName } from '../helper/utils.js';
-import { StringObject } from '../types/global.d.js';
+import { DiscordMember, HypixelGuildMember, StringObject } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
 
 const db = new Database('guild.db');
@@ -26,7 +26,7 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const uuid = await nameToUuid(interaction.options.getString('name')!);
-  const member = db.prepare('SELECT * FROM guildMembers WHERE uuid = (?)').get(uuid);
+  const member = db.prepare('SELECT * FROM guildMembers WHERE uuid = (?)').get(uuid) as HypixelGuildMember;
   if (!member) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
@@ -139,7 +139,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   if (member.discord!) {
     dcMessages = 0;
   } else {
-    dcMessages = db.prepare('SELECT messages FROM members WHERE discord = ?').get(member.discord).messages;
+    dcMessages = (db.prepare('SELECT messages FROM members WHERE discord = ?').get(member.discord) as DiscordMember)
+      .messages;
     if (!dcMessages) {
       dcMessages = 0;
     }
@@ -186,7 +187,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   let totalWeeklyGexp = 0;
-  const allWeeklyGexp = db.prepare('SELECT weeklyGexp FROM guildMembers').all();
+  const allWeeklyGexp = db.prepare('SELECT weeklyGexp FROM guildMembers').all() as HypixelGuildMember[];
   for (const i of allWeeklyGexp) {
     totalWeeklyGexp += i.weeklyGexp;
   }
@@ -208,7 +209,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   );
 
   let totalLifetimeGexp = 0;
-  const allLifetimeGexp = db.prepare('SELECT * FROM guildMembers').all();
+  const allLifetimeGexp = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
   for (const memberData of allLifetimeGexp) {
     for (const i in memberData) {
       if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(i)) {

@@ -6,6 +6,7 @@ import { Client, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { nameColor, uuidToName, skillAverage, hypixelRequest, uuidToDiscord } from './utils.js';
 import { ranks, roles } from './constants.js';
+import { HypixelGuildMember } from '../types/global.d.js';
 
 const db = new Database('guild.db');
 
@@ -60,7 +61,7 @@ export async function database() {
 export async function gsrun(sheets: JWT, client: Client) {
   setInterval(async () => {
     const gsapi = google.sheets({ version: 'v4', auth: sheets });
-    const data = db.prepare('SELECT * FROM guildMembers').all();
+    const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
     const guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
     const array = [];
     for (let i = data.length - 1; i >= 0; i--) {
@@ -125,7 +126,7 @@ export async function players() {
     const discordId = db
       .prepare('SELECT discord FROM guildMembers')
       .all()
-      .map((i) => i.discord);
+      .map((i) => (i as { discord: string }).discord);
     const members = Array.from(memberRole.members).concat(
       Array.from(noLiferRole.members),
       Array.from(proRole.members),
@@ -139,19 +140,25 @@ export async function players() {
   }, 5 * 60 * 1000);
 
   setInterval(async () => {
-    const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count);
+    const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count) as HypixelGuildMember;
     if (!data) {
       return;
     }
     count++;
     let profiles;
     let player;
+
     try {
       ({ profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${data.uuid}`));
       ({ player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${data.uuid}`));
     } catch (e) {
       return;
     }
+
+    if (!player) {
+      return;
+    }
+
     if (data.discord) {
       let member;
       try {
@@ -172,7 +179,7 @@ export async function players() {
         } else if (!displayName.includes(ign)) {
           await member.setNickname(displayName.replace(new RegExp(ign, 'gi'), ign));
         }
-        if (!data.tag.includes(['[Member]', '[Staff]'])) {
+        if (!['[Member]', '[Staff]'].some((tag) => data.tag.includes(tag))) {
           await member.roles.add(guild.roles.cache.get(roles[data.tag]) as Role);
         }
         if (data.tag === '[Member]') {
@@ -246,7 +253,7 @@ export async function players() {
     const breakMembers = db
       .prepare('SELECT discord FROM breaks')
       .all()
-      .map((i) => i.discord);
+      .map((i) => (i as { discord: string }).discord);
     for (const member of Array.from(breakRole.members)) {
       if (!breakMembers.includes(member[0])) {
         await member[1].roles.remove(breakRole);
