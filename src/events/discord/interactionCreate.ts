@@ -81,16 +81,23 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.editReply({ content: msg });
     } else if (interaction.customId === 'requirements') {
       const uuid = discordToUuid(interaction.user.id);
-      let playerData;
       await interaction.deferReply({ ephemeral: true });
-      try {
-        playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
-      } catch (e) {
+      if (!uuid) {
         await member.roles.add(interaction.guild!.roles.cache.get(roles.unverified) as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
           .setDescription('Please verify first in <#1031568019522072677>');
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
+      if (!playerData.stats) {
+        await member.roles.add(interaction.guild!.roles.cache.get(roles.unverified) as Role);
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Error')
+          .setDescription('Invalid Hypixel stats');
         await interaction.editReply({ embeds: [embed] });
         return;
       }
