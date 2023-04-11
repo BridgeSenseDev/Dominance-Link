@@ -1,10 +1,10 @@
 import { Canvas, FontLibrary } from 'skia-canvas';
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import Database from 'better-sqlite3';
-import { ButtonStyle, Message } from 'discord.js';
+import { ButtonStyle, GuildChannel, Message } from 'discord.js';
 import { rgbaColor } from './constants.js';
 import { abbreviateNumber, formatNumber, sleep } from './utils.js';
-import { messages } from '../events/discord/ready.js';
+import { channels } from '../events/discord/ready.js';
 import { HypixelGuildMember } from '../types/global.d.js';
 
 const db = new Database('guild.db');
@@ -15,7 +15,7 @@ async function generateLeaderboardImage(message: string[]) {
   const ctx = canvas.getContext('2d');
   let width = 5;
   let height = 29;
-  for (let i = 0; i < 13; i++) {
+  for (let i = 0; i < 16; i++) {
     let splitMessageSpace: string[];
     try {
       splitMessageSpace = message[i].split(' ');
@@ -48,7 +48,7 @@ async function generateLeaderboardImage(message: string[]) {
   return buffer;
 }
 
-async function generateLeaderboard(message: Message, order: keyof HypixelGuildMember) {
+async function generateLeaderboard(channel: GuildChannel, order: keyof HypixelGuildMember) {
   const data = db
     .prepare(`SELECT uuid, nameColor, "${order}" FROM guildMembers ORDER BY "${order}" ASC`)
     .all() as HypixelGuildMember[];
@@ -80,51 +80,84 @@ async function generateLeaderboard(message: Message, order: keyof HypixelGuildMe
       leaderboard.push(`§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
     }
   }
-  for (let i = 12; i < 130; i += 13) {
-    images.push(await generateLeaderboardImage(leaderboard.slice(i - 12, i + 1)));
+
+  const sliceSize = 15;
+  const totalItems = leaderboard.length;
+
+  let startIndex = Math.max(0, totalItems - sliceSize);
+  let endIndex = totalItems;
+
+  while (endIndex > 0) {
+    const slice = leaderboard.slice(startIndex, endIndex);
+    images.push(await generateLeaderboardImage(slice));
+    endIndex = startIndex;
+    startIndex = Math.max(0, endIndex - sliceSize);
   }
 
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setLabel('Scroll To Top')
-      .setStyle(ButtonStyle.Link)
-      .setURL(message.url)
-      .setEmoji({ id: '1036842301428875304' })
-  );
-  await message.edit({
-    content: `**Last Update**: <t:${Math.floor(Date.now() / 1000)}:R>`,
-    files: images,
-    components: [row]
-  });
+  if (!channel.isTextBased()) {
+    return;
+  }
+
+  const messageArray: Message[] = [];
+  const messages = await channel.messages.fetch({ limit: 100 });
+  messages.forEach((message) => messageArray.push(message));
+
+  for (const [index, message] of messageArray.entries()) {
+    const image = images[index];
+
+    if (!image) {
+      await message.edit({});
+      continue;
+    }
+
+    const row =
+      index === 0
+        ? new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setLabel('Scroll To Top')
+              .setStyle(ButtonStyle.Link)
+              .setURL(messageArray[messageArray.length - 1].url)
+              .setEmoji({ id: '1036842301428875304' })
+          )
+        : undefined;
+
+    const content = index === 8 ? `**Last Update**: <t:${Math.floor(Date.now() / 1000)}:R>` : '';
+
+    await message.edit({
+      content,
+      files: [image],
+      components: row ? [row] : []
+    });
+  }
 }
 
 export default async function leaderboards() {
   setInterval(async () => {
-    generateLeaderboard(messages.weeklyGexp, 'weeklyGexp');
-    await sleep(1000);
+    generateLeaderboard(channels.weeklyGexp, 'weeklyGexp');
+    await sleep(3000);
     generateLeaderboard(
-      messages.dailyGexp,
+      channels.dailyGexp,
       Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember[])[
         Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember[]).length - 1
       ]
     );
     await sleep(3000);
-    generateLeaderboard(messages.playtime, 'playtime');
+    generateLeaderboard(channels.playtime, 'playtime');
     await sleep(3000);
-    generateLeaderboard(messages.guildMessages, 'messages');
+    generateLeaderboard(channels.guildMessages, 'messages');
     await sleep(3000);
-    generateLeaderboard(messages.bwStars, 'bwStars');
+    generateLeaderboard(channels.bwStars, 'bwStars');
     await sleep(3000);
-    generateLeaderboard(messages.bwFkdr, 'bwFkdr');
+    generateLeaderboard(channels.bwFkdr, 'bwFkdr');
     await sleep(3000);
-    generateLeaderboard(messages.duelsWins, 'duelsWins');
+    generateLeaderboard(channels.duelsWins, 'duelsWins');
     await sleep(3000);
-    generateLeaderboard(messages.duelsWlr, 'duelsWlr');
+    generateLeaderboard(channels.duelsWlr, 'duelsWlr');
     await sleep(3000);
-    generateLeaderboard(messages.duelsWlr, 'duelsWlr');
+    generateLeaderboard(channels.duelsWlr, 'duelsWlr');
     await sleep(3000);
-    generateLeaderboard(messages.networth, 'networth');
+    generateLeaderboard(channels.networth, 'networth');
     await sleep(3000);
-    generateLeaderboard(messages.skillAverage, 'skillAverage');
-  }, 10 * 60 * 1000);
+    generateLeaderboard(channels.skillAverage, 'skillAverage');
+  }, 5 * 60 * 1000);
 }
