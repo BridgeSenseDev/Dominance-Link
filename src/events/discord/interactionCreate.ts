@@ -496,6 +496,9 @@ export default async function execute(client: Client, interaction: Interaction) 
       if (db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid)) {
         const {discord} = db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) as DiscordMember
         name = await uuidToName(uuid);
+        await member.setNickname(name);
+        await member.roles.add(member.guild!.roles.cache.get(roles['[Member]']) as Role);
+        await member.roles.remove(member.guild!.roles.cache.get(roles.unverified) as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Verification Unsuccessful')
