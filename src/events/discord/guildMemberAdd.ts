@@ -1,22 +1,10 @@
-import { Client, EmbedBuilder, GuildMember, Role } from 'discord.js';
-import Database from 'better-sqlite3';
+import { Client, EmbedBuilder, GuildMember } from 'discord.js';
 import config from '../../config.json' assert { type: 'json' };
-import { invis, roles } from '../../helper/constants.js';
+import { invis } from '../../helper/constants.js';
 import { channels } from './ready.js';
-import { uuidToName } from '../../helper/utils.js';
-import { DiscordMember } from '../../types/global.d.js';
-
-const db = new Database('guild.db');
 
 export default async function execute(client: Client, member: GuildMember) {
   if (member.guild.id !== '242357942664429568') return;
-  if (db.prepare('SELECT * FROM members WHERE discord = ?').get(member.user.id)) {
-    const {uuid} = db.prepare('SELECT * FROM members WHERE discord = ?').get(member.user.id) as DiscordMember;
-    const name = await uuidToName(uuid);
-    await member.setNickname(name);
-    await member.roles.add(member.guild!.roles.cache.get(roles['[Member]']) as Role);
-    await member.roles.remove(member.guild!.roles.cache.get(roles.unverified) as Role);
-  }
   const embed = new EmbedBuilder()
     .setColor(config.colors.discordGray)
     .setTitle(':wave: Welcome to Dominance!')
