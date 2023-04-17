@@ -61,7 +61,7 @@ export default async function execute(client: Client) {
   players();
   leaderboards();
   logInterval();
-  weeklyChallengesInterval();
+  weeklyChallengesInterval(client);
 
   // Music
   await client.distube.play(
