@@ -494,7 +494,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
       if (db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid)) {
-        const {discord} = db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) as DiscordMember
+        const { discord } = db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) as DiscordMember;
         name = await uuidToName(uuid);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
