@@ -1,6 +1,16 @@
 import { Client, EmbedBuilder, Guild, Role, TextChannel, ThreadChannel, WebhookClient } from 'discord.js';
+import { getNetworth } from 'skyhelper-networth';
 import Database from 'better-sqlite3';
-import { addXp, nameToUuid, timeStringToSeconds, uuidToDiscord } from '../../helper/utils.js';
+import {
+  addXp,
+  hypixelRequest,
+  nameColor,
+  nameToUuid,
+  removeSectionSymbols,
+  skillAverage,
+  timeStringToSeconds,
+  uuidToDiscord
+} from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
@@ -102,6 +112,84 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
+    if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 5) {
+      name = msg.split('!bw ')[1]?.split(' ')[0];
+      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
+      if (!playerData) {
+        await chat(`/gc ${name} does not exist or has never played Bedwars`);
+        return;
+      }
+      const level = playerData.achievements.bedwars_level;
+      const wins = playerData.stats.Bedwars.wins_bedwars;
+      const wlr =
+        Math.round((playerData.stats.Bedwars?.wins_bedwars / playerData.stats.Bedwars?.losses_bedwars) * 100) / 100;
+      const fkdr =
+        Math.round(
+          (playerData.stats.Bedwars?.final_kills_bedwars / playerData.stats.Bedwars?.final_deaths_bedwars) * 100
+        ) / 100;
+      const bblr =
+        Math.round(
+          (playerData.stats.Bedwars?.beds_broken_bedwars / playerData.stats.Bedwars?.beds_lost_bedwars) * 100
+        ) / 100;
+      const { winstreak } = playerData.stats.Bedwars;
+      await chat(
+        `/gc ▌ [${level}✫] ${removeSectionSymbols(
+          nameColor(playerData)
+        )} W: ${wins}, W / L: ${wlr}, FKDR: ${fkdr}, BBLR: ${bblr}, WS: ${winstreak}`
+      );
+    } else if (
+      ['!d', '!duels'].some((keyword) => msg.includes(keyword)) &&
+      msg.replace(/Guild > |:/g, '').split(' ').length <= 5
+    ) {
+      if (msg.includes('!duels')) {
+        name = msg.split('!duels ')[1]?.split(' ')[0];
+      } else {
+        name = msg.split('!d ')[1]?.split(' ')[0];
+      }
+      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
+      if (!playerData) {
+        await chat(`/gc ${name} does not exist or has never played Duels`);
+        return;
+      }
+      const { wins } = playerData.stats.Duels;
+      const wlr = Math.round((playerData.stats.Duels?.wins / playerData.stats.Duels?.losses) * 100) / 100;
+      const cws = playerData.stats.Duels.current_winstreak;
+      const bws = playerData.stats.Duels.best_overall_winstreak;
+      await chat(
+        `/gc ▌ ${removeSectionSymbols(nameColor(playerData))} W: ${wins}, W / L: ${wlr}, CWS: ${cws}, BWS: ${bws}`
+      );
+    } else if (
+      ['!sb', '!skyblock'].some((keyword) => msg.includes(keyword)) &&
+      msg.replace(/Guild > |:/g, '').split(' ').length <= 5
+    ) {
+      if (msg.includes('!skyblock')) {
+        name = msg.split('!skyblock ')[1]?.split(' ')[0];
+      } else {
+        name = msg.split('!sb ')[1]?.split(' ')[0];
+      }
+      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
+      let profiles;
+      try {
+        ({ profiles } = await hypixelRequest(
+          `https://api.hypixel.net/skyblock/profiles?uuid=${await nameToUuid(name)}`
+        ));
+      } catch (e) {
+        await chat(`/gc Hypixel hates me and blocked ${name}'s skyblock api request`);
+      }
+
+      if (!profiles) {
+        await chat(`/gc ${name} does not exist or has never played Skyblock`);
+        return;
+      }
+      const profile = profiles.find((i: any) => i.selected);
+      const profileData = profile.members[uuid];
+      const bankBalance = profile.banking?.balance;
+      const { networth } = await getNetworth(profileData, bankBalance);
+      const sa = await skillAverage(profileData);
+      await chat(
+        `/gc ▌ ${removeSectionSymbols(nameColor(playerData))} NW: ${networth}, SA: ${sa}, BAL: ${bankBalance}`
+      );
+    }
   } else if (msg.includes('Officer >')) {
     await ocWebhook.send({
       username: 'Dominance',

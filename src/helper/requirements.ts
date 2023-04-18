@@ -42,7 +42,7 @@ export default async function requirements(uuid: string, playerData: any) {
   } else if (Number.isNaN(fkdr) && playerData.stats.Bedwars?.wins_bedwars) {
     bedwars = [
       playerData.achievements.bedwars_level,
-      playerData.stats.Bedwars.wins_bedwars,
+      playerData.stats.Bedwars.final_kills_bedwars,
       playerData.stats.Bedwars.wins_bedwars
     ];
   }
