@@ -20,7 +20,7 @@ export default async function requirements(uuid: string, playerData: any) {
   const name = await uuidToName(uuid);
   try {
     guildData = (await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`)).guild;
-    ({ profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${uuid}`));
+    ({ profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${uuid}`, true));
   } catch (e) {
     /* empty */
   }

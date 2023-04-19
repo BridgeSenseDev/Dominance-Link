@@ -7,6 +7,34 @@ import { DiscordMember } from '../types/global.d.js';
 
 const db = new Database('guild.db');
 
+interface Proxy {
+  flag: string;
+  features: {
+    openvpn_udp: boolean;
+    proxy: boolean;
+  };
+  domain: string;
+}
+
+let agent: HttpsProxyAgent.HttpsProxyAgent;
+
+(async () => {
+  const taiwanProxies: Proxy[] = await fetch('https://api.nordvpn.com/server')
+    .then((response) => response.json())
+    .then((data) =>
+      data.filter((proxy: Proxy) => proxy.flag === 'TW' && proxy.features.openvpn_udp && !proxy.features.proxy)
+    );
+  const proxyOptions: HttpsProxyAgent.HttpsProxyAgentOptions = {
+    host: `https://${taiwanProxies[Math.floor(Math.random() * taiwanProxies.length)].domain}:443`,
+    auth: config.keys.nordVpn
+  };
+  agent = await new HttpsProxyAgent.HttpsProxyAgent(proxyOptions);
+})();
+
+export function getProxy() {
+  return agent;
+}
+
 export async function nameToUuid(name: string) {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${name}`)).json()).data.player.raw_id;
@@ -162,7 +190,7 @@ export function abbreviateNumber(number: number) {
 
 export function nameColor(player: any) {
   if (player.rank) {
-    return player;
+    return `[${player.rank}] ${player.displayname}`;
   }
   if (player.monthlyPackageRank && player.monthlyPackageRank !== 'NONE') {
     let monthlyPlusColor = rankColor[player.rankPlusColor];
@@ -244,8 +272,16 @@ export function addXp(discordId: string) {
   global.lastMessage[discordId] = Math.floor(Date.now() / 1000).toString();
 }
 
-export async function hypixelRequest(url: string) {
+export async function hypixelRequest(url: string, useProxy: boolean = false) {
   try {
+    if (useProxy) {
+      return await (
+        await fetch(url, {
+          headers: { 'API-Key': config.keys.hypixelApiKey },
+          agent
+        } as any)
+      ).json();
+    }
     return await (
       await fetch(url, {
         headers: { 'API-Key': config.keys.hypixelApiKey }
@@ -293,32 +329,4 @@ export function discordToUuid(discordId: string): string | null {
     return uuid.uuid;
   }
   return null;
-}
-
-interface Proxy {
-  flag: string;
-  features: {
-    openvpn_udp: boolean;
-    proxy: boolean;
-  };
-  domain: string;
-}
-
-let agent: HttpsProxyAgent.HttpsProxyAgent;
-
-(async () => {
-  const taiwanProxies: Proxy[] = await fetch('https://api.nordvpn.com/server')
-    .then((response) => response.json())
-    .then((data) =>
-      data.filter((proxy: Proxy) => proxy.flag === 'TW' && proxy.features.openvpn_udp && !proxy.features.proxy)
-    );
-  const proxyOptions: HttpsProxyAgent.HttpsProxyAgentOptions = {
-    host: `https://${taiwanProxies[Math.floor(Math.random() * taiwanProxies.length)].domain}:443`,
-    auth: config.keys.nordVpn
-  };
-  agent = await new HttpsProxyAgent.HttpsProxyAgent(proxyOptions);
-})();
-
-export function getProxy() {
-  return agent;
 }

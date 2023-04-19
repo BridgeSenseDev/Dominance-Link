@@ -25,7 +25,14 @@ sheet.authorize((err) => {
 export async function database() {
   setInterval(async () => {
     const members = [];
-    const guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
+    let guild;
+
+    try {
+      guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
+    } catch (e) {
+      return;
+    }
+
     for (const member of guild) {
       members.push(member.uuid);
       const tag = ranks[member.rank];
@@ -55,7 +62,7 @@ export async function database() {
     placeholders += ', ?'.repeat(members.length - 1);
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
     db.prepare('DELETE FROM guildMembers WHERE uuid IS NULL').run();
-  }, 1 * 60 * 1000);
+  }, 60 * 1000);
 }
 
 export async function gsrun(sheets: JWT, client: Client) {
@@ -146,15 +153,14 @@ export async function players() {
     }
     count++;
     let profiles;
-    let player;
 
     try {
-      ({ profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${data.uuid}`));
-      ({ player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${data.uuid}`));
+      ({ profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${data.uuid}`, true));
     } catch (e) {
-      return;
+      /* empty */
     }
 
+    const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${data.uuid}`);
     if (!player) {
       return;
     }
@@ -215,13 +221,16 @@ export async function players() {
     ) {
       bwFkdr = stats.Bedwars.final_kills_bedwars;
     }
-    if (stats.Duels.wins) {
+    if (!stats.Duels?.wins) {
+      duelsWins = '0';
+      duelsWlr = '0';
+    } else {
       duelsWins = stats.Duels.wins;
-    }
-    if (stats.Duels.wins / stats.Duels.losses) {
-      duelsWlr = (stats.Duels.wins / stats.Duels.losses).toFixed(1);
-    } else if (Number.isNaN(stats.Duels.wins / stats.Duels.losses) && stats.Duels.wins) {
-      duelsWlr = stats.Duels.wins;
+      if (stats.Duels.wins / stats.Duels.losses) {
+        duelsWlr = (stats.Duels.wins / stats.Duels.losses).toFixed(1);
+      } else if (Number.isNaN(stats.Duels.wins / stats.Duels.losses) && stats.Duels.wins) {
+        duelsWlr = stats.Duels.wins;
+      }
     }
 
     if (profiles) {
@@ -232,18 +241,25 @@ export async function players() {
       sa = await skillAverage(profileData);
     }
 
-    db.prepare(
-      'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
-    ).run(
-      nameColor(player),
-      bwStars,
-      bwFkdr,
-      duelsWins,
-      duelsWlr,
-      Math.round(networth * 100) / 100,
-      Math.round(sa * 100) / 100,
-      data.uuid
-    );
+    if (networth) {
+      db.prepare(
+        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
+      ).run(
+        nameColor(player),
+        bwStars,
+        bwFkdr,
+        duelsWins,
+        duelsWlr,
+        Math.round(networth * 100) / 100,
+        Math.round(sa * 100) / 100,
+        data.uuid
+      );
+    } else {
+      db.prepare(
+        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
+      ).run(nameColor(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
+    }
+
     if (count === 126) {
       count = 0;
     }
