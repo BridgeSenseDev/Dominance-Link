@@ -2,6 +2,7 @@ import { Client, EmbedBuilder, Guild, Role, TextChannel, ThreadChannel, WebhookC
 import { getNetworth } from 'skyhelper-networth';
 import Database from 'better-sqlite3';
 import {
+  abbreviateNumber,
   addXp,
   hypixelRequest,
   nameColor,
@@ -115,21 +116,22 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 5) {
       name = msg.split('!bw ')[1]?.split(' ')[0];
       const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
-      if (!playerData) {
+      if (!playerData || !playerData.stats.Bedwars) {
         await chat(`/gc ${name} does not exist or has never played Bedwars`);
         return;
       }
+  
       const level = playerData.achievements.bedwars_level;
       const wins = playerData.stats.Bedwars.wins_bedwars;
       const wlr =
-        Math.round((playerData.stats.Bedwars?.wins_bedwars / playerData.stats.Bedwars?.losses_bedwars) * 100) / 100;
+        Math.round((playerData.stats.Bedwars.wins_bedwars / playerData.stats.Bedwars.losses_bedwars) * 100) / 100;
       const fkdr =
         Math.round(
-          (playerData.stats.Bedwars?.final_kills_bedwars / playerData.stats.Bedwars?.final_deaths_bedwars) * 100
+          (playerData.stats.Bedwars.final_kills_bedwars / playerData.stats.Bedwars.final_deaths_bedwars) * 100
         ) / 100;
       const bblr =
         Math.round(
-          (playerData.stats.Bedwars?.beds_broken_bedwars / playerData.stats.Bedwars?.beds_lost_bedwars) * 100
+          (playerData.stats.Bedwars.beds_broken_bedwars / playerData.stats.Bedwars.beds_lost_bedwars) * 100
         ) / 100;
       const { winstreak } = playerData.stats.Bedwars;
       await chat(
@@ -147,7 +149,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         name = msg.split('!d ')[1]?.split(' ')[0];
       }
       const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
-      if (!playerData) {
+      if (!playerData || !playerData.stats.Duels) {
         await chat(`/gc ${name} does not exist or has never played Duels`);
         return;
       }
@@ -167,27 +169,33 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       } else {
         name = msg.split('!sb ')[1]?.split(' ')[0];
       }
-      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
-      let profiles;
-      try {
-        ({ profiles } = await hypixelRequest(
-          `https://api.hypixel.net/skyblock/profiles?uuid=${await nameToUuid(name)}`
-        ));
-      } catch (e) {
-        await chat(`/gc Hypixel hates me and blocked ${name}'s skyblock api request`);
-      }
 
-      if (!profiles) {
+      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
+      if (!playerData) {
         await chat(`/gc ${name} does not exist or has never played Skyblock`);
         return;
       }
+
+      let profiles;
+      try {
+        ({ profiles } = await hypixelRequest(
+          `https://api.hypixel.net/skyblock/profiles?uuid=${await nameToUuid(name)}`,
+          true
+        ));
+      } catch (e) {
+        await chat(`/gc Hypixel hates me and blocked ${name}'s skyblock api request`);
+        return;
+      }
+
       const profile = profiles.find((i: any) => i.selected);
-      const profileData = profile.members[uuid];
+      const profileData = profile.members[await nameToUuid(name)];
       const bankBalance = profile.banking?.balance;
       const { networth } = await getNetworth(profileData, bankBalance);
       const sa = await skillAverage(profileData);
       await chat(
-        `/gc ▌ ${removeSectionSymbols(nameColor(playerData))} NW: ${networth}, SA: ${sa}, BAL: ${bankBalance}`
+        `/gc ▌ ${removeSectionSymbols(nameColor(playerData))} NW: ${abbreviateNumber(
+          networth
+        )}, SA: ${sa}, BAL: ${abbreviateNumber(bankBalance)}`
       );
     }
   } else if (msg.includes('Officer >')) {
