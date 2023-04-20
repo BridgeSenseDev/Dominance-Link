@@ -260,7 +260,6 @@ export async function skillAverage(player: any) {
 export async function addXp(discordId: string = '', ign: string = '') {
   if (!discordId) {
     const uuid = await nameToUuid(ign);
-    db.prepare('UPDATE')
     if (uuid in global.lastMessage) {
       if (Date.now() / 1000 - Number(global.lastMessage[uuid]) >= 60) {
         db.prepare('UPDATE members SET xp = xp + ? WHERE uuid = ?').run(Math.floor(Math.random() * 11 + 15), uuid);

@@ -24,44 +24,57 @@ sheet.authorize((err) => {
 
 export async function database() {
   setInterval(async () => {
-    const members = [];
     let guild;
 
     try {
-      guild = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.members;
-    } catch (e) {
+      guild = (await hypixelRequest('https://api.hypixel.net/guild?name=Dominance')).guild.members;
+    } catch {
       return;
     }
 
-    for (const member of guild) {
-      members.push(member.uuid);
-      const tag = ranks[member.rank];
-      const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
+    const members = guild.map((member: HypixelGuildMember) => {
+      const { uuid, rank, expHistory, joined } = member;
+      const tag = ranks[rank];
+      const weeklyGexp = Object.values(expHistory).reduce((acc, cur) => acc + cur, 0);
+      const firstExpKey = Object.keys(expHistory)[0];
+      const firstExpValue = Object.values(expHistory)[0];
+
       db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime, tag) VALUES (?, ?, ?, ?)').run(
-        member.uuid,
+        uuid,
         0,
         0,
         tag
       );
+
       try {
         db.prepare(
-          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${
-            Object.keys(member.expHistory)[0]
-          }") = (?, ?, ?, ?) WHERE uuid = (?)`
-        ).run(tag, weeklyGexp, member.joined, Object.values(member.expHistory)[0], member.uuid);
+          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${firstExpKey}") = (?, ?, ?, ?) WHERE uuid = ?`
+        ).run(tag, weeklyGexp, joined, firstExpValue, uuid);
       } catch {
-        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${Object.keys(member.expHistory)[0]}" INTEGER`).run();
+        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${firstExpKey}" INTEGER`).run();
+        db.prepare(`ALTER TABLE archives ADD COLUMN "${firstExpKey}" INTEGER`).run();
         db.prepare(
-          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${
-            Object.keys(member.expHistory)[0]
-          }") = (?, ?, ?, ?) WHERE uuid = (?)`
-        ).run(tag, weeklyGexp, member.joined, Object.values(member.expHistory)[0], member.uuid);
+          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${firstExpKey}") = (?, ?, ?, ?) WHERE uuid = ?`
+        ).run(tag, weeklyGexp, joined, firstExpValue, uuid);
       }
-    }
-    let placeholders = '?';
-    placeholders += ', ?'.repeat(members.length - 1);
+
+      return uuid;
+    });
+
+    const getColumns = (table: string) =>
+      db
+        .prepare(`PRAGMA table_info(${table})`)
+        .all()
+        .map((column: any) => `"${column.name}"`);
+    const commonColumns = getColumns('guildMembers')
+      .filter((column) => getColumns('archives').includes(column))
+      .join(', ');
+    const placeholders = members.map(() => '?').join(', ');
+
+    db.prepare(
+      `INSERT INTO archives (${commonColumns}) SELECT ${commonColumns} FROM guildMembers WHERE uuid NOT IN (${placeholders})`
+    ).run(members);
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
-    db.prepare('DELETE FROM guildMembers WHERE uuid IS NULL').run();
   }, 60 * 1000);
 }
 

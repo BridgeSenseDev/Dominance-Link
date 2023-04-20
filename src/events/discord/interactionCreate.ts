@@ -136,6 +136,18 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
+      const memberData = db
+        .prepare('SELECT * FROM members WHERE discord = ?')
+        .get(interaction.user.id) as DiscordMember;
+      db.prepare(
+        'UPDATE archives SET uuid = ?, discordMessages = ?, xp = ? WHERE discord = ? AND EXISTS (SELECT 1 FROM archives WHERE discord = ?)'
+      ).run(memberData.uuid, memberData.messages, memberData.xp, memberData.discord, memberData.discord);
+      db.prepare('INSERT OR IGNORE INTO archives (discord, uuid, discordMessages, xp) VALUES (?, ?, ?, ?)').run(
+        memberData.discord,
+        memberData.uuid,
+        memberData.messages,
+        memberData.xp
+      );
       db.prepare('DELETE FROM members WHERE discord = ?').run(interaction.user.id);
       db.prepare('UPDATE guildMembers SET discord = NULL WHERE discord = ?').run(interaction.user.id);
       await member.roles.add(roles.unverified);
@@ -527,7 +539,11 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
       if (disc === interaction.user.tag) {
-        db.prepare('INSERT OR IGNORE INTO members (discord, message, xp) VALUES (?, ?, ?)').run(interaction.user.id, 0, 0);
+        db.prepare('INSERT OR IGNORE INTO members (discord, messages, xp) VALUES (?, ?, ?)').run(
+          interaction.user.id,
+          0,
+          0
+        );
         db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
         await member.roles.remove(interaction.guild!.roles.cache.get(roles.unverified) as Role);
         await member.roles.add(interaction.guild!.roles.cache.get(roles.verified) as Role);

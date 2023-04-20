@@ -74,28 +74,32 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   messageCache.push(msg);
 
   // Guild Chat
-  if (msg.includes('joined.')) {
-    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-    let uuid = await nameToUuid(name);
-    if (!uuid) {
-      [name] = msg.replace(/Guild > |:/g, '').split(' ');
-      uuid = await nameToUuid(name);
+  if (msg.includes('Guild >')) {
+    if (msg.includes('joined.')) {
+      let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
+      let uuid = await nameToUuid(name);
+      if (!uuid) {
+        [name] = msg.replace(/Guild > |:/g, '').split(' ');
+        uuid = await nameToUuid(name);
+      }
+      global.playtime[name] = Math.floor(Date.now() / 1000);
+      return;
     }
-    global.playtime[name] = Math.floor(Date.now() / 1000);
-  } else if (msg.includes('left.')) {
-    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-    let uuid = await nameToUuid(name);
-    if (!uuid) {
-      [name] = msg.replace(/Guild > |:/g, '').split(' ');
-      uuid = await nameToUuid(name);
+    if (msg.includes('left.')) {
+      let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
+      let uuid = await nameToUuid(name);
+      if (!uuid) {
+        [name] = msg.replace(/Guild > |:/g, '').split(' ');
+        uuid = await nameToUuid(name);
+      }
+      const time = Math.floor(Date.now() / 1000) - global.playtime[name];
+      if (!Number.isNaN(time)) {
+        delete global.playtime[name];
+        db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+        db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
+      }
+      return;
     }
-    const time = Math.floor(Date.now() / 1000) - global.playtime[name];
-    if (!Number.isNaN(time)) {
-      delete global.playtime[name];
-      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
-      db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
-    }
-  } else if (msg.includes('Guild >')) {
     await gcWebhook.send({
       username: 'Dominance',
       avatarURL: config.guild.icon,
@@ -122,7 +126,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         await chat(`/gc ${name} does not exist or has never played Bedwars`);
         return;
       }
-  
+
       const level = playerData.achievements.bedwars_level;
       const wins = playerData.stats.Bedwars.wins_bedwars;
       const wlr =
@@ -132,9 +136,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
           (playerData.stats.Bedwars.final_kills_bedwars / playerData.stats.Bedwars.final_deaths_bedwars) * 100
         ) / 100;
       const bblr =
-        Math.round(
-          (playerData.stats.Bedwars.beds_broken_bedwars / playerData.stats.Bedwars.beds_lost_bedwars) * 100
-        ) / 100;
+        Math.round((playerData.stats.Bedwars.beds_broken_bedwars / playerData.stats.Bedwars.beds_lost_bedwars) * 100) /
+        100;
       const { winstreak } = playerData.stats.Bedwars;
       await chat(
         `/gc ▌ [${level}✫] ${removeSectionSymbols(
@@ -218,7 +221,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     if (discordId) {
       addXp(discordId);
     } else {
-      addXp('', uuid)
+      addXp('', uuid);
     }
   } else if (msg.includes('From')) {
     let [, , name] = msg.split(' ');
@@ -468,6 +471,19 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     }
     const uuid = await nameToUuid(name);
     const discordId = uuidToDiscord(uuid);
+
+    const getColumns = (table: string) =>
+      db
+        .prepare(`PRAGMA table_info(${table})`)
+        .all()
+        .map((column: any) => `"${column.name}"`);
+    const commonColumns = getColumns('guildMembers')
+      .filter((column) => getColumns('archives').includes(column))
+      .join(', ');
+
+    db.prepare(`INSERT INTO archives (${commonColumns}) SELECT ${commonColumns} FROM guildMembers WHERE uuid = ?`).run(
+      uuid
+    );
     db.prepare('DELETE FROM guildMembers WHERE uuid = ?').run(uuid);
     if (discordId) {
       const member = await channels.guildChat.guild.members.fetch(discordId);
