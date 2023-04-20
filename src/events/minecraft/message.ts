@@ -110,6 +110,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     const discordId = uuidToDiscord(uuid);
     if (discordId) {
       addXp(discordId);
+    } else {
+      addXp('', uuid);
     }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
@@ -215,6 +217,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
     if (discordId) {
       addXp(discordId);
+    } else {
+      addXp('', uuid)
     }
   } else if (msg.includes('From')) {
     let [, , name] = msg.split(' ');

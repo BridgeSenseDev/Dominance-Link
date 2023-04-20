@@ -257,7 +257,21 @@ export async function skillAverage(player: any) {
   return levels / 8;
 }
 
-export function addXp(discordId: string) {
+export async function addXp(discordId: string = '', ign: string = '') {
+  if (!discordId) {
+    const uuid = await nameToUuid(ign);
+    db.prepare('UPDATE')
+    if (uuid in global.lastMessage) {
+      if (Date.now() / 1000 - Number(global.lastMessage[uuid]) >= 60) {
+        db.prepare('UPDATE members SET xp = xp + ? WHERE uuid = ?').run(Math.floor(Math.random() * 11 + 15), uuid);
+      }
+      return;
+    }
+    db.prepare('UPDATE members SET xp = xp + ? WHERE uuid = ?').run(Math.floor(Math.random() * 11 + 15), uuid);
+    global.lastMessage[uuid] = Math.floor(Date.now() / 1000).toString();
+    return;
+  }
+
   if (discordId in global.lastMessage) {
     if (Date.now() / 1000 - Number(global.lastMessage[discordId]) >= 60) {
       db.prepare('UPDATE members SET xp = xp + ? WHERE discord = ?').run(
@@ -265,9 +279,9 @@ export function addXp(discordId: string) {
         discordId
       );
     }
-  } else {
-    db.prepare('UPDATE members SET xp = xp + ? WHERE discord = ?').run(Math.floor(Math.random() * 11 + 15), discordId);
+    return;
   }
+  db.prepare('UPDATE members SET xp = xp + ? WHERE discord = ?').run(Math.floor(Math.random() * 11 + 15), discordId);
   db.prepare('UPDATE members SET (messages) = messages + 1 WHERE discord = (?)').run(discordId);
   global.lastMessage[discordId] = Math.floor(Date.now() / 1000).toString();
 }

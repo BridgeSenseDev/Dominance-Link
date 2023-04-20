@@ -527,7 +527,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
       if (disc === interaction.user.tag) {
-        db.prepare('INSERT OR IGNORE INTO members (discord) VALUES (?)').run(interaction.user.id);
+        db.prepare('INSERT OR IGNORE INTO members (discord, message, xp) VALUES (?, ?, ?)').run(interaction.user.id, 0, 0);
         db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
         await member.roles.remove(interaction.guild!.roles.cache.get(roles.unverified) as Role);
         await member.roles.add(interaction.guild!.roles.cache.get(roles.verified) as Role);
