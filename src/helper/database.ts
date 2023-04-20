@@ -166,14 +166,15 @@ export async function players() {
     }
     count++;
     let profiles;
+    let player;
 
     try {
       ({ profiles } = await hypixelRequest(`https://api.hypixel.net/skyblock/profiles?uuid=${data.uuid}`, true));
+      ({ player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${data.uuid}`));
     } catch (e) {
       /* empty */
     }
 
-    const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${data.uuid}`);
     if (!player) {
       return;
     }
