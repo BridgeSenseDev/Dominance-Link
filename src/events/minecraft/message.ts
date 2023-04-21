@@ -95,6 +95,10 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       const time = Math.floor(Date.now() / 1000) - global.playtime[name];
       if (!Number.isNaN(time)) {
         delete global.playtime[name];
+        if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
+          db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
+          db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
+        }
         db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
         db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
       }
@@ -111,14 +115,16 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       [name] = msg.replace(/Guild > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
-    const discordId = uuidToDiscord(uuid);
-    if (discordId) {
-      addXp(discordId);
-    } else {
-      addXp('', uuid);
+
+    addXp('', uuid);
+
+    if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
+      db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
+      db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
     }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
+
     if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 5) {
       name = msg.split('!bw ')[1]?.split(' ')[0];
       const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
@@ -211,18 +217,12 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     });
     let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
     let uuid = await nameToUuid(name);
-    const discordId = uuidToDiscord(uuid);
     if (!uuid) {
       [name] = msg.replace(/Officer > |:/g, '').split(' ');
       uuid = await nameToUuid(name);
     }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-    if (discordId) {
-      addXp(discordId);
-    } else {
-      addXp('', uuid);
-    }
+    addXp('', uuid);
   } else if (msg.includes('From')) {
     let [, , name] = msg.split(' ');
     name = name.slice(0, -1);
@@ -378,7 +378,13 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       ]
     });
     const uuid = await nameToUuid(name);
+
+    if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
+      db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
+      db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
+    }
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+
     try {
       const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid) as WaitlistMember;
       await client.channels.cache.get(channel)!.delete();
@@ -472,19 +478,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     const uuid = await nameToUuid(name);
     const discordId = uuidToDiscord(uuid);
 
-    const getColumns = (table: string) =>
-      db
-        .prepare(`PRAGMA table_info(${table})`)
-        .all()
-        .map((column: any) => `"${column.name}"`);
-    const commonColumns = getColumns('guildMembers')
-      .filter((column) => getColumns('archives').includes(column))
-      .join(', ');
-
-    db.prepare(`INSERT INTO archives (${commonColumns}) SELECT ${commonColumns} FROM guildMembers WHERE uuid = ?`).run(
-      uuid
-    );
+    db.prepare(`INSERT INTO guildMemberArchives SELECT * FROM guildMembers WHERE uuid = ?`).run(uuid);
     db.prepare('DELETE FROM guildMembers WHERE uuid = ?').run(uuid);
+
     if (discordId) {
       const member = await channels.guildChat.guild.members.fetch(discordId);
       await member.roles.remove(roles['[Member]']);

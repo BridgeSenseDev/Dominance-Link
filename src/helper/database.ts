@@ -39,12 +39,11 @@ export async function database() {
       const firstExpKey = Object.keys(expHistory)[0];
       const firstExpValue = Object.values(expHistory)[0];
 
-      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime, tag) VALUES (?, ?, ?, ?)').run(
-        uuid,
-        0,
-        0,
-        tag
-      );
+      if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
+        db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
+        db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
+      }
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
 
       try {
         db.prepare(
@@ -52,7 +51,7 @@ export async function database() {
         ).run(tag, weeklyGexp, joined, firstExpValue, uuid);
       } catch {
         db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${firstExpKey}" INTEGER`).run();
-        db.prepare(`ALTER TABLE archives ADD COLUMN "${firstExpKey}" INTEGER`).run();
+        db.prepare(`ALTER TABLE guildMemberArchives ADD COLUMN "${firstExpKey}" INTEGER`).run();
         db.prepare(
           `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${firstExpKey}") = (?, ?, ?, ?) WHERE uuid = ?`
         ).run(tag, weeklyGexp, joined, firstExpValue, uuid);
@@ -61,19 +60,11 @@ export async function database() {
       return uuid;
     });
 
-    const getColumns = (table: string) =>
-      db
-        .prepare(`PRAGMA table_info(${table})`)
-        .all()
-        .map((column: any) => `"${column.name}"`);
-    const commonColumns = getColumns('guildMembers')
-      .filter((column) => getColumns('archives').includes(column))
-      .join(', ');
     const placeholders = members.map(() => '?').join(', ');
 
-    db.prepare(
-      `INSERT INTO archives (${commonColumns}) SELECT ${commonColumns} FROM guildMembers WHERE uuid NOT IN (${placeholders})`
-    ).run(members);
+    db.prepare(`INSERT INTO guildMemberArchives SELECT * FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(
+      members
+    );
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
   }, 60 * 1000);
 }

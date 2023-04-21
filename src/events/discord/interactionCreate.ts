@@ -139,10 +139,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const memberData = db
         .prepare('SELECT * FROM members WHERE discord = ?')
         .get(interaction.user.id) as DiscordMember;
-      db.prepare(
-        'UPDATE archives SET uuid = ?, discordMessages = ?, xp = ? WHERE discord = ? AND EXISTS (SELECT 1 FROM archives WHERE discord = ?)'
-      ).run(memberData.uuid, memberData.messages, memberData.xp, memberData.discord, memberData.discord);
-      db.prepare('INSERT OR IGNORE INTO archives (discord, uuid, discordMessages, xp) VALUES (?, ?, ?, ?)').run(
+      db.prepare('INSERT INTO memberArchives (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
         memberData.discord,
         memberData.uuid,
         memberData.messages,
@@ -539,12 +536,21 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
       if (disc === interaction.user.tag) {
-        db.prepare('INSERT OR IGNORE INTO members (discord, messages, xp) VALUES (?, ?, ?)').run(
+        let messages = 0;
+        let xp = 0;
+        if (db.prepare('SELECT * FROM memberArchives WHERE discord = ?').get(interaction.user.id)) {
+          const memberData = db
+            .prepare('SELECT * FROM memberArchives WHERE discord = ?')
+            .get(interaction.user.id) as DiscordMember;
+          ({ messages, xp } = memberData);
+          db.prepare('DELETE FROM memberArchives WHERE discord = ?').run(interaction.user.id);
+        }
+        db.prepare('INSERT OR IGNORE INTO members (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
           interaction.user.id,
-          0,
-          0
+          uuid,
+          messages,
+          xp
         );
-        db.prepare('UPDATE members SET uuid = ? WHERE discord = ?').run(uuid, interaction.user.id);
         await member.roles.remove(interaction.guild!.roles.cache.get(roles.unverified) as Role);
         await member.roles.add(interaction.guild!.roles.cache.get(roles.verified) as Role);
         const { displayName } = member;
