@@ -37,7 +37,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const embed = new EmbedBuilder()
     .setColor(requirementData.color)
     .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
-    .setDescription(`**Current Guild:** \`${requirementData.guild[0]}\`\n\n${requirementData.requirementEmbed}`)
+    .setDescription(requirementData.requirementEmbed)
     .setThumbnail(
       `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
     );

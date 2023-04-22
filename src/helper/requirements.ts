@@ -12,7 +12,7 @@ import config from '../config.json' assert { type: 'json' };
 export default async function requirements(uuid: string, playerData: any) {
   let guildData;
   let profiles;
-  let guild: [string, string] | undefined;
+  let guild: [string, number] | undefined;
   let bedwars: [number, number, number] | undefined;
   let duels: [number, number] | undefined;
   let skywars: [string, number] | undefined;
@@ -66,9 +66,7 @@ export default async function requirements(uuid: string, playerData: any) {
   if (guildData) {
     const member = guildData.members.find((i: any) => i.uuid === uuid);
     const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
-    guild = [guildData.name, weeklyGexp.toString()];
-  } else {
-    guild = ['None', 'Not in a guild'];
+    guild = [guildData.name, weeklyGexp];
   }
 
   // Check requirements
@@ -78,8 +76,24 @@ export default async function requirements(uuid: string, playerData: any) {
   let color;
   let reqs;
 
+  if (!guild) {
+    requirementEmbed +=
+      ':red_circle: **GEXP**\n<a:across:986170696512204820> **Guild:** `None`\n<a:across:986170696512204820> **Weekly GEXP:** `0 / 150,000`\n\n';
+    guild = ['None', 0];
+  } else if (guild[1] >= 150000) {
+    meetingReqs = true;
+    requirementEmbed += `:green_circle: **GEXP**\n<a:atick:986173414723162113> **Guild:** \`${
+      guild[0]
+    }\`\n<a:atick:986173414723162113> **Weekly GEXP:** \`${formatNumber(guild[1])}\`\n\n`;
+  } else {
+    requirementEmbed += `:red_circle: **GEXP**\n<a:atick:986173414723162113> **Guild:** \`${
+      guild[0]
+    }\`\n<a:across:986170696512204820> **Weekly GEXP:** \`${formatNumber(guild[1])} / 150,000\`\n\n`;
+  }
+
   if (!playerData.achievementPoints) {
-    requirementEmbed += ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `0`\n\n';
+    requirementEmbed +=
+      ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `0 / 9,000`\n\n';
   } else if (playerData.achievementPoints >= 9000) {
     meetingReqs = true;
     requirementEmbed += `:green_circle: **Achievements**\n<a:atick:986173414723162113> **Achievement Points:** \`${formatNumber(
