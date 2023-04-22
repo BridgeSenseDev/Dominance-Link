@@ -28,10 +28,12 @@ export default async function requirements(uuid: string, playerData: any) {
   // Get gamemode data
   if (profiles) {
     const profile = profiles.find((i: any) => i.selected);
-    const profileData = profile.members[uuid];
-    const bankBalance = profile.banking?.balance;
-    const { networth } = await getNetworth(profileData, bankBalance);
-    skyblock = [networth, await skillAverage(profileData)];
+    if (profile) {
+      const profileData = profile.members[uuid];
+      const bankBalance = profile.banking?.balance;
+      const { networth } = await getNetworth(profileData, bankBalance);
+      skyblock = [networth, await skillAverage(profileData)];
+    }
   }
 
   const fkdr =
