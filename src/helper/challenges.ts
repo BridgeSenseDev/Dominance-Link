@@ -28,7 +28,12 @@ export async function updateWeeklyChallenges() {
     .map((member: unknown) => member as WeeklyChallengeMember);
 
   for (let i = 0; i < members.length; i++) {
-    const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${members[i].uuid}`);
+    let player;
+    try {
+      player = await hypixelRequest(`https://api.hypixel.net/player?uuid=${members[i].uuid}`);
+    } catch (e) {
+      return;
+    }
     let current = player;
     for (const obj of config.guild.weeklyChallenges.stat) {
       current = current[obj];
@@ -38,8 +43,11 @@ export async function updateWeeklyChallenges() {
   }
 
   members.sort((a, b) => {
-    if (a.difference && b.difference) {
-      return b.difference - a.difference;
+    if (a.difference !== undefined && b.difference !== undefined) {
+      if (a.difference !== b.difference) {
+        return b.difference - a.difference;
+      }
+      return b.initial - a.initial;
     }
     return 0;
   });
@@ -95,8 +103,11 @@ export async function resetWeeklyChallenges(client: Client) {
     }
 
     members.sort((a, b) => {
-      if (a.difference && b.difference) {
-        return b.difference - a.difference;
+      if (a.difference !== undefined && b.difference !== undefined) {
+        if (a.difference !== b.difference) {
+          return b.difference - a.difference;
+        }
+        return b.initial - a.initial;
       }
       return 0;
     });
