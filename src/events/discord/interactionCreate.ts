@@ -502,16 +502,6 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      if (db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid)) {
-        const { discord } = db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) as DiscordMember;
-        name = await uuidToName(uuid);
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle('Verification Unsuccessful')
-          .setDescription(`<a:across:986170696512204820> **${name}** is already verified to <@${discord}>`);
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
       const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`);
       try {
         name = player.displayname;
