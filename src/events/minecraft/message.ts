@@ -198,6 +198,11 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         return;
       }
 
+      if (!profiles) {
+        await chat(`/gc Hypixel hates me and blocked ${name}'s skyblock api request`);
+        return;
+      }
+
       const profile = profiles.find((i: any) => i.selected);
       const profileData = profile.members[await nameToUuid(name)];
       const bankBalance = profile.banking?.balance;
