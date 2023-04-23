@@ -66,6 +66,7 @@ export async function database() {
       members
     );
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
+    db.prepare('DELETE FROM guildMembers WHERE uuid IS NULL').run();
   }, 60 * 1000);
 }
 
