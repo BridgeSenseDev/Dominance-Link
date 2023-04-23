@@ -30,7 +30,7 @@ export async function updateWeeklyChallenges() {
   for (let i = 0; i < members.length; i++) {
     let player;
     try {
-      player = await hypixelRequest(`https://api.hypixel.net/player?uuid=${members[i].uuid}`);
+      ({ player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${members[i].uuid}`));
     } catch (e) {
       return;
     }
@@ -94,7 +94,7 @@ export async function updateWeeklyChallenges() {
 }
 
 export async function resetWeeklyChallenges(client: Client) {
-  cron.schedule('56 14 * * 1', async () => {
+  cron.schedule('50 11 * * 0', async () => {
     const members = db.prepare('SELECT * FROM weeklyChallenges').all() as WeeklyChallengeMember[];
     let winners = '';
 
@@ -114,7 +114,7 @@ export async function resetWeeklyChallenges(client: Client) {
 
     let count = 1;
     for (const member of members) {
-      if (member.difference! >= 200) {
+      if (member.difference! >= config.guild.weeklyChallenges.req) {
         winners += `\n${count}. **${await uuidToName(member.uuid)}** - \`${formatNumber(member.difference!)}\``;
         count++;
       }
