@@ -30,7 +30,7 @@
     "libsodium-wrappers": "^0.7.11",
     "mineflayer": "^4.8.1",
     "node-cron": "^3.0.2",
-    "opusscript": "^0.0.8",
+    "opusscript": "^0.1.0",
     "skia-canvas": "^1.0.1",
     "skyhelper-networth": "^1.12.6",
     "ytdl-core": "^4.11.4"
