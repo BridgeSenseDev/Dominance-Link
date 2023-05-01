@@ -177,6 +177,7 @@ export async function players() {
         member = await guild.members.fetch(data.discord);
       } catch (e) {
         db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
+        return;
       }
       if (!['[Owner]', '[GM]'].includes(data.tag) && member) {
         const ign = await uuidToName(data.uuid);
@@ -241,10 +242,12 @@ export async function players() {
 
     if (profiles) {
       const profile = profiles.find((i: any) => i.selected);
-      const profileData = profile.members[data.uuid];
-      const bankBalance = profile.banking?.balance;
-      ({ networth } = await getNetworth(profileData, bankBalance));
-      sa = await skillAverage(profileData);
+      if (profile) {
+        const profileData = profile.members[data.uuid];
+        const bankBalance = profile.banking?.balance;
+        ({ networth } = await getNetworth(profileData, bankBalance));
+        sa = await skillAverage(profileData);
+      }
     }
 
     if (networth) {

@@ -36,6 +36,10 @@ export async function updateWeeklyChallenges() {
     }
     let current = player;
     for (const obj of config.guild.weeklyChallenges.stat) {
+      if (!current) {
+        current = 0;
+        break;
+      }
       current = current[obj];
     }
     db.prepare('UPDATE weeklyChallenges SET current = ? WHERE uuid = ?').run(current, members[i].uuid);
