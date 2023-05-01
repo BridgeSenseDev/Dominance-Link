@@ -1,27 +1,98 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Message } from 'discord.js';
 import Database from 'better-sqlite3';
-import { addXp, discordToUuid, formatMentions, getProxy, uuidToName } from '../../helper/utils.js';
+import { google } from 'googleapis';
+import { addXp, discordToUuid, formatMentions, uuidToName } from '../../helper/utils.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { channels } from './ready.js';
 import { roles } from '../../helper/constants.js';
-import { HypixelGuildMember } from '../../types/global.d.js';
+import { HypixelGuildMember, NumberObject } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
 
 async function checkProfanity(message: string) {
-  const agent = getProxy();
-  const response = await fetch('https://api.openai.com/v1/moderations', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${config.keys.openAi}`
+  const limits: NumberObject = {
+    TOXICITY: 0.7,
+    SEVERE_TOXICITY: 0.5,
+    IDENTITY_ATTACK: 0.6,
+    INSULT: 0.8,
+    PROFANITY: 0.7,
+    THREAT: 0.8,
+    SEXUALLY_EXPLICIT: 0.8,
+    OBSCENE: 0.8
+  };
+
+  message = message.replace(/\*([^*]+)\*/g, '$1');
+  message = message.replace(/_([^_]+)_/g, '$1');
+  message = message.replace(/\*\*([^*]+)\*\*/g, '$1');
+  message = message.replace(/__([^_]+)__/g, '$1');
+  message = message.replace(/\|\|([^|]+)\|\|/g, '$1');
+  message = message.replace(/~([^~]+)~/g, '$1');
+  message = message.replace(/~~([^~]+)~~/g, '$1');
+  message = message.replace(/`([^`]+)`/g, '$1');
+  message = message.replace(/```([^`]+)```/g, '$1');
+  message = message.replace(/:([^:]+):/g, '$1');
+
+  const client = (await google.discoverAPI(
+    'https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1'
+  )) as any;
+
+  const analyzeRequest = {
+    comment: {
+      text: message
     },
-    body: JSON.stringify({ input: message, model: 'text-moderation-latest' }),
-    agent
-  } as any);
-  const { results } = await response.json();
-  return results[0].flagged;
+    requestedAttributes: {
+      TOXICITY: {},
+      SEVERE_TOXICITY: {},
+      IDENTITY_ATTACK: {},
+      INSULT: {},
+      PROFANITY: {},
+      THREAT: {},
+      SEXUALLY_EXPLICIT: {},
+      OBSCENE: {}
+    }
+  };
+
+  const analyzeRequestNotEn = {
+    comment: {
+      text: message
+    },
+    requestedAttributes: {
+      TOXICITY: {},
+      SEVERE_TOXICITY: {},
+      IDENTITY_ATTACK: {},
+      INSULT: {},
+      PROFANITY: {},
+      THREAT: {}
+    }
+  };
+
+  let response;
+  try {
+    response = await client.comments.analyze({
+      key: config.keys.googleCloud,
+      resource: analyzeRequest
+    });
+  } catch (e) {
+    try {
+      response = await client.comments.analyze({
+        key: config.keys.googleCloud,
+        resource: analyzeRequestNotEn
+      });
+    } catch (err) {
+      return false;
+    }
+  }
+
+  const { attributeScores } = response.data;
+
+  for (const attribute in attributeScores) {
+    if (attributeScores[attribute].summaryScore.value > limits[attribute]) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export default async function execute(client: Client, message: Message) {
