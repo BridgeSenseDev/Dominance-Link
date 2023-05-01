@@ -35,12 +35,7 @@ client.on('ready', async () => {
         `to get every week?**\n${invis}${sub} ${config.guild.gexpReq} GEXP per week\n\n${bullet} **Can public members participate in ` +
         `events**?\n${invis}${sub} Yes\n\n${dividers(22)}\n\n** Socials:**\n\n<:discord:963609407390883860> [Discord Invite]` +
         `(https://dominance.cf/discord)\n<:twitter:968021865064988742> [Twitter](https://twitter.com/MatrixHypixel)\n🌐 ` +
-        `[Website](https://dominance.cf/)\n<:hypixel:968022561940209664> [Hypixel Forum Post](https://dominance.cf/forums)\n\n` +
-        `${dividers(22)}\n\n**Guild Art:**\n\n:white_large_square: [Light Background Cape](https://bit.ly/3Klyt79)\n:black_large_square: ` +
-        `[Dark Background Cape](https://bit.ly/3ueDmte)\n:purple_square: [Pink Cape](https://bit.ly/3jb0nXz)\n:yellow_square: ` +
-        `[Yellow Cape White Background](https://bit.ly/3udsd) (By @Lennos#3244)\n:yellow_square: [Yellow Cape Black Background]` +
-        `(https://bit.ly/3Jdkajx) (By @Lennos#3244)\n:frame_photo: [Dominance Pack 16x](https://pvprp.com/pack?p=10795&or=profile) ` +
-        `(By <@818468511612403772>)`
+        `[Website](https://dominance.cf/)\n<:hypixel:968022561940209664> [Hypixel Forum Post](https://dominance.cf/forums)`
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,
