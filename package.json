@@ -24,7 +24,7 @@
     "discord.js": "^14.9.0",
     "distube": "^4.0.4",
     "ffmpeg-static": "^5.1.0",
-    "google-auth-library": "^8.7.0",
+    "google-auth-library": "^8.8.0",
     "googleapis": "^113.0.0",
     "https-proxy-agent": "^5.0.1",
     "libsodium-wrappers": "^0.7.11",
