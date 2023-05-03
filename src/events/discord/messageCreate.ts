@@ -48,8 +48,7 @@ async function checkProfanity(message: string) {
       INSULT: {},
       PROFANITY: {},
       THREAT: {},
-      SEXUALLY_EXPLICIT: {},
-      OBSCENE: {}
+      SEXUALLY_EXPLICIT: {}
     }
   };
 
@@ -85,7 +84,6 @@ async function checkProfanity(message: string) {
   }
 
   const { attributeScores } = response.data;
-
   for (const attribute in attributeScores) {
     if (attributeScores[attribute].summaryScore.value > limits[attribute]) {
       return true;
