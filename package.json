@@ -21,7 +21,7 @@
     "@distube/spotify": "^1.5.1",
     "@distube/ytdl-core": "^4.11.9",
     "better-sqlite3": "^8.3.0",
-    "discord.js": "^14.10.2",
+    "discord.js": "^14.11.0",
     "distube": "^4.0.4",
     "ffmpeg-static": "^5.1.0",
     "google-auth-library": "^8.8.0",
