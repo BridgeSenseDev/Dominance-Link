@@ -131,10 +131,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.showModal(modal);
     } else if (interaction.customId === 'unverify') {
       await interaction.deferReply({ ephemeral: true });
-      if (
-        !member.roles.cache.has(roles.verified) &&
-        db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id)
-      ) {
+      if (!db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id)) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setDescription(`<a:across:986170696512204820> <@${interaction.user.id}> is already unverified`);
