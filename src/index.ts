@@ -1,9 +1,8 @@
 import { Client, GatewayIntentBits } from 'discord.js';
 import config from './config.json' assert { type: 'json' };
-import discordCommands from './handlers/discordCommands.js';
-import discordEvents from './handlers/discordEvents.js';
+import ready from './events/discord/ready.js';
 
-const client = new Client({
+const client: Client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
@@ -14,8 +13,9 @@ const client = new Client({
   ]
 });
 
-discordCommands(client);
-discordEvents(client);
+client.on('ready', () => {
+  ready(client);
+});
 
 client.login(config.keys.discordBotToken);
 

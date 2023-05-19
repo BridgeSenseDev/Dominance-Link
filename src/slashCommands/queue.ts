@@ -15,7 +15,7 @@ export const data = new SlashCommandBuilder().setName('queue').setDescription('L
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const client = (await import('../index.js')).default;
-  const queue = client.distube.getQueue(interaction.guild);
+  const queue = client.distube.getQueue(interaction.guild!);
 
   if (!queue) {
     const embed = new EmbedBuilder()

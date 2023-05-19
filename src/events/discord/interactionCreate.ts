@@ -22,17 +22,19 @@ import Database from 'better-sqlite3';
 import {
   discordToUuid,
   formatNumber,
-  hypixelRequest,
+  hypixelApiError,
   nameToUuid,
   removeSectionSymbols,
   uuidToName
 } from '../../helper/utils.js';
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
-import { channels } from './ready.js';
+import { textChannels } from './ready.js';
 import { bullet, dividers, roles } from '../../helper/constants.js';
 import { updateWeeklyChallenges } from '../../helper/challenges.js';
 import { BreakMember, DiscordMember, HypixelGuildMember } from '../../types/global.d.js';
+import { fetchPlayerRaw, fetchGuildByPlayer } from '../../api.js';
+import { processPlayer } from '../../types/api/processors/processPlayers.js';
 
 const db = new Database('guild.db');
 
@@ -91,17 +93,14 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
-      if (!playerData.stats) {
-        await member.roles.add(interaction.guild!.roles.cache.get(roles.unverified) as Role);
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle('Error')
-          .setDescription('Invalid Hypixel stats');
-        await interaction.editReply({ embeds: [embed] });
+
+      const playerRawResponse = await fetchPlayerRaw(uuid);
+      if (!playerRawResponse.success) {
+        await interaction.editReply(hypixelApiError(playerRawResponse.cause));
         return;
       }
-      const requirementData = await requirements(uuid!, playerData);
+
+      const requirementData = await requirements(uuid, playerRawResponse.player);
       const embed = new EmbedBuilder()
         .setColor(requirementData.color)
         .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
@@ -111,7 +110,10 @@ export default async function execute(client: Client, interaction: Interaction) 
         );
       await interaction.editReply({ embeds: [embed] });
     } else if (interaction.customId === 'verify') {
-      if ((interaction.member as GuildMember).roles.cache.has(roles.verified)) {
+      if (
+        (interaction.member as GuildMember).roles.cache.has(roles.verified) &&
+        db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id)
+      ) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Verification Unsuccessful')
@@ -129,7 +131,10 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.showModal(modal);
     } else if (interaction.customId === 'unverify') {
       await interaction.deferReply({ ephemeral: true });
-      if (!member.roles.cache.has(roles.verified)) {
+      if (
+        !member.roles.cache.has(roles.verified) &&
+        db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id)
+      ) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setDescription(`<a:across:986170696512204820> <@${interaction.user.id}> is already unverified`);
@@ -247,7 +252,7 @@ export default async function execute(client: Client, interaction: Interaction) 
                 inline: true
               }
             );
-          await channels.applicationLogs.send({ embeds: [applicationEmbed] });
+          await textChannels.applicationLogs.send({ embeds: [applicationEmbed] });
           await interaction.deleteReply();
           await interaction.message.delete();
         });
@@ -310,7 +315,7 @@ export default async function execute(client: Client, interaction: Interaction) 
                 inline: true
               }
             );
-          await channels.applicationLogs.send({ embeds: [applicationEmbed] });
+          await textChannels.applicationLogs.send({ embeds: [applicationEmbed] });
           await interaction.deleteReply();
           await interaction.message.delete();
           await collectorInteraction.deleteReply();
@@ -372,11 +377,12 @@ export default async function execute(client: Client, interaction: Interaction) 
             db.prepare('DELETE FROM breaks WHERE discord = ?').run(breakData.discord);
             const embed = new EmbedBuilder()
               .setColor(config.colors.discordGray)
-              .setTitle(`${await uuidToName(breakData.uuid)}'s Break has Been Ended`)
+              .setTitle(`${await uuidToName(breakData.uuid)}'s Break Has Been Ended`)
               .setDescription(`This thread has been archived.`);
             await interaction.deleteReply();
             await collectorInteraction.editReply({ embeds: [embed] });
             await (collectorInteraction.channel as ThreadChannel).setLocked();
+            await (collectorInteraction.channel as ThreadChannel).setArchived();
             collector.stop();
           }
         });
@@ -399,6 +405,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setDescription(`This thread has been archived. Enjoy your stay!`);
       await interaction.editReply({ embeds: [embed] });
       await (interaction.channel as ThreadChannel).setLocked();
+      await (interaction.channel as ThreadChannel).setArchived();
     } else if (interaction.customId === 'closeApplication') {
       if (!(interaction.member as GuildMember).roles.cache.has(roles['[Staff]'])) {
         const embed = new EmbedBuilder()
@@ -445,10 +452,18 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      let current = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
-      for (const obj of config.guild.weeklyChallenges.stat) {
-        current = current[obj];
+
+      const playerRawResponse = await fetchPlayerRaw(uuid!);
+      let current;
+      if (!playerRawResponse.success) {
+        current = 0;
+      } else {
+        current = playerRawResponse.player;
+        for (const obj of config.guild.weeklyChallenges.stat) {
+          current = current[obj] as any;
+        }
       }
+
       db.prepare('INSERT INTO weeklyChallenges (uuid, discord, initial, current) VALUES (?, ?, ?, ?)').run(
         uuid,
         interaction.user.id,
@@ -465,7 +480,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       await timeoutMember.timeout(null);
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
-        .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
+        .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
         .setDescription(
           `**<@${timeoutMember.id}> timeout has been removed by ${interaction.user}**\n${
             interaction.message.embeds[0].description!.split('\n')[1]
@@ -477,9 +492,8 @@ export default async function execute(client: Client, interaction: Interaction) 
   } else if (interaction.type === InteractionType.ModalSubmit) {
     if (interaction.customId === 'verification') {
       await interaction.deferReply({ ephemeral: true });
-      let disc;
-      let name;
       const ign = interaction.fields.getTextInputValue('verificationInput');
+
       const uuid = await nameToUuid(ign);
       if (!uuid) {
         const embed = new EmbedBuilder()
@@ -489,12 +503,13 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
+
       if (
         db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) &&
         member.roles.cache.has(roles.verified) &&
         !member.roles.cache.has(roles.unverified)
       ) {
-        name = await uuidToName(uuid);
+        const name = await uuidToName(uuid);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Verification Unsuccessful')
@@ -502,19 +517,18 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`);
-      try {
-        name = player.displayname;
-        disc = player.socialMedia.links.DISCORD;
-      } catch (e) {
-        if (!name) {
-          const embed = new EmbedBuilder()
-            .setColor(config.colors.red)
-            .setTitle('Verification Unsuccessful')
-            .setDescription(`<a:across:986170696512204820> **${ign}** is an invalid IGN`);
-          await interaction.editReply({ embeds: [embed] });
-          return;
-        }
+
+      const playerRawResponse = await fetchPlayerRaw(uuid);
+      if (!playerRawResponse.success) {
+        await interaction.editReply(hypixelApiError(playerRawResponse.cause));
+        return;
+      }
+
+      const processedPlayer = processPlayer(playerRawResponse.player);
+      const name = processedPlayer.username;
+      const discord = processedPlayer.links.DISCORD;
+
+      if (!discord) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Verification Unsuccessful')
@@ -525,7 +539,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      if (disc === interaction.user.tag) {
+      if (discord === interaction.user.tag) {
         let messages = 0;
         let xp = 0;
         if (db.prepare('SELECT * FROM memberArchives WHERE discord = ?').get(interaction.user.id)) {
@@ -553,37 +567,40 @@ export default async function execute(client: Client, interaction: Interaction) 
         } else if (!displayName.includes(name)) {
           await member.setNickname(displayName.replace(new RegExp(name, 'gi'), name));
         }
-        const { guild } = await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`);
-        if (!guild || guild.name_lower !== 'dominance') {
-          const embed = new EmbedBuilder()
-            .setColor(config.colors.green)
-            .setTitle('Verification Successful')
-            .setDescription(
-              `<a:atick:986173414723162113> **${name}** is not in Dominance\n<:add:1005843961652453487>\
-                  Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
-            )
-            .setThumbnail(
-              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-            );
-          await interaction.editReply({ embeds: [embed] });
-        } else {
-          await member.roles.add(interaction.guild!.roles.cache.get(roles['[Member]']) as Role);
-          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(interaction.user.id, uuid);
-          const embed = new EmbedBuilder()
-            .setColor(config.colors.green)
-            .setTitle('Verification Successful')
-            .setDescription(
-              `<a:atick:986173414723162113> **${name}** is in Dominance\n<:add:1005843961652453487>\
-                    Added: <@&445669382539051008>, <@&1031926129822539786>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
-            )
-            .setThumbnail(
-              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-            );
-          await interaction.editReply({ embeds: [embed] });
+        const guildResponse = await fetchGuildByPlayer(uuid);
+        if (guildResponse.success) {
+          const { guild } = guildResponse;
+          if (!guild || guild.name_lower !== 'dominance') {
+            const embed = new EmbedBuilder()
+              .setColor(config.colors.green)
+              .setTitle('Verification Successful')
+              .setDescription(
+                `<a:atick:986173414723162113> **${name}** is not in Dominance\n<:add:1005843961652453487>\
+                    Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
+              )
+              .setThumbnail(
+                `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+              );
+            await interaction.editReply({ embeds: [embed] });
+          } else {
+            await member.roles.add(interaction.guild!.roles.cache.get(roles['[Member]']) as Role);
+            db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(interaction.user.id, uuid);
+            const embed = new EmbedBuilder()
+              .setColor(config.colors.green)
+              .setTitle('Verification Successful')
+              .setDescription(
+                `<a:atick:986173414723162113> **${name}** is in Dominance\n<:add:1005843961652453487>\
+                      Added: <@&445669382539051008>, <@&1031926129822539786>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
+              )
+              .setThumbnail(
+                `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+              );
+            await interaction.editReply({ embeds: [embed] });
+          }
         }
       } else {
         const embed = new EmbedBuilder().setColor(config.colors.red).setTitle('Verification Unsuccessful')
-          .setDescription(`<a:across:986170696512204820>${name} has a different discord account linked on hypixel\nThe discord tag **${disc}**\
+          .setDescription(`<a:across:986170696512204820>${name} has a different discord account linked on hypixel\nThe discord tag **${discord}**\
                         linked on hypixel does not match your discord tag **${interaction.user.tag}**`);
         await interaction.editReply({ embeds: [embed] });
       }
@@ -593,10 +610,15 @@ export default async function execute(client: Client, interaction: Interaction) 
       const q2 = interaction.fields.getTextInputValue('q2Input');
       const q3 = interaction.fields.getTextInputValue('q3Input');
 
-      const uuid = discordToUuid(interaction.user.id) as string;
-      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`)).player;
-      const requirementData = await requirements(uuid, playerData);
-      const name = await uuidToName(uuid);
+      const uuid = discordToUuid(interaction.user.id)!;
+      const playerRawResponse = await fetchPlayerRaw(uuid);
+      if (!playerRawResponse.success) {
+        await interaction.editReply(hypixelApiError(playerRawResponse.cause));
+        return;
+      }
+
+      const requirementData = await requirements(uuid, playerRawResponse.player);
+      const name = (await uuidToName(uuid))!;
 
       const applicationEmbed = new EmbedBuilder()
         .setColor(requirementData.color)
@@ -645,7 +667,7 @@ export default async function execute(client: Client, interaction: Interaction) 
             .setLabel('Deny')
             .setEmoji('a:across:986170696512204820')
         );
-      await channels.applications.send({ components: [row], embeds: [applicationEmbed] });
+      await textChannels.applications.send({ components: [row], embeds: [applicationEmbed] });
       const replyEmbed = new EmbedBuilder()
         .setColor(requirementData.color)
         .setTitle(`${interaction.user.tag}'s application has been received`)
@@ -667,7 +689,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const q1 = interaction.fields.getTextInputValue('q1Input');
       const q2 = interaction.fields.getTextInputValue('q2Input');
       const uuid = discordToUuid(interaction.user.id) as string;
-      const name = await uuidToName(uuid);
+      const name = (await uuidToName(uuid))!;
       const thread = db.prepare('SELECT thread FROM breaks WHERE discord = ?').get(interaction.user.id) as BreakMember;
       if (thread) {
         const replyEmbed = new EmbedBuilder()
@@ -736,7 +758,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       );
       await member.roles.add(interaction.guild!.roles.cache.get(roles.Break) as Role);
 
-      await channels.break.send({ embeds: [embed] });
+      await textChannels.break.send({ embeds: [embed] });
     }
   }
 }

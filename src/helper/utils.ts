@@ -1,41 +1,12 @@
-import { Client, Message } from 'discord.js';
+import { Client, EmbedBuilder, Message } from 'discord.js';
 import Database from 'better-sqlite3';
-import HttpsProxyAgent from 'https-proxy-agent';
 import { rankColor, levelingXp } from './constants.js';
-import config from '../config.json' assert { type: 'json' };
 import { DiscordMember } from '../types/global.d.js';
+import config from '../config.json' assert { type: 'json' };
 
 const db = new Database('guild.db');
 
-interface Proxy {
-  flag: string;
-  features: {
-    openvpn_udp: boolean;
-    proxy: boolean;
-  };
-  domain: string;
-}
-
-let agent: HttpsProxyAgent.HttpsProxyAgent;
-
-(async () => {
-  const taiwanProxies: Proxy[] = await fetch('https://api.nordvpn.com/server')
-    .then((response) => response.json())
-    .then((data) =>
-      data.filter((proxy: Proxy) => proxy.flag === 'TW' && proxy.features.openvpn_udp && !proxy.features.proxy)
-    );
-  const proxyOptions: HttpsProxyAgent.HttpsProxyAgentOptions = {
-    host: `https://${taiwanProxies[Math.floor(Math.random() * taiwanProxies.length)].domain}:443`,
-    auth: config.keys.nordVpn
-  };
-  agent = await new HttpsProxyAgent.HttpsProxyAgent(proxyOptions);
-})();
-
-export function getProxy() {
-  return agent;
-}
-
-export async function nameToUuid(name: string) {
+export async function nameToUuid(name: string): Promise<string | null> {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${name}`)).json()).data.player.raw_id;
   } catch (e) {
@@ -43,7 +14,7 @@ export async function nameToUuid(name: string) {
   }
 }
 
-export async function uuidToName(uuid: string) {
+export async function uuidToName(uuid: string): Promise<string | null> {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${uuid}`)).json()).data.player.username;
   } catch (e) {
@@ -178,7 +149,17 @@ export function formatNumber(number: number) {
   if (!number) {
     return 0;
   }
-  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+  let formattedNumber: string;
+
+  if (number % 1 !== 0) {
+    const roundedNumber = parseFloat(number.toPrecision(3));
+    formattedNumber = roundedNumber.toString();
+  } else {
+    formattedNumber = number.toString();
+  }
+
+  return formattedNumber.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 export function abbreviateNumber(number: number) {
@@ -260,6 +241,9 @@ export async function skillAverage(player: any) {
 export async function addXp(discordId: string = '', ign: string = '') {
   if (!discordId) {
     const uuid = await nameToUuid(ign);
+    if (!uuid) {
+      return;
+    }
     if (uuid in global.lastMessage) {
       if (Date.now() / 1000 - Number(global.lastMessage[uuid]) >= 60) {
         db.prepare('UPDATE members SET xp = xp + ? WHERE uuid = ?').run(Math.floor(Math.random() * 11 + 15), uuid);
@@ -284,26 +268,6 @@ export async function addXp(discordId: string = '', ign: string = '') {
   } else {
     db.prepare('UPDATE members SET xp = xp + ? WHERE discord = ?').run(Math.floor(Math.random() * 11 + 15), discordId);
     global.lastMessage[discordId] = Math.floor(Date.now() / 1000).toString();
-  }
-}
-
-export async function hypixelRequest(url: string, useProxy: boolean = false) {
-  try {
-    if (useProxy) {
-      return await (
-        await fetch(url, {
-          headers: { 'API-Key': config.keys.hypixelApiKey },
-          agent
-        } as any)
-      ).json();
-    }
-    return await (
-      await fetch(url, {
-        headers: { 'API-Key': config.keys.hypixelApiKey }
-      })
-    ).json();
-  } catch (e) {
-    throw new Error("Couldn't get a response from the API");
   }
 }
 
@@ -344,4 +308,69 @@ export function discordToUuid(discordId: string): string | null {
     return uuid.uuid;
   }
   return null;
+}
+
+export const findScoreIndex = <T extends { req: number }>(data: T[], score = 0): number =>
+  data.findIndex(
+    ({ req }, index, arr) => score >= req && ((arr[index + 1] && score < arr[index + 1].req) || !arr[index + 1])
+  );
+
+export const findScore = <T extends { req: number }>(data: T[], score = 0): T => data[findScoreIndex(data, score)];
+
+export function cutOff(input: number): number {
+  return +input.toFixed(2);
+}
+
+export function hypixelApiError(cause: string) {
+  return {
+    embeds: [
+      new EmbedBuilder()
+        .setColor(config.colors.discordGray)
+        .setTitle(`Hypixel API Error`)
+        .setDescription(`Couldn't get a response from the API\nCause: \`${cause}\``)
+    ]
+  };
+}
+
+export function romanize(num: number) {
+  if (Number.isNaN(num)) return NaN;
+  const digits = String(+num).split('');
+  const key = [
+    '',
+    'C',
+    'CC',
+    'CCC',
+    'CD',
+    'D',
+    'DC',
+    'DCC',
+    'DCCC',
+    'CM',
+    '',
+    'X',
+    'XX',
+    'XXX',
+    'XL',
+    'L',
+    'LX',
+    'LXX',
+    'LXXX',
+    'XC',
+    '',
+    'I',
+    'II',
+    'III',
+    'IV',
+    'V',
+    'VI',
+    'VII',
+    'VIII',
+    'IX'
+  ];
+  let roman = '';
+  let i = 3;
+  while (i--) {
+    roman = (key[+digits.pop()! + i * 10] || '') + roman;
+  }
+  return Array(+digits.join('') + 1).join('M') + roman;
 }

@@ -2,9 +2,10 @@ import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from '
 import Database from 'better-sqlite3';
 import { Canvas, Image } from 'skia-canvas';
 import renderBox, { renderSkin } from '../helper/render.js';
-import { abbreviateNumber, doubleDigits, hypixelRequest, nameToUuid, uuidToName } from '../helper/utils.js';
+import { abbreviateNumber, doubleDigits, nameToUuid, uuidToName } from '../helper/utils.js';
 import { DiscordMember, HypixelGuildMember, StringObject } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
+import { fetchStatus } from '../api.js';
 
 const db = new Database('guild.db');
 
@@ -26,6 +27,14 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const uuid = await nameToUuid(interaction.options.getString('name')!);
+  if (!uuid) {
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.red)
+      .setTitle('Error')
+      .setDescription(`<a:across:986170696512204820> **${interaction.options.getString('name')}** is an invalid IGN`);
+    await interaction.editReply({ embeds: [embed] });
+    return;
+  }
   const member = db.prepare('SELECT * FROM guildMembers WHERE uuid = (?)').get(uuid) as HypixelGuildMember;
   if (!member) {
     const embed = new EmbedBuilder()
@@ -235,10 +244,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   );
 
   let online = '§cCurrently Offline';
-  const status = await hypixelRequest(`https://api.hypixel.net/status?uuid=${uuid}`);
-  if (status.session.online) {
+  const status = await fetchStatus(uuid);
+  if (status.success && status.session.online) {
     online = '§aCurrently Online';
-  } else if ((await uuidToName(uuid)) in global.playtime) {
+  } else if ((await uuidToName(uuid))! in global.playtime) {
     online = '§aCurrently Online';
   }
 

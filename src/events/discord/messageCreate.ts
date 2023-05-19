@@ -4,7 +4,7 @@ import { google } from 'googleapis';
 import { addXp, discordToUuid, formatMentions, uuidToName } from '../../helper/utils.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
-import { channels } from './ready.js';
+import { textChannels } from './ready.js';
 import { roles } from '../../helper/constants.js';
 import { HypixelGuildMember, NumberObject } from '../../types/global.d.js';
 
@@ -102,11 +102,11 @@ export default async function execute(client: Client, message: Message) {
     await message.react(':dominance:1060579574347472946');
   }
 
-  if (channel.id === channels.chatLogs.id) {
+  if (channel.id === textChannels.chatLogs.id) {
     await chat(message.content);
   }
 
-  if (![channels.minecraftLink.id, channels.officerChat.id].includes(channel.id)) return;
+  if (![textChannels.minecraftLink.id, textChannels.officerChat.id].includes(channel.id)) return;
 
   const uuid = discordToUuid(author.id);
   let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(author.id) as HypixelGuildMember;
@@ -132,7 +132,7 @@ export default async function execute(client: Client, message: Message) {
         const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
+          .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
           .setDescription(`**<@${author.id}> has been timed out until <t:${timestamp}:f>**\n**Message: **${content}`);
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
@@ -141,7 +141,7 @@ export default async function execute(client: Client, message: Message) {
             .setStyle(ButtonStyle.Danger)
             .setEmoji(':three_oclock_3d:1029704628310388796')
         );
-        await channels.automod.send({ embeds: [embed], components: [row] });
+        await textChannels.automod.send({ embeds: [embed], components: [row] });
         return;
       }
 
@@ -150,7 +150,7 @@ export default async function execute(client: Client, message: Message) {
       const messageLength = `/gc ${name} [Break]: ${messageContent}`.length;
 
       if (messageLength > 256) {
-        await channels.minecraftLink.send(`Character limit exceeded (${messageLength})`);
+        await textChannels.minecraftLink.send(`Character limit exceeded (${messageLength})`);
         return;
       }
 
@@ -166,7 +166,7 @@ export default async function execute(client: Client, message: Message) {
   const messageContent = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');
   const messageLength = `/gc ${await uuidToName(user.uuid)} ${user.tag}: ${messageContent}`.length;
 
-  if (channel.id === channels.minecraftLink.id) {
+  if (channel.id === textChannels.minecraftLink.id) {
     if (await checkProfanity(content)) {
       try {
         await message.member!.timeout(12 * 60 * 60 * 1000);
@@ -176,7 +176,7 @@ export default async function execute(client: Client, message: Message) {
       const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
-        .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
+        .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
         .setDescription(`**<@${author.id}> has been timed out until <t:${timestamp}:f>**\n**Message: **${content}`);
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
@@ -185,18 +185,18 @@ export default async function execute(client: Client, message: Message) {
           .setStyle(ButtonStyle.Danger)
           .setEmoji(':three_oclock_3d:1029704628310388796')
       );
-      await channels.automod.send({ embeds: [embed], components: [row] });
+      await textChannels.automod.send({ embeds: [embed], components: [row] });
       return;
     }
 
     if (messageLength > 256) {
-      await channels.minecraftLink.send(`Character limit exceeded (${messageLength})`);
+      await textChannels.minecraftLink.send(`Character limit exceeded (${messageLength})`);
       return;
     }
 
     await chat(`/gc ${await uuidToName(user.uuid)} ${user.tag}: ${messageContent}`);
     await message.delete();
-  } else if (channel.id === channels.officerChat.id) {
+  } else if (channel.id === textChannels.officerChat.id) {
     if (await checkProfanity(content)) {
       try {
         await message.member!.timeout(12 * 60 * 60 * 1000);
@@ -206,7 +206,7 @@ export default async function execute(client: Client, message: Message) {
       const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
-        .setTitle(`AutoMod has blocked a message in <#${channels.minecraftLink.id}>`)
+        .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
         .setDescription(`**<@${author.id}> has been timed out until <t:${timestamp}:f>**\n**Message: **${content}`);
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
@@ -215,18 +215,18 @@ export default async function execute(client: Client, message: Message) {
           .setStyle(ButtonStyle.Danger)
           .setEmoji(':three_oclock_3d:1029704628310388796')
       );
-      await channels.automod.send({ embeds: [embed], components: [row] });
+      await textChannels.automod.send({ embeds: [embed], components: [row] });
       return;
     }
 
     if (messageLength > 256) {
-      await channels.minecraftLink.send(`Character limit exceeded (${messageLength})`);
+      await textChannels.minecraftLink.send(`Character limit exceeded (${messageLength})`);
       return;
     }
 
     await chat(`/oc ${await uuidToName(user.uuid)} ${user.tag}: ${messageContent}`);
     await message.delete();
-  } else if (channel.id === channels.chatLogs.id) {
+  } else if (channel.id === textChannels.chatLogs.id) {
     await chat(messageContent);
   }
 

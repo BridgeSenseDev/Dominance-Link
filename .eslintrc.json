@@ -1,34 +1,22 @@
 {
+  "root": true,
   "env": {
-    "es2021": true,
     "node": true
   },
-  "settings": {
-    "import/resolver": {
-      "node": {
-        "extensions": [".js", ".jsx", ".ts", ".tsx"]
-      }
-    }
-  },
-  "extends": ["airbnb-base", "prettier"],
+  "extends": ["airbnb-base", "airbnb-typescript/base", "prettier"],
   "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "ecmaVersion": "latest",
-    "sourceType": "module"
-  },
-  "plugins": ["@typescript-eslint", "prettier"],
+  "parserOptions": { "project": "./tsconfig.json" },
+  "plugins": ["@typescript-eslint"],
   "rules": {
-    "import/no-unresolved": "off",
     "import/no-mutable-exports": "off",
     "no-restricted-syntax": "off",
     "no-await-in-loop": "off",
-    "consistent-return": "off",
     "no-continue": "off",
     "no-console": "off",
     "no-param-reassign": "off",
     "no-plusplus": "off",
     "guard-for-in": "off",
-    "no-unsafe-optional-chaining": "off",
-    "no-control-regex": "off"
+    "no-control-regex": "off",
+    "default-case": "off"
   }
 }

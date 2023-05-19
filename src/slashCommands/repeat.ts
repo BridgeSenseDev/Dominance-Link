@@ -10,7 +10,7 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const client = (await import('../index.js')).default;
-  const queue = client.distube.getQueue(interaction.guild);
+  const queue = client.distube.getQueue(interaction.guild!)!;
   switch (interaction.options.getSubcommand()) {
     case 'off': {
       queue.setRepeatMode(0);
@@ -36,6 +36,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       await interaction.editReply({ embeds: [embed2] });
       break;
     }
-    default:
   }
 }

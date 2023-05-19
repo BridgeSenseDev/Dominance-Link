@@ -1,6 +1,8 @@
 import { Worker } from 'worker_threads';
 import { fileURLToPath } from 'url';
+import { SpotifyPlugin } from '@distube/spotify';
 import { Client, Message, TextChannel, VoiceChannel } from 'discord.js';
+import { DisTube } from 'distube';
 import { database, gsrun, players, sheet } from '../../helper/database.js';
 import gexpWatch from '../../helper/gexpWatch.js';
 import channelUpdate from '../../helper/channelUpdate.js';
@@ -10,6 +12,9 @@ import leaderboards from '../../helper/leaderboards.js';
 import { breakUpdate, unverifiedUpdate } from '../../helper/messageUpdate.js';
 import { logInterval } from '../minecraft/message.js';
 import { weeklyChallengesInterval } from '../../helper/challenges.js';
+import { sleep } from '../../helper/utils.js';
+import discordCommands from '../../handlers/discordCommands.js';
+import discordEvents from '../../handlers/discordEvents.js';
 
 let worker: Worker;
 
@@ -18,10 +23,15 @@ interface Messages {
 }
 const messages: Messages = {};
 
-interface Channels {
-  [key: string]: TextChannel | VoiceChannel;
+interface TextChannels {
+  [key: string]: TextChannel;
 }
-const channels: Channels = {};
+const textChannels: TextChannels = {};
+
+interface VoiceChannels {
+  [key: string]: VoiceChannel;
+}
+const voiceChannels: VoiceChannels = {};
 
 global.onlineMembers = 0;
 global.lastMessage = {};
@@ -43,12 +53,36 @@ export default async function execute(client: Client) {
     type ConfigChannels = keyof typeof config.channels;
     const channel = client.channels.cache.get(config.channels[channelName as ConfigChannels])!;
     if (channel.isTextBased()) {
-      channels[channelName] = channel as TextChannel;
+      textChannels[channelName] = channel as TextChannel;
     }
     if (channel.isVoiceBased()) {
-      channels[channelName] = channel as VoiceChannel;
+      voiceChannels[channelName] = channel as VoiceChannel;
     }
   }
+
+  const startTime = performance.now();
+  client.distube = new DisTube(client, {
+    emitNewSongOnly: true,
+    leaveOnEmpty: false,
+    leaveOnFinish: false,
+    leaveOnStop: false,
+
+    plugins: [new SpotifyPlugin()]
+  });
+
+  await client.distube.play(
+    voiceChannels.music,
+    'https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4FyS8kM?si=38b7fafb48fb4e35'
+  );
+  const newQueue = client.distube.getQueue(voiceChannels.music.guild);
+  newQueue?.setRepeatMode(2);
+  await client.distube.shuffle(voiceChannels.music.guild);
+  const endTime = performance.now();
+  console.log(`[DISCORD] Loaded ${newQueue?.songs.length} songs in ${((endTime - startTime) / 1000).toFixed(1)}s`);
+  await sleep(5000);
+
+  discordCommands(client);
+  discordEvents(client);
 
   gexpWatch();
   channelUpdate(client);
@@ -63,15 +97,7 @@ export default async function execute(client: Client) {
   logInterval();
   weeklyChallengesInterval(client);
 
-  // Music
-  await client.distube.play(
-    channels.music,
-    'https://open.spotify.com/playlist/0vvXsWCC9xrXsKd4FyS8kM?si=86cc479f1d954174'
-  );
-  client.distube.getQueue(channels.music.guild).setRepeatMode(2);
-  await client.distube.shuffle(channels.music.guild);
-
   console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
 }
 
-export { worker, channels, messages };
+export { worker, voiceChannels, textChannels, messages };

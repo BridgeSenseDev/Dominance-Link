@@ -4,10 +4,8 @@ import Database from 'better-sqlite3';
 import {
   abbreviateNumber,
   addXp,
-  hypixelRequest,
-  nameColor,
+  formatNumber,
   nameToUuid,
-  removeSectionSymbols,
   skillAverage,
   timeStringToSeconds,
   uuidToDiscord
@@ -15,9 +13,11 @@ import {
 import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
-import { channels } from '../discord/ready.js';
+import { textChannels } from '../discord/ready.js';
 import { roles } from '../../helper/constants.js';
 import { BreakMember, WaitlistMember } from '../../types/global.d.js';
+import { fetchPlayerRaw, fetchSkyblockProfiles } from '../../api.js';
+import { processPlayer } from '../../types/api/processors/processPlayers.js';
 
 const db = new Database('guild.db');
 db.defaultSafeIntegers(true);
@@ -61,9 +61,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     const parsedMessage = JSON.parse(msg);
     if (parsedMessage.server !== 'limbo') {
       await chat('\u00a7');
-    } else {
-      return;
-    }
+    } else return;
   }
   if (msg.includes('@everyone') || msg.includes('@here')) {
     logMessages += `${msg.replace('@', '')}\n`;
@@ -116,7 +114,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       uuid = await nameToUuid(name);
     }
 
-    addXp('', uuid);
+    if (uuid) {
+      addXp('', uuid);
+    }
 
     if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
       db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
@@ -227,7 +227,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       uuid = await nameToUuid(name);
     }
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-    addXp('', uuid);
+    if (uuid) {
+      addXp('', uuid);
+    }
   } else if (msg.includes('From')) {
     let [, , name] = msg.split(' ');
     name = name.slice(0, -1);
@@ -255,7 +257,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
-    await channels.guildLogs.send({
+    await textChannels.guildLogs.send({
       files: [
         await messageToImage(
           `§6-------------------------------------------------------------§r§f§l                                                        LEVEL ` +
@@ -264,7 +266,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
-    await channels.publicAnnouncements.send({
+    await textChannels.publicAnnouncements.send({
       files: [
         await messageToImage(
           `§6-------------------------------------------------------------§r§f§l                                                        LEVEL ` +
@@ -301,7 +303,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       ]
     });
   } else if (msg.includes(' has muted ')) {
-    await channels.guildLogs.send({
+    await textChannels.guildLogs.send({
       files: [
         await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
@@ -309,6 +311,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       ]
     });
     const uuid = await nameToUuid(msg.split(' ')[msg.split(' ').indexOf('for') - 1]);
+    if (!uuid) return;
     const time = timeStringToSeconds(msg.split(' ')[msg.split(' ').length - 1]);
     const discordId = uuidToDiscord(uuid);
     if (!discordId) return;
@@ -316,7 +319,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     const member = await guild.members.fetch(discordId);
     await member.timeout(time, 'Muted in-game');
   } else if (msg.includes(' has unmuted ')) {
-    await channels.guildLogs.send({
+    await textChannels.guildLogs.send({
       files: [
         await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
@@ -324,6 +327,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       ]
     });
     const uuid = await nameToUuid(msg.split(' ')[msg.split(' ').length - 1]);
+    if (!uuid) return;
     const discordId = uuidToDiscord(uuid);
     if (!discordId) return;
     const guild = client.guilds.cache.get('242357942664429568') as Guild;
@@ -344,7 +348,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
-    await channels.guildLogs.send({
+    await textChannels.guildLogs.send({
       files: [
         await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
@@ -354,6 +358,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   } else if (msg.includes('joined the guild!')) {
     let funFact;
     const name = msg.split(' ')[msg.split(' ').indexOf('joined') - 1];
+    const uuid = await nameToUuid(name);
+    if (!uuid) return;
     const funFacts = await (
       await fetch('https://api.api-ninjas.com/v1/facts?limit=3', {
         method: 'GET',
@@ -375,14 +381,13 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         )
       ]
     });
-    await channels.guildLogs.send({
+    await textChannels.guildLogs.send({
       files: [
         await messageToImage(
           `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`
         )
       ]
     });
-    const uuid = await nameToUuid(name);
 
     if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
       db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
@@ -399,7 +404,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     }
     try {
       const breakData = db.prepare('SELECT * FROM breaks WHERE uuid = ?').get(uuid) as BreakMember;
-      const member = await channels.guildChat.guild.members.fetch(breakData.discord);
+      const member = await textChannels.guildChat.guild.members.fetch(breakData.discord);
       const thread = client.channels.cache.get(breakData.thread) as ThreadChannel;
       db.prepare('DELETE FROM breaks WHERE uuid = ?').run(uuid);
       await member.roles.remove(thread.guild!.roles.cache.get(roles.Break) as Role);
@@ -415,7 +420,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       await chat(
         `/gc Welcome back from your break, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`
       );
-      await channels.guildChat.send(
+      await textChannels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome back from your break, <@${breakData.discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
       return;
@@ -428,13 +433,13 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     const discordId = uuidToDiscord(uuid);
     if (discordId) {
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId, uuid);
-      await channels.guildChat.send(
+      await textChannels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discordId}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
-      const member = await channels.guildChat.guild.members.fetch(discordId);
+      const member = await textChannels.guildChat.guild.members.fetch(discordId);
       await member.roles.add(roles['[Member]']);
     } else {
-      await channels.guildChat.send(
+      await textChannels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
     }
@@ -481,17 +486,22 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       name = msg.split(' ')[msg.split(' ').indexOf('was') - 1];
     }
     const uuid = await nameToUuid(name);
+    if (!uuid) return;
     const discordId = uuidToDiscord(uuid);
 
     db.prepare(`INSERT INTO guildMemberArchives SELECT * FROM guildMembers WHERE uuid = ?`).run(uuid);
     db.prepare('DELETE FROM guildMembers WHERE uuid = ?').run(uuid);
 
     if (discordId) {
-      const member = await channels.guildChat.guild.members.fetch(discordId);
-      await member.roles.remove(roles['[Member]']);
-      await member.roles.remove(roles['[NoLifer]']);
-      await member.roles.remove(roles['[Pro]']);
-      await member.roles.remove(roles['[Staff]']);
+      try {
+        const member = await textChannels.guildChat.guild.members.fetch(discordId);
+        await member.roles.remove(roles['[Member]']);
+        await member.roles.remove(roles['[NoLifer]']);
+        await member.roles.remove(roles['[Pro]']);
+        await member.roles.remove(roles['[Staff]']);
+      } catch (e) {
+        /* empty */
+      }
     }
   }
 }

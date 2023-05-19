@@ -5,7 +5,7 @@ export const data = new SlashCommandBuilder().setName('shuffle').setDescription(
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const client = (await import('../index.js')).default;
-  const queue = client.distube.getQueue(interaction.guild);
+  const queue = client.distube.getQueue(interaction.guild!);
   if (!queue) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.discordGray)
@@ -13,7 +13,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({ embeds: [embed] });
     return;
   }
-  await queue.shuffle(interaction.guild);
+  await queue.shuffle();
   const embed = new EmbedBuilder()
     .setColor(config.colors.discordGray)
     .setDescription(

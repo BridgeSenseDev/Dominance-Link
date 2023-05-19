@@ -1,27 +1,22 @@
-/* eslint-disable no-unused-expressions */
-/* eslint-disable no-lone-blocks */
-/* eslint-disable no-unused-vars */
 /* eslint-disable no-var */
 /* eslint-disable vars-on-top */
 
-import { Channel, WebhookClient } from 'discord.js';
-
-interface StringObject {
+export interface StringObject {
   [key: string]: string;
 }
 
-interface NumberObject {
+export interface NumberObject {
   [key: string]: number;
 }
 
-interface DiscordMember {
+export interface DiscordMember {
   discord: string;
   uuid: string;
   messages: number;
   xp: number;
 }
 
-interface HypixelGuildMember {
+export interface HypixelGuildMember {
   uuid: string;
   discord: string;
   messages: number;
@@ -40,10 +35,11 @@ interface HypixelGuildMember {
   swLevel: number;
   swKdr: number;
   [date: string]: number;
+  name?: string | null;
   discordTag?: string | null;
 }
 
-interface BreakMember {
+export interface BreakMember {
   uuid: string;
   discord: string;
   thread: string;
@@ -51,14 +47,14 @@ interface BreakMember {
   reason: string;
 }
 
-interface WaitlistMember {
+export interface WaitlistMember {
   uuid: string;
   discord: string;
   time: string;
   channel: string;
 }
 
-interface WeeklyChallengeMember {
+export interface WeeklyChallengeMember {
   uuid: string;
   discord: string;
   initial: number;

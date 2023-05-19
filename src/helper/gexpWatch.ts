@@ -2,9 +2,10 @@ import { schedule } from 'node-cron';
 import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
-import { channels } from '../events/discord/ready.js';
-import { doubleDigits, hypixelRequest } from './utils.js';
+import { textChannels } from '../events/discord/ready.js';
+import { doubleDigits } from './utils.js';
 import { NumberObject, StringObject } from '../types/global.d.js';
+import { fetchGuildByName } from '../api.js';
 
 const db = new Database('guild.db');
 
@@ -23,7 +24,7 @@ function gexpGained(gained: number): [string, number] {
 }
 
 export default async function gexpWatch() {
-  schedule('00 50 11 * * 0-6', async () => {
+  schedule('00 08 15 * * 0-6', async () => {
     const guildThumbnails: StringObject = {
       rebel: `https://cdn.discordapp.com/attachments/986281342457237624/1001705614264778803/a_96a019775f60ebe70d0e5ea3d762ff57.webp`,
       cronos: `https://cdn.discordapp.com/attachments/986281342457237624/1001839326033879080/ezgif-1-9402e80289.png`,
@@ -31,18 +32,23 @@ export default async function gexpWatch() {
       abyss: `https://cdn.discordapp.com/icons/549722930251300865/a_581a4ba9007bfc5b62d27e4bd89a0d67.webp?size=4096&width=656&height=656`,
       lucid: `https://cdn.discordapp.com/avatars/1014274693596983326/9d5bddb15cd0b0ef69035198f1d68914.webp?size=4096&width=656&height=656`
     };
-    const gexpUrls: StringObject = {
-      dominance: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Dominance`,
-      rebel: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Rebel`,
-      cronos: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Sailor%20Moon`,
-      dawns: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=The%20Dawns%20Awakening`,
-      abyss: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=The%20Abyss`,
-      lucid: `https://api.hypixel.net/guild?key=${config.keys.hypixelApiKey}&name=Lucid`
+    const guildNames: StringObject = {
+      dominance: 'Dominance',
+      rebel: 'Rebel',
+      cronos: 'Sailor Moon',
+      dawns: 'The Dawns Awakening',
+      abyss: 'The Abyss',
+      lucid: 'Lucid'
     };
     const guildGexp: NumberObject = {};
-    for (const i in gexpUrls) {
-      guildGexp[i] = (await hypixelRequest(gexpUrls[i])).guild.exp;
+
+    for (const i in guildNames) {
+      const guildResponse = await fetchGuildByName(guildNames[i]);
+      if (guildResponse.success && guildResponse.guild) {
+        guildGexp[i] = guildResponse.guild.exp;
+      }
     }
+
     const date = new Date();
     const today = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
     date.setDate(date.getDate() - 1);
@@ -108,6 +114,6 @@ export default async function gexpWatch() {
           .setThumbnail(guildThumbnails[i])
       );
     }
-    await channels.guildWatch.send({ embeds });
+    await textChannels.guildWatch.send({ embeds });
   });
 }

@@ -1,7 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { channels, worker } from '../events/discord/ready.js';
-import { hypixelRequest, nameToUuid } from '../helper/utils.js';
+import { textChannels, worker } from '../events/discord/ready.js';
+import { fetchStatus } from '../api.js';
 
 export async function startBot() {
   const client = (await import('../index.js')).default;
@@ -30,17 +30,15 @@ export async function quit() {
 
 export async function autoRejoin() {
   setInterval(async () => {
-    const status = (
-      await hypixelRequest(`https://api.hypixel.net/status?uuid=${await nameToUuid(config.minecraft.ign)}`)
-    ).session.online;
-    if (!status) {
+    const statusResponse = await fetchStatus(config.minecraft.ign);
+    if (statusResponse.success && !statusResponse.session.online) {
       console.log('[MINECRAFT] Restarting bot');
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle('Disconnected')
         .setDescription(`${config.minecraft.ign} has been disconnected from hypixel. Trying to reconnect...`)
         .addFields({ name: '<:clock_:969185417712775168> Time', value: `<t:${Math.floor(Date.now() / 1000)}:R>` });
-      await channels.botStatus.send({ embeds: [embed] });
+      await textChannels.botStatus.send({ embeds: [embed] });
       try {
         quit();
       } catch (err) {

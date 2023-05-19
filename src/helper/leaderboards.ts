@@ -4,7 +4,7 @@ import Database from 'better-sqlite3';
 import { ButtonStyle, GuildChannel, Message } from 'discord.js';
 import { rgbaColor } from './constants.js';
 import { abbreviateNumber, formatNumber, sleep } from './utils.js';
-import { channels } from '../events/discord/ready.js';
+import { textChannels } from '../events/discord/ready.js';
 import { HypixelGuildMember } from '../types/global.d.js';
 
 const db = new Database('guild.db');
@@ -133,31 +133,31 @@ async function generateLeaderboard(channel: GuildChannel, order: keyof HypixelGu
 
 export default async function leaderboards() {
   setInterval(async () => {
-    generateLeaderboard(channels.weeklyGexp, 'weeklyGexp');
+    generateLeaderboard(textChannels.weeklyGexp, 'weeklyGexp');
     await sleep(3000);
     generateLeaderboard(
-      channels.dailyGexp,
+      textChannels.dailyGexp,
       Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember[])[
         Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember[]).length - 1
       ]
     );
     await sleep(3000);
-    generateLeaderboard(channels.playtime, 'playtime');
+    generateLeaderboard(textChannels.playtime, 'playtime');
     await sleep(3000);
-    generateLeaderboard(channels.guildMessages, 'messages');
+    generateLeaderboard(textChannels.guildMessages, 'messages');
     await sleep(3000);
-    generateLeaderboard(channels.bwStars, 'bwStars');
+    generateLeaderboard(textChannels.bwStars, 'bwStars');
     await sleep(3000);
-    generateLeaderboard(channels.bwFkdr, 'bwFkdr');
+    generateLeaderboard(textChannels.bwFkdr, 'bwFkdr');
     await sleep(3000);
-    generateLeaderboard(channels.duelsWins, 'duelsWins');
+    generateLeaderboard(textChannels.duelsWins, 'duelsWins');
     await sleep(3000);
-    generateLeaderboard(channels.duelsWlr, 'duelsWlr');
+    generateLeaderboard(textChannels.duelsWlr, 'duelsWlr');
     await sleep(3000);
-    generateLeaderboard(channels.duelsWlr, 'duelsWlr');
+    generateLeaderboard(textChannels.duelsWlr, 'duelsWlr');
     await sleep(3000);
-    generateLeaderboard(channels.networth, 'networth');
+    generateLeaderboard(textChannels.networth, 'networth');
     await sleep(3000);
-    generateLeaderboard(channels.skillAverage, 'skillAverage');
+    generateLeaderboard(textChannels.skillAverage, 'skillAverage');
   }, 5 * 60 * 1000);
 }

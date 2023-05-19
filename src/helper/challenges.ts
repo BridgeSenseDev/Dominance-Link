@@ -5,8 +5,9 @@ import fs from 'fs';
 import config from '../config.json' assert { type: 'json' };
 import { messages } from '../events/discord/ready.js';
 import { dividers } from './constants.js';
-import { formatNumber, hypixelRequest, uuidToName } from './utils.js';
+import { formatNumber, uuidToName } from './utils.js';
 import { WeeklyChallengeMember } from '../types/global.d.js';
+import { fetchPlayerRaw } from '../api.js';
 
 const db = new Database('guild.db');
 
@@ -28,19 +29,15 @@ export async function updateWeeklyChallenges() {
     .map((member: unknown) => member as WeeklyChallengeMember);
 
   for (let i = 0; i < members.length; i++) {
-    let player;
-    try {
-      ({ player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${members[i].uuid}`));
-    } catch (e) {
-      return;
-    }
-    let current = player;
-    for (const obj of config.guild.weeklyChallenges.stat) {
-      if (!current) {
-        current = 0;
-        break;
+    const playerRawResponse = await fetchPlayerRaw(members[i].uuid);
+    let current;
+    if (!playerRawResponse.success) {
+      current = 0;
+    } else {
+      current = playerRawResponse.player;
+      for (const obj of config.guild.weeklyChallenges.stat) {
+        current = current[obj] as any;
       }
-      current = current[obj];
     }
     db.prepare('UPDATE weeklyChallenges SET current = ? WHERE uuid = ?').run(current, members[i].uuid);
     members[i].difference = current - members[i].initial;

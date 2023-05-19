@@ -2,34 +2,38 @@ import { Client, EmbedBuilder, GuildMember, Role } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../../config.json' assert { type: 'json' };
 import { invis, roles } from '../../helper/constants.js';
-import { channels } from './ready.js';
-import { hypixelRequest } from '../../helper/utils.js';
+import { textChannels } from './ready.js';
 import { DiscordMember } from '../../types/global.d.js';
+import { fetchGuildByPlayer, fetchPlayerRaw } from '../../api.js';
+import { processPlayer } from '../../types/api/processors/processPlayers.js';
 
 const db = new Database('guild.db');
 
 export default async function execute(client: Client, member: GuildMember) {
   if (member.guild.id !== '242357942664429568') return;
+
   if (db.prepare('SELECT * FROM members WHERE discord = ?').get(member.user.id)) {
-    let name;
-    let disc;
     const { uuid } = db.prepare('SELECT * FROM members WHERE discord = ?').get(member.user.id) as DiscordMember;
-    const { player } = await hypixelRequest(`https://api.hypixel.net/player?uuid=${uuid}`);
-    try {
-      name = player.displayname;
-      disc = player.socialMedia.links.DISCORD;
-    } catch (e) {
+    const playerRawResponse = await fetchPlayerRaw(uuid);
+    if (!playerRawResponse.success) {
       return;
     }
-    if (disc === member.user.tag) {
-      const { guild } = await hypixelRequest(`https://api.hypixel.net/guild?player=${uuid}`);
-      if (guild && guild.name_lower === 'dominance') {
-        db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(member.user.id, uuid);
-        await member.roles.add(member.guild!.roles.cache.get(roles['[Member]']) as Role);
+    const processedPlayer = await processPlayer(playerRawResponse.player);
+
+    const { username } = processedPlayer;
+    const discord = processedPlayer.links.DISCORD;
+
+    if (discord === member.user.tag) {
+      const guildResponse = await fetchGuildByPlayer(uuid);
+      if (guildResponse.success) {
+        if (guildResponse.guild?.name_lower === 'dominance') {
+          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(member.user.id, uuid);
+          await member.roles.add(member.guild!.roles.cache.get(roles['[Member]']) as Role);
+        }
+        await member.setNickname(username);
+        await member.roles.add(member.guild!.roles.cache.get(roles.verified) as Role);
+        await member.roles.remove(member.guild!.roles.cache.get(roles.unverified) as Role);
       }
-      await member.setNickname(name);
-      await member.roles.add(member.guild!.roles.cache.get(roles.verified) as Role);
-      await member.roles.remove(member.guild!.roles.cache.get(roles.unverified) as Role);
     }
   }
 
@@ -46,5 +50,5 @@ export default async function execute(client: Client, member: GuildMember) {
         `Forum Post](https://dominance.cf/forums)${invis}${invis}<:twitter:968021865064988742> [Twitter Page](https://twitter.com/` +
         `MatrixHypixel)${invis}${invis}🌐 [Website](https://dominance.cf/)`
     );
-  await channels.welcome.send({ content: member.toString(), embeds: [embed] });
+  await textChannels.welcome.send({ content: member.toString(), embeds: [embed] });
 }

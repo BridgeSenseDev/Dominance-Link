@@ -1,7 +1,8 @@
 import { ActivityType, Client } from 'discord.js';
-import { getLevel, hypixelRequest, sleep } from './utils.js';
+import { getLevel, sleep } from './utils.js';
 import { chat } from '../handlers/workerHandler.js';
-import { channels } from '../events/discord/ready.js';
+import { voiceChannels } from '../events/discord/ready.js';
+import { fetchGuildByName } from '../api.js';
 
 async function channelUpdate(client: Client) {
   setInterval(async () => {
@@ -17,15 +18,17 @@ async function channelUpdate(client: Client) {
     });
 
     // Total members
-    await channels.members.setName(`🧑│All members: ${channels.members.guild.memberCount}`);
+    await voiceChannels.members.setName(`🧑│All members: ${voiceChannels.members.guild.memberCount}`);
 
     // Guild level
-    const level = (await hypixelRequest(`https://api.hypixel.net/guild?name=Dominance`)).guild.exp;
-    await channels.level.setName(`📈│Guild Level: ${getLevel(level)}`);
+    const guildResponse = await fetchGuildByName('Dominance');
+    if (guildResponse.success && guildResponse.guild) {
+      await voiceChannels.level.setName(`📈│Guild Level: ${getLevel(guildResponse.guild.exp)}`);
+    }
 
     // Online members
     await sleep(10000);
-    await channels.online.setName(`🎮│Online Members: ${global.onlineMembers}`);
+    await voiceChannels.online.setName(`🎮│Online Members: ${global.onlineMembers}`);
   }, 6 * 60 * 1000);
 }
 

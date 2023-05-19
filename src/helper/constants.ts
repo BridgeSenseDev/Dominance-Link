@@ -1,6 +1,20 @@
 import { StringObject } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
 
+export const duelsDivisions = [
+  { name: 'Rookie', key: 'rookie' },
+  { name: 'Iron', key: 'iron' },
+  { name: 'Gold', key: 'gold' },
+  { name: 'Diamond', key: 'diamond' },
+  { name: 'Master', key: 'master' },
+  { name: 'Legend', key: 'legend' },
+  { name: 'Grandmaster', key: 'grandmaster' },
+  { name: 'Godlike', key: 'godlike' },
+  { name: 'WORLD ELITE', key: 'world_elite' },
+  { name: 'WORLD MASTER', key: 'world_master' },
+  { name: "WORLD'S BEST", key: 'worlds_best' }
+];
+
 export const levelingXp = [
   50, 125, 200, 300, 500, 750, 1000, 1500, 2000, 3500, 5000, 7500, 10000, 15000, 20000, 30000, 50000, 75000, 100000,
   200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1100000, 1200000, 1300000, 1400000, 1500000,

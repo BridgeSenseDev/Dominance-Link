@@ -1,6 +1,6 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, TextChannel, GuildMember } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { channels } from '../events/discord/ready.js';
+import { voiceChannels } from '../events/discord/ready.js';
 
 export const data = new SlashCommandBuilder()
   .setName('play')
@@ -12,9 +12,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const client = (await import('../index.js')).default;
   try {
-    await client.distube.play(channels.music, interaction.options.getString('link-or-query'), {
-      textChannel: interaction.channel,
-      member: interaction.member
+    await client.distube.play(voiceChannels.music, interaction.options.getString('link-or-query')!, {
+      textChannel: interaction.channel as TextChannel,
+      member: interaction.member as GuildMember
     });
   } catch (err) {
     const embed = new EmbedBuilder()
@@ -23,15 +23,15 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({ embeds: [embed] });
     return;
   }
-  const { songs } = client.distube.getQueue(interaction.guild);
+  const { songs } = client.distube.getQueue(interaction.guild!)!;
   if (songs[songs.length - 1].playlist) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.discordGray)
       .setAuthor({ name: 'Added to queue', iconURL: interaction.user.displayAvatarURL() })
       .setDescription(
-        `**Playlist:** [${songs[songs.length - 1].playlist.name}](${songs[songs.length - 1].playlist.url})`
+        `**Playlist:** [${songs[songs.length - 1].playlist!.name}](${songs[songs.length - 1].playlist!.url})`
       )
-      .setThumbnail(songs[songs.length - 1].playlist.thumbnail)
+      .setThumbnail(songs[songs.length - 1].playlist!.thumbnail ?? null)
       .addFields(
         {
           name: 'Requested By',
@@ -40,7 +40,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         },
         {
           name: 'Queue',
-          value: `${songs.length} songs - \`${client.distube.getQueue(interaction.guild).formattedDuration}\``,
+          value: `${songs.length} songs - \`${client.distube.getQueue(interaction.guild!)!.formattedDuration}\``,
           inline: true
         }
       );
@@ -51,7 +51,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Added to queue', iconURL: interaction.user.displayAvatarURL() })
     .setDescription(`[${songs[songs.length - 1].name}](${songs[songs.length - 1].url})`)
-    .setThumbnail(songs[songs.length - 1].thumbnail)
+    .setThumbnail(songs[songs.length - 1].thumbnail ?? null)
     .addFields(
       {
         name: 'Requested By',
@@ -65,7 +65,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       },
       {
         name: 'Queue',
-        value: `${songs.length} songs - \`${client.distube.getQueue(interaction.guild).formattedDuration}\``,
+        value: `${songs.length} songs - \`${client.distube.getQueue(interaction.guild!)?.formattedDuration}\``,
         inline: true
       }
     );

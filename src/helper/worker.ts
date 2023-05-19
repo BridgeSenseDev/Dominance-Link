@@ -11,10 +11,17 @@ parentPort!.on('message', async (msg) => {
       auth: 'microsoft',
       username: config.minecraft.ign,
       version: '1.8.9',
-      hideErrors: false,
       viewDistance: 'tiny',
       chatLengthLimit: 256,
       defaultChatPatterns: false
+    });
+
+    bot.on('error', (error) => {
+      if (error.message.includes('ETIMEDOUT')) {
+        console.log('Connection timed out');
+      } else {
+        console.error('An error occurred:', error);
+      }
     });
 
     bot.on('message', (message, messagePosition) => {
@@ -36,10 +43,17 @@ parentPort!.on('message', async (msg) => {
       auth: 'microsoft',
       username: config.minecraft.ign,
       version: '1.8.9',
-      hideErrors: false,
       viewDistance: 'tiny',
       chatLengthLimit: 256,
       defaultChatPatterns: false
+    });
+
+    bot.on('error', (error) => {
+      if (error.message.includes('ETIMEDOUT')) {
+        console.log('Connection timed out');
+      } else {
+        console.error('An error occurred');
+      }
     });
 
     bot.on('message', (message, messagePosition) => {

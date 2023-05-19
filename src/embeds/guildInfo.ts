@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits, EmbedBuilder, TextChannel } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { bullet, dividers, invis, sub } from '../helper/constants.js';
+import { bullet, dividers } from '../helper/constants.js';
 import { formatDate } from '../helper/utils.js';
 
 const client = new Client({

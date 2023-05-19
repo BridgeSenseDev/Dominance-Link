@@ -1,19 +1,8 @@
-import { SpotifyPlugin } from '@distube/spotify';
 import { Client, Collection, REST, Routes } from 'discord.js';
-import { DisTube } from 'distube';
 import fs from 'fs';
 import config from '../config.json' assert { type: 'json' };
 
 export default async function discordCommands(client: Client) {
-  client.distube = new DisTube(client, {
-    emitNewSongOnly: true,
-    leaveOnEmpty: false,
-    leaveOnFinish: false,
-    leaveOnStop: false,
-
-    plugins: [new SpotifyPlugin()]
-  });
-
   client.commands = new Collection();
   const commandFiles = fs.readdirSync('./slashCommands/');
   const commands = [];
