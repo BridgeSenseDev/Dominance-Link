@@ -125,94 +125,86 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
 
-    if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 5) {
+    if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
       name = msg.split('!bw ')[1]?.split(' ')[0];
-      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
-      if (!playerData || !playerData.stats.Bedwars) {
-        await chat(`/gc ${name} does not exist or has never played Bedwars`);
+      uuid = await nameToUuid(name);
+      if (!uuid) {
+        await chat(`/gc Error: ${name} is an invalid IGN`);
+        return;
+      }
+      const playerRawResponse = await fetchPlayerRaw(uuid);
+      if (!playerRawResponse.success) {
+        await chat(`/gc Error: ${playerRawResponse.cause}`);
+        return;
+      }
+      const processedPlayer = processPlayer(playerRawResponse.player, ['bedwars']);
+      const bedwars = processedPlayer.stats.Bedwars;
+
+      const star = bedwars?.star ?? 0;
+      const { rankTag } = processedPlayer;
+      const fk = formatNumber(bedwars?.overall.finalKills ?? 0);
+      const fkdr = formatNumber(bedwars?.overall.fkdr ?? 0);
+      const wins = formatNumber(bedwars?.overall.wins ?? 0);
+      const wlr = formatNumber(bedwars?.overall.wlr ?? 0);
+      const bblr = formatNumber(bedwars?.overall.bblr ?? 0);
+      const ws = formatNumber(bedwars?.overall.winstreak ?? 0);
+
+      await chat(`/gc [${star}✫] ${rankTag} FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} BBLR: ${bblr} WS: ${ws}`);
+    } else if (msg.includes('!d') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
+      name = msg.split('!d ')[1]?.split(' ')[0];
+      uuid = await nameToUuid(name);
+      if (!uuid) {
+        await chat(`/gc Error: ${name} is an invalid IGN`);
+        return;
+      }
+      const playerRawResponse = await fetchPlayerRaw(uuid);
+      if (!playerRawResponse.success) {
+        await chat(`/gc Error: ${playerRawResponse.cause}`);
+        return;
+      }
+      const processedPlayer = processPlayer(playerRawResponse.player, ['duels']);
+      const duels = processedPlayer.stats.Duels;
+
+      const division = duels?.general.division;
+      const { rankTag } = processedPlayer;
+      const wins = formatNumber(duels?.general.wins ?? 0);
+      const wlr = formatNumber(duels?.general.wlr ?? 0);
+      const cws = formatNumber(duels?.general.winstreaks.current.overall ?? 0);
+      const bws = formatNumber(duels?.general.winstreaks.best.overall ?? 0);
+
+      await chat(`/gc [${division}] ${rankTag} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`);
+    } else if (msg.includes('!sb') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
+      name = msg.split('!sb ')[1]?.split(' ')[0];
+      uuid = await nameToUuid(name);
+      if (!uuid) {
+        await chat(`/gc Error: ${name} is an invalid IGN`);
+        return;
+      }
+      const playerRawResponse = await fetchPlayerRaw(uuid);
+      if (!playerRawResponse.success) {
+        await chat(`/gc Error: ${playerRawResponse.cause}`);
+        return;
+      }
+      const processedPlayer = processPlayer(playerRawResponse.player);
+      const skyblockProfilesResponse = await fetchSkyblockProfiles(uuid);
+      if (!skyblockProfilesResponse.success) {
+        await chat(`/gc Error: ${skyblockProfilesResponse.cause}`);
         return;
       }
 
-      const level = playerData.achievements.bedwars_level;
-      const wins = playerData.stats.Bedwars.wins_bedwars;
-      const wlr =
-        Math.round((playerData.stats.Bedwars.wins_bedwars / playerData.stats.Bedwars.losses_bedwars) * 100) / 100;
-      const fkdr =
-        Math.round(
-          (playerData.stats.Bedwars.final_kills_bedwars / playerData.stats.Bedwars.final_deaths_bedwars) * 100
-        ) / 100;
-      const bblr =
-        Math.round((playerData.stats.Bedwars.beds_broken_bedwars / playerData.stats.Bedwars.beds_lost_bedwars) * 100) /
-        100;
-      const { winstreak } = playerData.stats.Bedwars;
-      await chat(
-        `/gc ▌ [${level}✫] ${removeSectionSymbols(
-          nameColor(playerData)
-        )} W: ${wins}, W / L: ${wlr}, FKDR: ${fkdr}, BBLR: ${bblr}, WS: ${winstreak}`
-      );
-    } else if (
-      ['!d', '!duels'].some((keyword) => msg.includes(keyword)) &&
-      msg.replace(/Guild > |:/g, '').split(' ').length <= 5
-    ) {
-      if (msg.includes('!duels')) {
-        name = msg.split('!duels ')[1]?.split(' ')[0];
-      } else {
-        name = msg.split('!d ')[1]?.split(' ')[0];
-      }
-      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
-      if (!playerData || !playerData.stats.Duels) {
-        await chat(`/gc ${name} does not exist or has never played Duels`);
+      const profile = skyblockProfilesResponse.profiles.find((i: any) => i.selected);
+      if (!profile) {
+        await chat(`/gc Error: ${name} has no skyblock profiles`);
         return;
       }
-      const { wins } = playerData.stats.Duels;
-      const wlr = Math.round((playerData.stats.Duels?.wins / playerData.stats.Duels?.losses) * 100) / 100;
-      const cws = playerData.stats.Duels.current_winstreak;
-      const bws = playerData.stats.Duels.best_overall_winstreak;
-      await chat(
-        `/gc ▌ ${removeSectionSymbols(nameColor(playerData))} W: ${wins}, W / L: ${wlr}, CWS: ${cws}, BWS: ${bws}`
-      );
-    } else if (
-      ['!sb', '!skyblock'].some((keyword) => msg.includes(keyword)) &&
-      msg.replace(/Guild > |:/g, '').split(' ').length <= 5
-    ) {
-      if (msg.includes('!skyblock')) {
-        name = msg.split('!skyblock ')[1]?.split(' ')[0];
-      } else {
-        name = msg.split('!sb ')[1]?.split(' ')[0];
-      }
-
-      const playerData = (await hypixelRequest(`https://api.hypixel.net/player?uuid=${await nameToUuid(name)}`)).player;
-      if (!playerData) {
-        await chat(`/gc ${name} does not exist or has never played Skyblock`);
-        return;
-      }
-
-      let profiles;
-      try {
-        ({ profiles } = await hypixelRequest(
-          `https://api.hypixel.net/skyblock/profiles?uuid=${await nameToUuid(name)}`,
-          true
-        ));
-      } catch (e) {
-        await chat(`/gc Hypixel hates me and blocked ${name}'s skyblock api request`);
-        return;
-      }
-
-      if (!profiles) {
-        await chat(`/gc Hypixel hates me and blocked ${name}'s skyblock api request`);
-        return;
-      }
-
-      const profile = profiles.find((i: any) => i.selected);
-      const profileData = profile.members[await nameToUuid(name)];
+      const profileData = profile.members[uuid];
       const bankBalance = profile.banking?.balance;
-      const { networth } = await getNetworth(profileData, bankBalance);
-      const sa = await skillAverage(profileData);
-      await chat(
-        `/gc ▌ ${removeSectionSymbols(nameColor(playerData))} NW: ${abbreviateNumber(
-          networth
-        )}, SA: ${sa}, BAL: ${abbreviateNumber(bankBalance)}`
-      );
+      const networth = abbreviateNumber((await getNetworth(profileData, bankBalance)).networth);
+      const sa = formatNumber(await skillAverage(profileData));
+      const level = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
+      const { rankTag } = processedPlayer;
+
+      await chat(`/gc [${level}] ${rankTag} NW: ${networth} SA: ${sa}`);
     }
   } else if (msg.includes('Officer >')) {
     await ocWebhook.send({
