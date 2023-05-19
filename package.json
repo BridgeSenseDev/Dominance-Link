@@ -26,7 +26,7 @@
     "ffmpeg-static": "^5.1.0",
     "google-auth-library": "^8.8.0",
     "googleapis": "^118.0.0",
-    "https-proxy-agent": "^6.1.0",
+    "https-proxy-agent": "^6.2.0",
     "libsodium-wrappers": "^0.7.11",
     "mineflayer": "^4.8.1",
     "node-cron": "^3.0.2",
@@ -38,7 +38,7 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.21.8",
     "@types/better-sqlite3": "^7.6.4",
-    "@types/node": "^20.2.0",
+    "@types/node": "^20.2.1",
     "@types/node-cron": "^3.0.7",
     "@typescript-eslint/eslint-plugin": "^5.59.6",
     "@typescript-eslint/parser": "^5.59.6",
