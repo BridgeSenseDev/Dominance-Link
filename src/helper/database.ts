@@ -5,7 +5,7 @@ import { JWT } from 'google-auth-library';
 import { Client, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { uuidToName, skillAverage, uuidToDiscord } from './utils.js';
-import { ranks, roles } from './constants.js';
+import { bwPrestiges, ranks, roles } from './constants.js';
 import { HypixelGuildMember } from '../types/global.d.js';
 import { fetchGuildByName, fetchPlayerRaw, fetchSkyblockProfiles } from '../api.js';
 import { processPlayer } from '../types/api/processors/processPlayers.js';
@@ -167,6 +167,24 @@ export async function players() {
     }
     const processedPlayer = processPlayer(playerRawResponse.player, ['duels', 'bedwars', 'skywars']);
 
+    let networth = 0;
+    let sa = 0;
+
+    const bwFkdr = +(processedPlayer.stats.Bedwars?.overall.fkdr.toFixed(1) ?? 0);
+    const bwStars = processedPlayer.stats.Bedwars?.star ?? 0;
+    const duelsWins = processedPlayer.stats.Duels?.general.wins ?? 0;
+    const duelsWlr = +(processedPlayer.stats.Duels?.general.wlr.toFixed(1) ?? 0);
+
+    if (profiles) {
+      const profile = profiles.find((i: any) => i.selected);
+      if (profile) {
+        const profileData = profile.members[data.uuid];
+        const bankBalance = profile.banking?.balance;
+        ({ networth } = await getNetworth(profileData, bankBalance));
+        sa = await skillAverage(profileData);
+      }
+    }
+
     if (data.discord) {
       let member;
       try {
@@ -175,7 +193,18 @@ export async function players() {
         db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
         return;
       }
-      if (!['[Owner]', '[GM]'].includes(data.tag) && member) {
+
+      const bwRole = bwPrestiges[Math.floor(bwStars / 100) * 100];
+      for (const roleId of Object.values(bwPrestiges)) {
+        if (member.roles.cache.has(roleId) && roleId !== bwRole) {
+          await member.roles.remove(roleId);
+        }
+      }
+      if (bwRole) {
+        await member.roles.add(bwRole);
+      }
+
+      if (!['[Owner]', '[GM]'].includes(data.tag)) {
         const ign = processedPlayer.username;
         await member.roles.add(memberRole);
         const { displayName } = member;
@@ -203,24 +232,6 @@ export async function players() {
         if (data.tag === '[NoLifer]') {
           await member.roles.remove(staffRole);
         }
-      }
-    }
-
-    let networth = 0;
-    let sa = 0;
-
-    const bwFkdr = +(processedPlayer.stats.Bedwars?.overall.fkdr.toFixed(1) ?? 0);
-    const bwStars = processedPlayer.stats.Bedwars?.star ?? 0;
-    const duelsWins = processedPlayer.stats.Duels?.general.wins ?? 0;
-    const duelsWlr = +(processedPlayer.stats.Duels?.general.wlr.toFixed(1) ?? 0);
-
-    if (profiles) {
-      const profile = profiles.find((i: any) => i.selected);
-      if (profile) {
-        const profileData = profile.members[data.uuid];
-        const bankBalance = profile.banking?.balance;
-        ({ networth } = await getNetworth(profileData, bankBalance));
-        sa = await skillAverage(profileData);
       }
     }
 
