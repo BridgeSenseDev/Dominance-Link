@@ -11,20 +11,8 @@ import { nameToUuid } from './helper/utils.js';
 
 async function fetchJsonEndpoint<T>(endpoint: string, query: any): Promise<T> {
   let request: Response;
-  try {
-    request = await fetch(`https://api.hypixel.net${endpoint}?${new URLSearchParams(query)}`);
-  } catch (e) {
-    if (e instanceof TypeError && e.message === 'fetch failed') {
-      return {
-        success: false,
-        cause: 'ConnectTimeoutError: Connect Timeout Error'
-      } as T;
-    }
-    return {
-      success: false,
-      cause: 'Unknown'
-    } as T;
-  }
+  request = await fetch(`https://api.hypixel.net${endpoint}?${new URLSearchParams(query)}`);
+
   while (request.status === 429) {
     if (request.headers.has('RateLimit-Reset')) {
       await setTimeoutAsync(parseInt(request.headers.get('RateLimit-Reset')!, 10) * 1000);
@@ -32,7 +20,16 @@ async function fetchJsonEndpoint<T>(endpoint: string, query: any): Promise<T> {
 
     request = await fetch(`https://api.hypixel.net${endpoint}?${new URLSearchParams(query)}`);
   }
-  return request.json();
+
+  const contentType = request.headers.get('Content-Type');
+  if (contentType && contentType.includes('application/json')) {
+    return request.json();
+  }
+
+  return {
+    success: false,
+    cause: request.status
+  } as T;
 }
 
 export function dashedUUID(input: string): string {
