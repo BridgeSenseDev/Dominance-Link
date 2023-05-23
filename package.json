@@ -23,7 +23,7 @@
     "mineflayer": "^4.8.1",
     "node-cron": "^3.0.2",
     "skia-canvas": "^1.0.1",
-    "skyhelper-networth": "^1.12.11"
+    "skyhelper-networth": "^1.13.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.21.8",
