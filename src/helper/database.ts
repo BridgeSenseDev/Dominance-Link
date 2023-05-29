@@ -5,7 +5,7 @@ import { JWT } from 'google-auth-library';
 import { Client, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { uuidToName, skillAverage, uuidToDiscord } from './utils.js';
-import { bwPrestiges, ranks, roles } from './constants.js';
+import { bwPrestiges, duelsDivisionRoles, ranks, roles } from './constants.js';
 import { HypixelGuildMember } from '../types/global.d.js';
 import { fetchGuildByName, fetchPlayerRaw, fetchSkyblockProfiles } from '../api.js';
 import { processPlayer } from '../types/api/processors/processPlayers.js';
@@ -202,6 +202,22 @@ export async function players() {
       }
       if (bwRole) {
         await member.roles.add(bwRole);
+      }
+
+      let highestRole = null;
+      for (const wins in duelsDivisionRoles) {
+        if (duelsWins >= parseInt(wins, 10)) {
+          highestRole = duelsDivisionRoles[wins];
+        }
+      }
+
+      for (const wins in duelsDivisionRoles) {
+        const roleId = duelsDivisionRoles[wins];
+        if (highestRole === roleId) {
+          await member.roles.add(roleId);
+        } else if (member.roles.cache.has(roleId)) {
+          await member.roles.remove(roleId);
+        }
       }
 
       if (!['[Owner]', '[GM]'].includes(data.tag)) {
