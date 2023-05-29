@@ -81,7 +81,7 @@ export default async function requirements(uuid: string, playerData: RawPlayer) 
     )} / 9,000\`\n\n`;
   }
 
-  if (bedwars[0] >= 300 && bedwars[1] >= 2) {
+  if (bedwars[0] >= 300 && bedwars[1] >= 3) {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Bedwars 1**\n';
   } else {
@@ -92,10 +92,10 @@ export default async function requirements(uuid: string, playerData: RawPlayer) 
   } else {
     requirementEmbed += `<a:across:986170696512204820> **Bedwars Stars:** \`${bedwars[0]} / 300\`\n`;
   }
-  if (bedwars[1] >= 2) {
+  if (bedwars[1] >= 3) {
     requirementEmbed += `<a:atick:986173414723162113> **Bedwars FKDR:** \`${bedwars[1]}\`\n\n`;
   } else {
-    requirementEmbed += `<a:across:986170696512204820> **Bedwars FKDR:** \`${bedwars[1]} / 2\`\n\n`;
+    requirementEmbed += `<a:across:986170696512204820> **Bedwars FKDR:** \`${bedwars[1]} / 3\`\n\n`;
   }
 
   if (bedwars[0] >= 150 && bedwars[1] >= 5) {
