@@ -1,6 +1,6 @@
 import { ChannelType, Client, VoiceState } from 'discord.js';
-import { voiceChannels } from './ready';
-import { discordToUuid, uuidToName } from '../../helper/utils';
+import { voiceChannels } from './ready.js';
+import { discordToUuid, uuidToName } from '../../helper/utils.js';
 
 export default async function execute(client: Client, oldState: VoiceState, newState: VoiceState): Promise<void> {
   if (oldState.channelId !== newState.channelId && newState.member) {
