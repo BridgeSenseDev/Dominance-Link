@@ -19,7 +19,7 @@
   <img alt="Stars" src="https://img.shields.io/github/languages/code-size/BridgeSenseDev/Dominance-Link?color=lightgray&style=for-the-badge">
 </p>
 
-⚠️ This bot is designed specifically for dominance. If you are looking for a more general purpose bot with better documentation i recommend DuckySoLucks's [hypixel-discord-chat-bridge](https://github.com/DuckySoLucky/hypixel-discord-chat-bridge)<br>
+⚠️ This bot is designed specifically for dominance. If you are looking for a more general purpose bot with better documentation i recommend DuckySoLuckys's [hypixel-discord-chat-bridge](https://github.com/DuckySoLucky/hypixel-discord-chat-bridge)<br>
 
 > 🚨 USE AT YOUR OWN RISK:
 > This application will login to Hypixel using Mineflayer which is not a normal Minecraft client, this could result in your Minecraft account getting banned from Hypixel, so use this application at your own risk. I am not liable for any damages and no warranty is provided under the [MIT License.](https://github.com/BridgeSenseDev/Matrix-Link/blob/master/LICENSE)
