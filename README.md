@@ -19,6 +19,8 @@
   <img alt="Stars" src="https://img.shields.io/github/languages/code-size/BridgeSenseDev/Dominance-Link?color=lightgray&style=for-the-badge">
 </p>
 
+⚠️ This bot is designed specifically for dominance. If you are looking for a more general purpose bot with better documentation i recommend DuckySoLucks's [hypixel-discord-chat-bridge](https://github.com/DuckySoLucky/hypixel-discord-chat-bridge)<br>
+
 > 🚨 USE AT YOUR OWN RISK:
 > This application will login to Hypixel using Mineflayer which is not a normal Minecraft client, this could result in your Minecraft account getting banned from Hypixel, so use this application at your own risk. I am not liable for any damages and no warranty is provided under the [MIT License.](https://github.com/BridgeSenseDev/Matrix-Link/blob/master/LICENSE)
 
@@ -37,13 +39,10 @@
 `/online` Llst all the online members in the guild<br>
 `/reqs` Check if you meet our guild requirements
 
-<details>
-<summary>Music Commands</summary>
-<br>
-<code>/play</code> Play a track or playlist by proving a link or search query<br>
-<code>/skip</code> Skip the current song<br>
-<code>/queue</code> Lists the music queue<br>
-<code>/shuffle</code> Shuffle the queue<br>
-<code>/repeat</code> Repeat songs in the queue<br>
-<code>/clear</code> Clear the queue<br>
-</details>
+## Credits
+[Skyhelper Networth](https://github.com/Altpapier/SkyHelper-Networth)<br>
+[Unborn Hypixel](https://github.com/lilithmod/unborn-hypixel)<br>
+[PlayerDB API](https://playerdb.co/)<br>
+[Hypixel API](https://api.hypixel.net/)<br>
+[Altpapier](https://github.com/altpapier/hypixel-discord-guild-bridge/)<br>
+[DuckySoLucky](https://github.com/DuckySoLucky/hypixel-discord-chat-bridge)<br>
