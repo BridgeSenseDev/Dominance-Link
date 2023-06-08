@@ -6,7 +6,7 @@ import { textChannels } from '../events/discord/ready.js';
 import { doubleDigits, formatNumber, sleep } from './utils.js';
 import { NumberObject, StringObject } from '../types/global.d.js';
 import { fetchGuildByName } from '../api.js';
-import { chat } from '../handlers/workerHandler';
+import { chat } from '../handlers/workerHandler.js';
 
 const db = new Database('guild.db');
 
