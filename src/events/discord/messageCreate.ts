@@ -170,6 +170,13 @@ export default async function execute(client: Client, message: Message) {
     if (await checkProfanity(content)) {
       try {
         await message.member!.timeout(12 * 60 * 60 * 1000);
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
+          .setDescription(
+            `**You have been timed out for 12 hours. A staff member will review this as soon as possible**`
+          );
+        await channel.send({ content: `<@${author.id}>>`, embeds: [embed] });
       } catch (e) {
         /* empty */
       }
@@ -200,6 +207,13 @@ export default async function execute(client: Client, message: Message) {
     if (await checkProfanity(content)) {
       try {
         await message.member!.timeout(12 * 60 * 60 * 1000);
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
+          .setDescription(
+            `**You have been timed out for 12 hours. A staff member will review this as soon as possible**`
+          );
+        await channel.send({ content: `<@${author.id}>>`, embeds: [embed] });
       } catch (e) {
         /* empty */
       }
