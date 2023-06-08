@@ -3,9 +3,10 @@ import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
 import { textChannels } from '../events/discord/ready.js';
-import { doubleDigits } from './utils.js';
+import { doubleDigits, formatNumber, sleep } from './utils.js';
 import { NumberObject, StringObject } from '../types/global.d.js';
 import { fetchGuildByName } from '../api.js';
+import { chat } from '../handlers/workerHandler';
 
 const db = new Database('guild.db');
 
@@ -23,8 +24,8 @@ function gexpGained(gained: number): [string, number] {
   return ['<:down:969182381162500097> Lost', config.colors.red];
 }
 
-export default async function gexpWatch() {
-  schedule('00 50 11 * * 0-6', async () => {
+export async function gexpWatch() {
+  schedule('00 56 11 * * 0-6', async () => {
     const guildThumbnails: StringObject = {
       rebel: `https://cdn.discordapp.com/attachments/986281342457237624/1001705614264778803/a_96a019775f60ebe70d0e5ea3d762ff57.webp`,
       cronos: `https://cdn.discordapp.com/attachments/986281342457237624/1001839326033879080/ezgif-1-9402e80289.png`,
@@ -115,5 +116,40 @@ export default async function gexpWatch() {
       );
     }
     await textChannels.guildWatch.send({ embeds });
+  });
+}
+
+export async function gexpUpdate() {
+  schedule('0 * * * *', async () => {
+    const dominanceResponse = await fetchGuildByName('Dominance');
+    const rebelResponse = await fetchGuildByName('Rebel');
+
+    if (!rebelResponse.success || !dominanceResponse.success) {
+      return;
+    }
+
+    if (!dominanceResponse.guild?.exp || !rebelResponse.guild?.exp) {
+      return;
+    }
+
+    const dominanceGexp = dominanceResponse.guild.exp;
+    const rebelGexp = rebelResponse.guild.exp;
+    const gained = dominanceGexp - rebelGexp - (global.dominanceGexp - global.rebelGexp);
+    const absoluteGained = Math.abs(gained);
+    const gainedText = gained >= 0 ? 'gained' : 'lost';
+    const difference = dominanceGexp - rebelGexp;
+    const absoluteDifference = Math.abs(difference);
+    const differenceText = difference >= 0 ? 'ahead' : 'behind';
+
+    await chat(`/gc We earned ${formatNumber(dominanceGexp - global.dominanceGexp)} GEXP in the past hour`);
+    await sleep(1000);
+    await chat(
+      `/gc We ${gainedText} ${formatNumber(absoluteGained)} GEXP over rebel and are now ${formatNumber(
+        absoluteDifference
+      )} GEXP ${differenceText} them`
+    );
+
+    global.dominanceGexp = dominanceGexp;
+    global.rebelGexp = rebelGexp;
   });
 }

@@ -65,6 +65,8 @@ export interface WeeklyChallengeMember {
 declare global {
   var onlineMembers: number;
   var guildOnline: string[];
+  var dominanceGexp: number;
+  var rebelGexp: number;
   var playtime: NumberObject;
   var lastMessage: StringObject;
 }
