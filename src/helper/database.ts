@@ -150,7 +150,7 @@ export async function players() {
 
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count) as HypixelGuildMember;
-    if (!data || !data.uuid) {
+    if (!data || !data.uuid || !data.tag) {
       return;
     }
     count++;
