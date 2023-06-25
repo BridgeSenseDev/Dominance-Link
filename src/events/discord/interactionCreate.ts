@@ -536,7 +536,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      if (discord === interaction.user.tag) {
+      if (discord === interaction.user.tag || discord === interaction.user.tag.slice(0, -2)) {
         let messages = 0;
         let xp = 0;
         if (db.prepare('SELECT * FROM memberArchives WHERE discord = ?').get(interaction.user.id)) {
@@ -598,7 +598,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       } else {
         const embed = new EmbedBuilder().setColor(config.colors.red).setTitle('Verification Unsuccessful')
           .setDescription(`<a:across:986170696512204820>${name} has a different discord account linked on hypixel\nThe discord tag **${discord}**\
-                        linked on hypixel does not match your discord tag **${interaction.user.tag}**`);
+                        linked on hypixel does not match your discord tag **${interaction.user.tag.slice(0, -2)}**`);
         await interaction.editReply({ embeds: [embed] });
       }
     } else if (interaction.customId === 'applications') {
@@ -619,7 +619,7 @@ export default async function execute(client: Client, interaction: Interaction) 
 
       const applicationEmbed = new EmbedBuilder()
         .setColor(requirementData.color)
-        .setTitle(`${interaction.user.tag}'s Application`)
+        .setTitle(`${interaction.user.tag.slice(0, -2)}'s Application`)
         .setThumbnail(
           `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
         )
@@ -667,7 +667,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       await textChannels.applications.send({ components: [row], embeds: [applicationEmbed] });
       const replyEmbed = new EmbedBuilder()
         .setColor(requirementData.color)
-        .setTitle(`${interaction.user.tag}'s application has been received`)
+        .setTitle(`${interaction.user.tag.slice(0, -2)}'s application has been received`)
         .setThumbnail(
           `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
         )
