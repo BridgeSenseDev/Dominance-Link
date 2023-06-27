@@ -11,7 +11,7 @@ import { HypixelGuildMember } from '../types/global.d.js';
 import { fetchGuildByName, fetchPlayerRaw, fetchSkyblockProfiles } from '../api.js';
 import { processPlayer } from '../types/api/processors/processPlayers.js';
 import { textChannels } from '../events/discord/ready.js';
-import { chat } from '../handlers/workerHandler';
+import { chat } from '../handlers/workerHandler.js';
 
 const db = new Database('guild.db');
 
