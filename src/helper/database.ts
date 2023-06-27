@@ -1,14 +1,17 @@
 import { google } from 'googleapis';
+import { schedule } from 'node-cron';
 import Database from 'better-sqlite3';
 import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
-import { Client, Guild, Role } from 'discord.js';
+import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { uuidToName, skillAverage, uuidToDiscord } from './utils.js';
+import { uuidToName, skillAverage, uuidToDiscord, doubleDigits } from './utils.js';
 import { bwPrestiges, duelsDivisionRoles, ranks, roles } from './constants.js';
 import { HypixelGuildMember } from '../types/global.d.js';
 import { fetchGuildByName, fetchPlayerRaw, fetchSkyblockProfiles } from '../api.js';
 import { processPlayer } from '../types/api/processors/processPlayers.js';
+import { textChannels } from '../events/discord/ready.js';
+import { chat } from '../handlers/workerHandler';
 
 const db = new Database('guild.db');
 
@@ -17,6 +20,99 @@ export const sheet = new google.auth.JWT(config.sheets.clientEmail, undefined, c
 ]);
 
 sheet.authorize();
+
+function calculatePointsFromGexp(weeklyGexp: number) {
+  if (weeklyGexp >= 1000000) return 225;
+  if (weeklyGexp >= 750000) return 150;
+  if (weeklyGexp >= 600000) return 120;
+  if (weeklyGexp >= 500000) return 100;
+  if (weeklyGexp >= 400000) return 80;
+  if (weeklyGexp >= 250000) return 60;
+  if (weeklyGexp >= 200000) return 50;
+  if (weeklyGexp >= 175000) return 45;
+  if (weeklyGexp >= 150000) return 40;
+  return 0;
+}
+
+export async function weekly(client: Client) {
+  schedule('50 14 * * 2', async () => {
+    const guildResponse = await fetchGuildByName('Dominance');
+    if (!guildResponse.success || !guildResponse.guild) {
+      return;
+    }
+    const { members } = guildResponse.guild;
+
+    for (const member of members) {
+      const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
+      const points = calculatePointsFromGexp(weeklyGexp);
+      if (points !== 0) {
+        db.prepare('UPDATE guildMembers SET points = points + (?) WHERE uuid = ?').run(points, member.uuid);
+      }
+    }
+  });
+
+  schedule('54 11 * * 2', async () => {
+    let noLiferDesc = '';
+    let proDesc = '';
+
+    const noLifer = db
+      .prepare('SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) ORDER BY points DESC')
+      .all(100) as HypixelGuildMember[];
+    const pro = db
+      .prepare(
+        'SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND points < (?) ORDER BY points DESC'
+      )
+      .all(50, 100) as HypixelGuildMember[];
+    const member = db
+      .prepare('SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points < (?) ORDER BY points DESC')
+      .all(50) as HypixelGuildMember[];
+
+    for (const i in noLifer) {
+      db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[NoLifer]', noLifer[i].uuid);
+      if (noLifer[i].discord) {
+        noLiferDesc += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(noLifer[i].uuid)} (${await client.users.fetch(
+          noLifer[i].discord
+        )}) - ${noLifer[i].points}`;
+      } else {
+        noLiferDesc += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(noLifer[i].uuid)} - ${noLifer[i].points}`;
+      }
+    }
+
+    for (const i in pro) {
+      db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Pro]', pro[i].uuid);
+      if (pro[i].discord) {
+        proDesc += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(pro[i].uuid)} (${await client.users.fetch(
+          pro[i].discord
+        )}) - ${pro[i].points}`;
+      } else {
+        proDesc += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(pro[i].uuid)} - ${pro[i].points}`;
+      }
+    }
+
+    for (const i in member) {
+      db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Member]', member[i].uuid);
+    }
+
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    const previous = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
+    date.setDate(date.getDate() - 6);
+    const prevWeek = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
+
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.discordGray)
+      .setTitle(`Weekly Roles Update ${prevWeek} - ${previous}`)
+      .setDescription(
+        `Congrats to the following **NoLifer** members${noLiferDesc}\n\nCongrats to the following **Pro** members${proDesc}\n\n**Detailed ` +
+          `stats can be found in https://dominance.cf/sheets**`
+      )
+      .setImage(config.guild.banner);
+
+    await textChannels.announcements.send({ embeds: [embed] });
+
+    db.prepare('UPDATE guildMembers SET points = 0;').run();
+  });
+}
 
 export async function database() {
   setInterval(async () => {
@@ -182,6 +278,21 @@ export async function players() {
         const bankBalance = profile.banking?.balance;
         ({ networth } = await getNetworth(profileData, bankBalance));
         sa = await skillAverage(profileData);
+      }
+    }
+
+    if (data.targetRank && !['[Staff]', '[Owner]', '[GM]'].includes(data.tag) && data.targetRank !== data.tag) {
+      const ign = await uuidToName(data.uuid);
+      if (data.targetRank === '[NoLifer]') {
+        await chat(`/g promote ${ign}`);
+      } else if (data.targetRank === '[Pro]') {
+        if (data.tag === '[Member]') {
+          await chat(`/g promote ${ign}`);
+        } else if (data.tag === '[NoLifer]') {
+          await chat(`/g demote ${ign}`);
+        }
+      } else if (data.targetRank === '[Member]') {
+        await chat(`/g demote ${ign}`);
       }
     }
 

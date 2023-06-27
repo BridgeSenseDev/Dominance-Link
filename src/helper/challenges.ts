@@ -116,6 +116,7 @@ export async function resetWeeklyChallenges(client: Client) {
     let count = 1;
     for (const member of members) {
       if (member.difference! >= config.guild.weeklyChallenges.req) {
+        db.prepare('UPDATE guildMembers SET points = points + 25 WHERE uuid = ?').run(member.uuid);
         winners += `\n${count}. **${await uuidToName(member.uuid)}** - \`${formatNumber(member.difference!)}\``;
         count++;
       }
