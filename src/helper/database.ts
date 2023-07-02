@@ -35,7 +35,7 @@ function calculatePointsFromGexp(weeklyGexp: number) {
 }
 
 export async function weekly(client: Client) {
-  schedule('50 14 * * 2', async () => {
+  schedule('50 11 * * 0', async () => {
     const guildResponse = await fetchGuildByName('Dominance');
     if (!guildResponse.success || !guildResponse.guild) {
       return;
@@ -51,7 +51,7 @@ export async function weekly(client: Client) {
     }
   });
 
-  schedule('54 11 * * 2', async () => {
+  schedule('55 11 * * 0', async () => {
     let noLiferDesc = '';
     let proDesc = '';
 
