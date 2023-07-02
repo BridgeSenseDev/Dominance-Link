@@ -7,7 +7,7 @@ import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { uuidToName, skillAverage, uuidToDiscord, doubleDigits } from './utils.js';
 import { bwPrestiges, duelsDivisionRoles, ranks, roles } from './constants.js';
-import { HypixelGuildMember } from '../types/global.d.js';
+import { DiscordMember, HypixelGuildMember } from '../types/global.d.js';
 import { fetchGuildByName, fetchPlayerRaw, fetchSkyblockProfiles } from '../api.js';
 import { processPlayer } from '../types/api/processors/processPlayers.js';
 import { textChannels } from '../events/discord/ready.js';
@@ -246,10 +246,15 @@ export async function players() {
 
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count) as HypixelGuildMember;
+
+    count++;
+    if (count === 126) {
+      count = 0;
+    }
+
     if (!data || !data.uuid || !data.tag) {
       return;
     }
-    count++;
 
     const skyblockProfilesResponse = await fetchSkyblockProfiles(data.uuid);
     if (!skyblockProfilesResponse.success) {
@@ -302,6 +307,17 @@ export async function players() {
         member = await guild.members.fetch(data.discord);
       } catch (e) {
         db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
+        const memberData = db.prepare('SELECT * FROM members WHERE discord = ?').get(data.discord) as DiscordMember;
+        if (!memberData) {
+          return;
+        }
+        db.prepare('INSERT INTO memberArchives (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
+          memberData.discord,
+          memberData.uuid,
+          memberData.messages,
+          memberData.xp
+        );
+        db.prepare('DELETE FROM members WHERE discord = ?').run(data.discord);
         return;
       }
 
@@ -379,10 +395,6 @@ export async function players() {
       db.prepare(
         'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
       ).run(processedPlayer.rankTagF, bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
-    }
-
-    if (count === 126) {
-      count = 0;
     }
   }, 7 * 1000);
 
