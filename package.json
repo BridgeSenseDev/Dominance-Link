@@ -19,7 +19,7 @@
     "discord.js": "^14.11.0",
     "ffmpeg-static": "^5.1.0",
     "google-auth-library": "^8.9.0",
-    "googleapis": "^118.0.0",
+    "googleapis": "^122.0.0",
     "mineflayer": "^4.10.1",
     "node-cron": "^3.0.2",
     "skia-canvas": "^1.0.1",
