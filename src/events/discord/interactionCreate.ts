@@ -31,7 +31,6 @@ import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { textChannels } from './ready.js';
 import { bullet, dividers, roles } from '../../helper/constants.js';
-import { updateWeeklyChallenges } from '../../helper/challenges.js';
 import { BreakMember, DiscordMember, HypixelGuildMember } from '../../types/global.d.js';
 import { fetchPlayerRaw, fetchGuildByPlayer } from '../../api.js';
 import { processPlayer } from '../../types/api/processors/processPlayers.js';
@@ -435,40 +434,6 @@ export default async function execute(client: Client, interaction: Interaction) 
           collector.stop();
         }
       });
-    } else if (interaction.customId === 'joinChallenge') {
-      await interaction.deferReply({ ephemeral: true });
-      const uuid = discordToUuid(interaction.user.id);
-      const name = await uuidToName(uuid!);
-      if (db.prepare('SELECT * FROM weeklyChallenges WHERE uuid = ?').get(uuid)) {
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle('Error')
-          .setDescription(
-            `<a:across:986170696512204820> **${name}** is already participating in this weekly challenge`
-          );
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
-
-      const playerRawResponse = await fetchPlayerRaw(uuid!);
-      let current;
-      if (!playerRawResponse.success) {
-        current = 0;
-      } else {
-        current = playerRawResponse.player;
-        for (const obj of config.guild.weeklyChallenges.stat) {
-          current = current[obj] as any;
-        }
-      }
-
-      db.prepare('INSERT INTO weeklyChallenges (uuid, discord, initial, current) VALUES (?, ?, ?, ?)').run(
-        uuid,
-        interaction.user.id,
-        current,
-        current
-      );
-      updateWeeklyChallenges();
-      await interaction.deleteReply();
     } else if (interaction.customId === 'removeTimeout') {
       await interaction.deferReply();
       const timeoutMember = await interaction.guild!.members.fetch(

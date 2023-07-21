@@ -9,7 +9,6 @@ import config from '../../config.json' assert { type: 'json' };
 import leaderboards from '../../helper/leaderboards.js';
 import { breakUpdate, unverifiedUpdate } from '../../helper/messageUpdate.js';
 import { logInterval } from '../minecraft/message.js';
-import { weeklyChallengesInterval } from '../../helper/challenges.js';
 import discordCommands from '../../handlers/discordCommands.js';
 import discordEvents from '../../handlers/discordEvents.js';
 import { fetchGuildByName } from '../../api.js';
@@ -84,7 +83,6 @@ export default async function execute(client: Client) {
   players();
   leaderboards();
   logInterval();
-  weeklyChallengesInterval(client);
   weekly(client);
 
   console.log(`[DISCORD] Logged in as ${client.user!.tag}`);

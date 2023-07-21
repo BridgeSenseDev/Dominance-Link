@@ -54,14 +54,6 @@ export interface WaitlistMember {
   channel: string;
 }
 
-export interface WeeklyChallengeMember {
-  uuid: string;
-  discord: string;
-  initial: number;
-  current: number;
-  difference?: number;
-}
-
 declare global {
   var onlineMembers: number;
   var guildOnline: string[];
