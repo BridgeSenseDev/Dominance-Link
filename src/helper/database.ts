@@ -40,14 +40,25 @@ export async function weekly(client: Client) {
     if (!guildResponse.success || !guildResponse.guild) {
       return;
     }
+
     const { members } = guildResponse.guild;
+    const memberPoints: Array<[uuid: string, points: number]> = [];
 
     for (const member of members) {
       const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
       const points = calculatePointsFromGexp(weeklyGexp);
       if (points !== 0) {
-        db.prepare('UPDATE guildMembers SET points = points + (?) WHERE uuid = ?').run(points, member.uuid);
+        memberPoints.push([member.uuid, points]);
       }
+    }
+
+    memberPoints.sort((a, b) => b[1] - a[1]);
+
+    memberPoints[0][1] += 25;
+    memberPoints[1][1] += 15;
+    memberPoints[2][1] += 10;
+    for (const member of memberPoints) {
+      db.prepare('UPDATE guildMembers SET points = points + (?) WHERE uuid = ?').run(member[1], member[0]);
     }
   });
 
@@ -55,17 +66,66 @@ export async function weekly(client: Client) {
     let noLiferDesc = '';
     let proDesc = '';
 
-    const noLifer = db
-      .prepare('SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) ORDER BY points DESC')
-      .all(100) as HypixelGuildMember[];
-    const pro = db
+    const noLiferReq = db
       .prepare(
-        'SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND points < (?) ORDER BY points DESC'
+        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND tag != '[Staff]' ORDER BY points DESC"
+      )
+      .all(100) as HypixelGuildMember[];
+    const topNoLifer = db
+      .prepare(
+        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE tag != '[Staff]' ORDER BY points DESC LIMIT 3"
+      )
+      .all() as HypixelGuildMember[];
+    const staffNoLifer = db
+      .prepare(
+        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND tag = '[Staff]' ORDER BY points"
+      )
+      .all(100) as HypixelGuildMember[];
+
+    const proReq = db
+      .prepare(
+        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND points < (?) AND tag != '[Staff]' ORDER BY points DESC"
       )
       .all(50, 100) as HypixelGuildMember[];
+    const topPro = db
+      .prepare(
+        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE tag != '[Staff]' ORDER BY points DESC LIMIT 20"
+      )
+      .all() as HypixelGuildMember[];
+    const staffPro = db
+      .prepare(
+        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND points < (?) AND tag = '[Staff]' ORDER BY points DESC LIMIT 20"
+      )
+      .all(50, 100) as HypixelGuildMember[];
+
     const member = db
-      .prepare('SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points < (?) ORDER BY points DESC')
+      .prepare(
+        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points < (?) AND tag != '[Staff]' ORDER BY points DESC"
+      )
       .all(50) as HypixelGuildMember[];
+
+    let noLifer = noLiferReq;
+    let pro = proReq;
+
+    if (noLifer.length < 3) {
+      const additionalMembers = topNoLifer.filter(
+        (guildMember) => !noLiferReq.find((req) => req.uuid === guildMember.uuid)
+      );
+      noLifer = noLifer.concat(additionalMembers.slice(0, 3 - noLifer.length));
+    }
+
+    pro = pro.filter((proMember) => !noLifer.find((noLiferMember) => noLiferMember.uuid === proMember.uuid));
+
+    if (pro.length < 20) {
+      const additionalMembers = topPro.filter((guildMember) => !proReq.find((req) => req.uuid === guildMember.uuid));
+      pro = pro.concat(additionalMembers.slice(0, 20 - pro.length));
+    }
+
+    noLifer = noLifer.concat(staffNoLifer);
+    pro = pro.concat(staffPro);
+
+    noLifer.sort((a, b) => b.points - a.points);
+    pro.sort((a, b) => b.points - a.points);
 
     for (const i in noLifer) {
       db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[NoLifer]', noLifer[i].uuid);
@@ -108,7 +168,7 @@ export async function weekly(client: Client) {
       )
       .setImage(config.guild.banner);
 
-    await textChannels.announcements.send({ embeds: [embed] });
+    await textChannels.announcements.send({ content: '<@&1031926129822539786>', embeds: [embed] });
 
     db.prepare('UPDATE guildMembers SET points = 0;').run();
   });
@@ -132,7 +192,12 @@ export async function database() {
         db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
         db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
       }
-      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points , messages, playtime) VALUES (?, ?, ?, ?)').run(
+        uuid,
+        0,
+        0,
+        0
+      );
 
       try {
         db.prepare(

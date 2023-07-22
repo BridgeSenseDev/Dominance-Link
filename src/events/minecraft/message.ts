@@ -97,7 +97,12 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
           db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
           db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
         }
-        db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+        db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points, messages, playtime) VALUES (?, ?, ?, ?)').run(
+          uuid,
+          0,
+          0,
+          0
+        );
         db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
       }
       return;
@@ -122,7 +127,12 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
       db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
     }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points, messages, playtime) VALUES (?, ?, ?, ?)').run(
+      uuid,
+      0,
+      0,
+      0
+    );
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
 
     if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
@@ -385,7 +395,12 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
       db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
     }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points, messages, playtime) VALUES (?, ?, ?, ?)').run(
+      uuid,
+      0,
+      0,
+      0
+    );
 
     try {
       const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid) as WaitlistMember;
