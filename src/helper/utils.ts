@@ -1,5 +1,6 @@
 import { Client, EmbedBuilder, Message } from 'discord.js';
 import Database from 'better-sqlite3';
+import { demojify } from 'discord-emoji-converter';
 import { rankColor, levelingXp } from './constants.js';
 import { DiscordMember } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
@@ -25,6 +26,7 @@ export async function uuidToName(uuid: string): Promise<string | null> {
 export async function formatMentions(client: Client, message: Message) {
   let msg = message.content;
   const guild = message.guild!;
+
   if (msg.includes('<@') && msg.includes('>') && !msg.includes('<@&')) {
     const mentions = msg.match(/<@!?\d+>/g)!;
     const members = await guild.members.fetch();
@@ -59,16 +61,23 @@ export async function formatMentions(client: Client, message: Message) {
         `#${guild.channels.cache.get(mention.replace(/[^0-9]/g, ''))!.name || 'deleted-channel'}`
       );
     }
+  }
 
-    if ((msg.includes('<a:') || msg.includes('<:')) && msg.includes('>')) {
-      const emojis = [...(msg.match(/<a:\w+:\d+>/g) || []), ...(msg.match(/<:\w+:\d+>/g) || [])];
-      for (const emoji of emojis) {
-        const emojiName = emoji.replace(/[0-9]/g, '').replace(/<a:/g, '').replace(/:>/g, '').replace(/<:/g, '');
-        msg = msg.replace(emoji, `:${emojiName}:`);
-      }
+  if ((msg.includes('<a:') || msg.includes('<:')) && msg.includes('>')) {
+    const emojis = [...(msg.match(/<a:\w+:\d+>/g) || []), ...(msg.match(/<:\w+:\d+>/g) || [])];
+    for (const emoji of emojis) {
+      const emojiName = emoji.replace(/[0-9]/g, '').replace(/<a:/g, '').replace(/:>/g, '').replace(/<:/g, '');
+      msg = msg.replace(emoji, `:${emojiName}:`);
     }
   }
-  return msg;
+
+  msg = msg.replaceAll(/(?:\d{1,3}\.){2,3}\d{1,3}/g, '[IP Address Removed]');
+
+  try {
+    return demojify(msg);
+  } catch (e) {
+    return msg;
+  }
 }
 
 export function getLevel(exp: number) {
