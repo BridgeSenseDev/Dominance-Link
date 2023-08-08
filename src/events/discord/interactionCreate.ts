@@ -344,7 +344,7 @@ export default async function execute(client: Client, interaction: Interaction) 
           const embed = new EmbedBuilder()
             .setColor(config.colors.discordGray)
             .setDescription(`Only staff can close this application`);
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.editReply({ embeds: [embed] });
           return;
         }
         const confirmationEmbed = new EmbedBuilder()
