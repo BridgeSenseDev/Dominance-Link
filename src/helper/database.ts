@@ -225,61 +225,64 @@ export async function database() {
 }
 
 export async function gsrun(sheets: JWT, client: Client) {
-  setInterval(async () => {
-    const gsapi = google.sheets({ version: 'v4', auth: sheets });
-    const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
-    const response = await fetchGuildByName('Dominance');
-    if (!response.success || !response.guild) {
-      return;
-    }
-    const guildMembers = response.guild.members;
-    const array = [];
-    for (let i = data.length - 1; i >= 0; i--) {
-      for (let j = Object.keys(data[i]).length; j >= 0; j--) {
-        if (
-          /[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) &&
-          !Object.keys(guildMembers[0].expHistory).includes(Object.keys(data[i])[j])
-        ) {
-          delete data[i][Object.keys(data[i])[j]];
-        }
+  setInterval(
+    async () => {
+      const gsapi = google.sheets({ version: 'v4', auth: sheets });
+      const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
+      const response = await fetchGuildByName('Dominance');
+      if (!response.success || !response.guild) {
+        return;
       }
-      const { uuid } = data[i];
-      data[i].name = await uuidToName(uuid);
-      if (data[i].discord) {
-        try {
-          data[i].discordTag = (await client.users.fetch(data[i].discord)).tag;
-        } catch (e) {
-          data[i].discordTag = null;
+      const guildMembers = response.guild.members;
+      const array = [];
+      for (let i = data.length - 1; i >= 0; i--) {
+        for (let j = Object.keys(data[i]).length; j >= 0; j--) {
+          if (
+            /[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(Object.keys(data[i])[j]) &&
+            !Object.keys(guildMembers[0].expHistory).includes(Object.keys(data[i])[j])
+          ) {
+            delete data[i][Object.keys(data[i])[j]];
+          }
         }
-      } else {
-        const discordId = uuidToDiscord(uuid);
-        if (discordId) {
-          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId, uuid);
-          data[i].discord = discordId;
+        const { uuid } = data[i];
+        data[i].name = await uuidToName(uuid);
+        if (data[i].discord) {
           try {
             data[i].discordTag = (await client.users.fetch(data[i].discord)).tag;
           } catch (e) {
             data[i].discordTag = null;
           }
         } else {
-          data[i].discordTag = null;
+          const discordId = uuidToDiscord(uuid);
+          if (discordId) {
+            db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId, uuid);
+            data[i].discord = discordId;
+            try {
+              data[i].discordTag = (await client.users.fetch(data[i].discord)).tag;
+            } catch (e) {
+              data[i].discordTag = null;
+            }
+          } else {
+            data[i].discordTag = null;
+          }
         }
+        array.push(Object.values(data[i]));
       }
-      array.push(Object.values(data[i]));
-    }
-    array.sort((a: any, b: any) => b[4] - a[4]);
-    const options = {
-      spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
-      range: 'Guild API!A2',
-      valueInputOption: 'USER_ENTERED',
-      resource: { values: array }
-    };
-    await gsapi.spreadsheets.values.clear({
-      spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
-      range: 'Guild API!A2:Z126'
-    });
-    await gsapi.spreadsheets.values.update(options);
-  }, 6 * 60 * 1000);
+      array.sort((a: any, b: any) => b[4] - a[4]);
+      const options = {
+        spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
+        range: 'Guild API!A2',
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: array }
+      };
+      await gsapi.spreadsheets.values.clear({
+        spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
+        range: 'Guild API!A2:Z126'
+      });
+      await gsapi.spreadsheets.values.update(options);
+    },
+    6 * 60 * 1000
+  );
 }
 
 export async function players() {
@@ -292,22 +295,25 @@ export async function players() {
   const staffRole = guild.roles.cache.get(roles['[Staff]']) as Role;
   let count = 0;
 
-  setInterval(async () => {
-    const discordId = db
-      .prepare('SELECT discord FROM guildMembers')
-      .all()
-      .map((i) => (i as { discord: string }).discord);
-    const members = Array.from(memberRole.members).concat(
-      Array.from(noLiferRole.members),
-      Array.from(proRole.members),
-      Array.from(staffRole.members)
-    );
-    for (const member of members) {
-      if (!discordId.includes(member[0])) {
-        await member[1].roles.remove([memberRole, noLiferRole, proRole]);
+  setInterval(
+    async () => {
+      const discordId = db
+        .prepare('SELECT discord FROM guildMembers')
+        .all()
+        .map((i) => (i as { discord: string }).discord);
+      const members = Array.from(memberRole.members).concat(
+        Array.from(noLiferRole.members),
+        Array.from(proRole.members),
+        Array.from(staffRole.members)
+      );
+      for (const member of members) {
+        if (!discordId.includes(member[0])) {
+          await member[1].roles.remove([memberRole, noLiferRole, proRole]);
+        }
       }
-    }
-  }, 5 * 60 * 1000);
+    },
+    5 * 60 * 1000
+  );
 
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers LIMIT 1 OFFSET ?').get(count) as HypixelGuildMember;
@@ -463,15 +469,18 @@ export async function players() {
     }
   }, 7 * 1000);
 
-  setInterval(async () => {
-    const breakMembers = db
-      .prepare('SELECT discord FROM breaks')
-      .all()
-      .map((i) => (i as { discord: string }).discord);
-    for (const member of Array.from(breakRole.members)) {
-      if (!breakMembers.includes(member[0])) {
-        await member[1].roles.remove(breakRole);
+  setInterval(
+    async () => {
+      const breakMembers = db
+        .prepare('SELECT discord FROM breaks')
+        .all()
+        .map((i) => (i as { discord: string }).discord);
+      for (const member of Array.from(breakRole.members)) {
+        if (!breakMembers.includes(member[0])) {
+          await member[1].roles.remove(breakRole);
+        }
       }
-    }
-  }, 5 * 60 * 1000);
+    },
+    5 * 60 * 1000
+  );
 }
