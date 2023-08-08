@@ -6,7 +6,7 @@ import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { textChannels } from './ready.js';
 import { roles } from '../../helper/constants.js';
-import { HypixelGuildMember, NumberObject } from '../../types/global.d.js';
+import { Count, HypixelGuildMember, NumberObject } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
 
@@ -104,6 +104,18 @@ export default async function execute(client: Client, message: Message) {
 
   if (channel.id === textChannels.chatLogs.id) {
     await chat(message.content);
+  }
+
+  if (channel.id === textChannels.counting.id) {
+    if (/^-?\d+$/.test(content.split(' ')[0])) {
+      const currentCount = db.prepare('SELECT * FROM counting ORDER BY count DESC LIMIT 1').get() as Count;
+      if (currentCount.count + 1 === parseInt(content.split(' ')[0], 10) && currentCount.discord !== author.id) {
+        await message.react('a:atick:986173414723162113');
+        db.prepare('INSERT INTO counting (count, discord) VALUES (?, ?)').run(content.split(' ')[0], author.id);
+      } else {
+        await message.react('a:across:986170696512204820');
+      }
+    }
   }
 
   if (![textChannels.minecraftLink.id, textChannels.officerChat.id].includes(channel.id)) return;

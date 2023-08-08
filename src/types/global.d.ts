@@ -54,6 +54,11 @@ export interface WaitlistMember {
   channel: string;
 }
 
+export interface Count {
+  count: number;
+  discord: string;
+}
+
 declare global {
   var onlineMembers: number;
   var guildOnline: string[];
