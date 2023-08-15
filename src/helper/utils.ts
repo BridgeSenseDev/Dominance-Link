@@ -11,7 +11,11 @@ export async function nameToUuid(name: string): Promise<string | null> {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${name}`)).json()).data.player.raw_id;
   } catch (e) {
-    return null;
+    try {
+      return (await (await fetch(`https://api.mojang.com/users/profiles/minecraft/${name}`)).json()).id;
+    } catch (err) {
+      return null;
+    }
   }
 }
 
@@ -19,7 +23,11 @@ export async function uuidToName(uuid: string): Promise<string | null> {
   try {
     return (await (await fetch(`https://playerdb.co/api/player/minecraft/${uuid}`)).json()).data.player.username;
   } catch (e) {
-    return null;
+    try {
+      return (await (await fetch(`https://api.mojang.com/user/profile/${uuid}`)).json()).name;
+    } catch (err) {
+      return null;
+    }
   }
 }
 
