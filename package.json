@@ -18,7 +18,7 @@
     "better-sqlite3": "^8.5.0",
     "discord-emoji-converter": "^1.2.8",
     "discord.js": "^14.12.1",
-    "ffmpeg-static": "^5.1.0",
+    "ffmpeg-static": "^5.2.0",
     "google-auth-library": "^8.9.0",
     "googleapis": "^123.0.0",
     "mineflayer": "^4.11.0",
