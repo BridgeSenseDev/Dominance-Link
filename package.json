@@ -17,7 +17,7 @@
     "@discordjs/builders": "^1.6.5",
     "better-sqlite3": "^8.5.0",
     "discord-emoji-converter": "^1.2.8",
-    "discord.js": "^14.12.1",
+    "discord.js": "^14.13.0",
     "ffmpeg-static": "^5.2.0",
     "google-auth-library": "^8.9.0",
     "googleapis": "^123.0.0",
