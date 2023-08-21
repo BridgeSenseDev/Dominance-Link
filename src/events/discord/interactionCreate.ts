@@ -279,7 +279,7 @@ export default async function execute(client: Client, interaction: Interaction) 
           }
         )
       );
-      const message = await interaction.reply({ components: [row], ephemeral: true });
+      const message = await interaction.reply({ components: [row], ephemeral: true, fetchReply: true });
       const collector = message.createMessageComponentCollector({
         componentType: ComponentType.StringSelect,
         time: 60 * 1000
@@ -293,7 +293,11 @@ export default async function execute(client: Client, interaction: Interaction) 
             .setColor(config.colors.red)
             .setTitle('Your Dominance application has been denied')
             .setDescription(`**Reason:** ${collectorInteraction.values}`);
-          await user.send({ embeds: [embed] });
+          try {
+            await user.send({ embeds: [embed] });
+          } catch (e) {
+            /* empty */
+          }
           const applicationEmbed = new EmbedBuilder()
             .setColor(config.colors.red)
             .setTitle(`${name}'s application has been denied`)
