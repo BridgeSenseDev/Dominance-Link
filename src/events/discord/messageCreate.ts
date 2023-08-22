@@ -5,7 +5,7 @@ import { addXp, discordToUuid, formatMentions, uuidToName } from '../../helper/u
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { textChannels } from './ready.js';
-import { roles } from '../../helper/constants.js';
+import { discordRoles } from '../../helper/constants.js';
 import { Count, HypixelGuildMember, NumberObject } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
@@ -125,7 +125,7 @@ export default async function execute(client: Client, message: Message) {
 
   if (!user) {
     if (!uuid) {
-      await member!.roles.add(member!.guild.roles.cache.get(roles.unverified)!);
+      await member!.roles.add(member!.guild.roles.cache.get(discordRoles.unverified)!);
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle('Error')
@@ -134,7 +134,7 @@ export default async function execute(client: Client, message: Message) {
       return;
     }
 
-    if (member?.roles.cache.has(roles.Break)) {
+    if (member?.roles.cache.has(discordRoles.Break)) {
       if (await checkProfanity(content)) {
         try {
           await message.member!.timeout(12 * 60 * 60 * 1000);
@@ -188,7 +188,7 @@ export default async function execute(client: Client, message: Message) {
           .setDescription(
             `**You have been timed out for 12 hours. A staff member will review this as soon as possible**`
           );
-        await channel.send({ content: `<@${author.id}>>`, embeds: [embed] });
+        await channel.send({ content: `<@${author.id}>`, embeds: [embed] });
       } catch (e) {
         /* empty */
       }
@@ -225,7 +225,7 @@ export default async function execute(client: Client, message: Message) {
           .setDescription(
             `**You have been timed out for 12 hours. A staff member will review this as soon as possible**`
           );
-        await channel.send({ content: `<@${author.id}>>`, embeds: [embed] });
+        await channel.send({ content: `<@${author.id}>`, embeds: [embed] });
       } catch (e) {
         /* empty */
       }

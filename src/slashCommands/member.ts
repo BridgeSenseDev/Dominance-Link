@@ -10,9 +10,9 @@ import { fetchStatus } from '../api.js';
 const db = new Database('guild.db');
 
 const tagColor: StringObject = {
-  '[Member]': '§2[Member]',
-  '[NoLifer]': '§6[NoLifer]',
-  '[Pro]': '§5[Pro]',
+  '[Slayer]': '§2[Slayer]',
+  '[Hero]': '§6[Hero]',
+  '[Elite]': '§5[Elite]',
   '[Staff]': '§c[Staff]',
   '[Owner]': '§4[Owner]',
   '[GM]': '§4[GM]'

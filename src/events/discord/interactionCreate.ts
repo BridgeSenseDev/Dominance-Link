@@ -30,7 +30,7 @@ import {
 import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { textChannels } from './ready.js';
-import { bullet, dividers, roles } from '../../helper/constants.js';
+import { bullet, dividers, discordRoles } from '../../helper/constants.js';
 import { BreakMember, DiscordMember, HypixelGuildMember } from '../../types/global.d.js';
 import { fetchPlayerRaw, fetchGuildByPlayer } from '../../api.js';
 import { processPlayer } from '../../types/api/processors/processPlayers.js';
@@ -68,8 +68,8 @@ export default async function execute(client: Client, interaction: Interaction) 
       .slice(0, 25);
     await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
   } else if (interaction.isButton()) {
-    if (interaction.customId in roles) {
-      const roleId = roles[interaction.customId];
+    if (interaction.customId in discordRoles) {
+      const roleId = discordRoles[interaction.customId as keyof typeof discordRoles];
       let msg;
       await interaction.deferReply({ ephemeral: true });
       if (member.roles.resolve(roleId)) {
@@ -84,7 +84,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const uuid = discordToUuid(interaction.user.id);
       await interaction.deferReply({ ephemeral: true });
       if (!uuid) {
-        await member.roles.add(interaction.guild!.roles.cache.get(roles.unverified) as Role);
+        await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
@@ -110,7 +110,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.editReply({ embeds: [embed] });
     } else if (interaction.customId === 'verify') {
       if (
-        (interaction.member as GuildMember).roles.cache.has(roles.verified) &&
+        (interaction.member as GuildMember).roles.cache.has(discordRoles.verified) &&
         db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id)
       ) {
         const embed = new EmbedBuilder()
@@ -148,8 +148,17 @@ export default async function execute(client: Client, interaction: Interaction) 
       );
       db.prepare('DELETE FROM members WHERE discord = ?').run(interaction.user.id);
       db.prepare('UPDATE guildMembers SET discord = NULL WHERE discord = ?').run(interaction.user.id);
-      await member.roles.add(roles.unverified);
-      for (const role of [roles.verified, roles['[Member]'], roles['[NoLifer]'], roles['[Pro]'], roles['[Staff]']]) {
+      await member.roles.add(discordRoles.unverified);
+      for (const role of [
+        discordRoles.verified,
+        discordRoles.slayer,
+        discordRoles.elite,
+        discordRoles.hero,
+        discordRoles.godlike,
+        discordRoles.dominator,
+        discordRoles.rebelSlayer,
+        discordRoles.staff
+      ]) {
         if (member.roles.cache.has(role)) {
           await member.roles.remove(role);
         }
@@ -161,7 +170,7 @@ export default async function execute(client: Client, interaction: Interaction) 
     } else if (interaction.customId === 'apply') {
       const uuid = discordToUuid(interaction.user.id);
       if (!uuid) {
-        await member.roles.add(interaction.guild!.roles.cache.get(roles.unverified) as Role);
+        await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
@@ -344,7 +353,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const name = await uuidToName(breakData.uuid);
       if (interaction.user.id !== breakData.discord) {
         const breakMember = interaction.guild?.members.cache.get(breakData.discord) as GuildMember;
-        if (!(interaction.member as GuildMember).roles.cache.has(roles['[Staff]'])) {
+        if (!(interaction.member as GuildMember).roles.cache.has(discordRoles.staff)) {
           const embed = new EmbedBuilder()
             .setColor(config.colors.discordGray)
             .setDescription(`Only staff can close this application`);
@@ -372,7 +381,7 @@ export default async function execute(client: Client, interaction: Interaction) 
           if (collectorInteraction.customId === 'confirm') {
             await collectorInteraction.deferReply();
             if (breakMember !== undefined) {
-              await breakMember.roles.remove(interaction.guild!.roles.cache.get(roles.Break) as Role);
+              await breakMember.roles.remove(interaction.guild!.roles.cache.get(discordRoles.Break) as Role);
             }
             db.prepare('DELETE FROM breaks WHERE discord = ?').run(breakData.discord);
             const embed = new EmbedBuilder()
@@ -398,7 +407,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
       db.prepare('DELETE FROM breaks WHERE discord = ?').run(interaction.user.id);
-      await member.roles.remove(interaction.guild!.roles.cache.get(roles.Break) as Role);
+      await member.roles.remove(interaction.guild!.roles.cache.get(discordRoles.Break) as Role);
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`Welcome back, ${await uuidToName(breakData.uuid)}!`)
@@ -407,7 +416,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       await (interaction.channel as ThreadChannel).setLocked();
       await (interaction.channel as ThreadChannel).setArchived();
     } else if (interaction.customId === 'closeApplication') {
-      if (!(interaction.member as GuildMember).roles.cache.has(roles['[Staff]'])) {
+      if (!(interaction.member as GuildMember).roles.cache.has(discordRoles.staff)) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
           .setDescription(`Only staff can close this application`);
@@ -472,8 +481,8 @@ export default async function execute(client: Client, interaction: Interaction) 
 
       if (
         db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) &&
-        member.roles.cache.has(roles.verified) &&
-        !member.roles.cache.has(roles.unverified)
+        member.roles.cache.has(discordRoles.verified) &&
+        !member.roles.cache.has(discordRoles.unverified)
       ) {
         const name = await uuidToName(uuid);
         const embed = new EmbedBuilder()
@@ -521,8 +530,8 @@ export default async function execute(client: Client, interaction: Interaction) 
           messages,
           xp
         );
-        await member.roles.remove(interaction.guild!.roles.cache.get(roles.unverified) as Role);
-        await member.roles.add(interaction.guild!.roles.cache.get(roles.verified) as Role);
+        await member.roles.remove(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
+        await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.verified) as Role);
         const { displayName } = member;
         if (!displayName.toUpperCase().includes(name.toUpperCase())) {
           if (/\(.*?\)/.test(displayName.split(' ')[1])) {
@@ -542,21 +551,21 @@ export default async function execute(client: Client, interaction: Interaction) 
               .setTitle('Verification Successful')
               .setDescription(
                 `<a:atick:986173414723162113> **${name}** is not in Dominance\n<:add:1005843961652453487>\
-                    Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
+                    Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
               )
               .setThumbnail(
                 `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
               );
             await interaction.editReply({ embeds: [embed] });
           } else {
-            await member.roles.add(interaction.guild!.roles.cache.get(roles['[Member]']) as Role);
+            await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.slayer) as Role);
             db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(interaction.user.id, uuid);
             const embed = new EmbedBuilder()
               .setColor(config.colors.green)
               .setTitle('Verification Successful')
               .setDescription(
                 `<a:atick:986173414723162113> **${name}** is in Dominance\n<:add:1005843961652453487>\
-                      Added: <@&445669382539051008>, <@&1031926129822539786>\n<:minus:1005843963686686730> Removed: <@&${roles.unverified}>`
+                      Added: <@&445669382539051008>, <@&1031926129822539786>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
               )
               .setThumbnail(
                 `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
@@ -722,7 +731,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         q1,
         q2
       );
-      await member.roles.add(interaction.guild!.roles.cache.get(roles.Break) as Role);
+      await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.Break) as Role);
 
       await textChannels.break.send({ embeds: [embed] });
     }

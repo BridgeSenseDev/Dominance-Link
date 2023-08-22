@@ -14,7 +14,7 @@ import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { textChannels } from '../discord/ready.js';
-import { roles } from '../../helper/constants.js';
+import { discordRoles } from '../../helper/constants.js';
 import { BreakMember, WaitlistMember } from '../../types/global.d.js';
 import { fetchPlayerRaw, fetchSkyblockProfiles } from '../../api.js';
 import { processPlayer } from '../../types/api/processors/processPlayers.js';
@@ -414,8 +414,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       const member = await textChannels.guildChat.guild.members.fetch(breakData.discord);
       const thread = client.channels.cache.get(breakData.thread) as ThreadChannel;
       db.prepare('DELETE FROM breaks WHERE uuid = ?').run(uuid);
-      await member.roles.remove(thread.guild!.roles.cache.get(roles.Break) as Role);
-      await member.roles.add(roles['[Member]']);
+      await member.roles.remove(thread.guild!.roles.cache.get(discordRoles.Break) as Role);
+      await member.roles.add(discordRoles.slayer);
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`Welcome back, ${name}!`)
@@ -444,7 +444,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discordId}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
       const member = await textChannels.guildChat.guild.members.fetch(discordId);
-      await member.roles.add(roles['[Member]']);
+      await member.roles.add(discordRoles.slayer);
     } else {
       await textChannels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
@@ -502,10 +502,13 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     if (discordId) {
       try {
         const member = await textChannels.guildChat.guild.members.fetch(discordId);
-        await member.roles.remove(roles['[Member]']);
-        await member.roles.remove(roles['[NoLifer]']);
-        await member.roles.remove(roles['[Pro]']);
-        await member.roles.remove(roles['[Staff]']);
+        await member.roles.remove(discordRoles.slayer);
+        await member.roles.remove(discordRoles.elite);
+        await member.roles.remove(discordRoles.hero);
+        await member.roles.remove(discordRoles.godlike);
+        await member.roles.remove(discordRoles.dominator);
+        await member.roles.remove(discordRoles.rebelSlayer);
+        await member.roles.remove(discordRoles.staff);
       } catch (e) {
         /* empty */
       }

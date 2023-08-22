@@ -25,7 +25,7 @@ function gexpGained(gained: number): [string, number] {
 }
 
 export async function gexpWatch() {
-  schedule('00 56 11 * * 0-6', async () => {
+  schedule('00 50 11 * * 0-6', async () => {
     const guildThumbnails: StringObject = {
       rebel: `https://cdn.discordapp.com/attachments/986281342457237624/1001705614264778803/a_96a019775f60ebe70d0e5ea3d762ff57.webp`,
       cronos: `https://cdn.discordapp.com/attachments/986281342457237624/1001839326033879080/ezgif-1-9402e80289.png`,
