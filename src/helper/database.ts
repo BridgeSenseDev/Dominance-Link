@@ -285,6 +285,10 @@ export async function players() {
     if (!playerRawResponse.success) {
       return;
     }
+    if (!playerRawResponse.player) {
+      return;
+    }
+
     const processedPlayer = processPlayer(playerRawResponse.player, ['duels', 'bedwars', 'skywars']);
 
     let networth = 0;

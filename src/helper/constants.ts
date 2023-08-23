@@ -74,6 +74,8 @@ export const hypixelRoles = {
 } as const;
 
 export const discordRoles = {
+  owner: '1066802933687132190',
+  seniorStaff: '844591760294281226',
   staff: '1005725104430395452',
   rebelSlayer: '1142652461425889371',
   dominator: '1142652458355658873',

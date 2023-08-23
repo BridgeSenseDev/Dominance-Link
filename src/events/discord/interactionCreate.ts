@@ -98,6 +98,10 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply(hypixelApiError(playerRawResponse.cause));
         return;
       }
+      if (!playerRawResponse.player) {
+        await interaction.editReply(hypixelApiError(String(playerRawResponse.player)));
+        return;
+      }
 
       const requirementData = await requirements(uuid, playerRawResponse.player);
       const embed = new EmbedBuilder()
@@ -498,6 +502,10 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply(hypixelApiError(playerRawResponse.cause));
         return;
       }
+      if (!playerRawResponse.player) {
+        await interaction.editReply(hypixelApiError(String(playerRawResponse.player)));
+        return;
+      }
 
       const processedPlayer = processPlayer(playerRawResponse.player);
       const name = processedPlayer.username;
@@ -589,6 +597,10 @@ export default async function execute(client: Client, interaction: Interaction) 
       const playerRawResponse = await fetchPlayerRaw(uuid);
       if (!playerRawResponse.success) {
         await interaction.editReply(hypixelApiError(playerRawResponse.cause));
+        return;
+      }
+      if (!playerRawResponse.player) {
+        await interaction.editReply(hypixelApiError(String(playerRawResponse.player)));
         return;
       }
 

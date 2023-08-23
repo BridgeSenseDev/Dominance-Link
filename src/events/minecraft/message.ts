@@ -142,11 +142,17 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         await chat(`/gc Error: ${name} is an invalid IGN`);
         return;
       }
+
       const playerRawResponse = await fetchPlayerRaw(uuid);
       if (!playerRawResponse.success) {
         await chat(`/gc Error: ${playerRawResponse.cause}`);
         return;
       }
+      if (!playerRawResponse.player) {
+        await chat(`/gc Error: ${playerRawResponse.player}`);
+        return;
+      }
+
       const processedPlayer = processPlayer(playerRawResponse.player, ['bedwars']);
       const bedwars = processedPlayer.stats.Bedwars;
 
@@ -167,11 +173,17 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         await chat(`/gc Error: ${name} is an invalid IGN`);
         return;
       }
+
       const playerRawResponse = await fetchPlayerRaw(uuid);
       if (!playerRawResponse.success) {
         await chat(`/gc Error: ${playerRawResponse.cause}`);
         return;
       }
+      if (!playerRawResponse.player) {
+        await chat(`/gc Error: ${playerRawResponse.player}`);
+        return;
+      }
+
       const processedPlayer = processPlayer(playerRawResponse.player, ['duels']);
       const duels = processedPlayer.stats.Duels;
 
@@ -190,11 +202,17 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         await chat(`/gc Error: ${name} is an invalid IGN`);
         return;
       }
+
       const playerRawResponse = await fetchPlayerRaw(uuid);
       if (!playerRawResponse.success) {
         await chat(`/gc Error: ${playerRawResponse.cause}`);
         return;
       }
+      if (!playerRawResponse.player) {
+        await chat(`/gc Error: ${playerRawResponse.player}`);
+        return;
+      }
+
       const processedPlayer = processPlayer(playerRawResponse.player);
       const skyblockProfilesResponse = await fetchSkyblockProfiles(uuid);
       if (!skyblockProfilesResponse.success) {

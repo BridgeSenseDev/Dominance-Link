@@ -15,9 +15,14 @@ export default async function execute(client: Client, member: GuildMember) {
   if (db.prepare('SELECT * FROM members WHERE discord = ?').get(member.user.id)) {
     const { uuid } = db.prepare('SELECT * FROM members WHERE discord = ?').get(member.user.id) as DiscordMember;
     const playerRawResponse = await fetchPlayerRaw(uuid);
+
     if (!playerRawResponse.success) {
       return;
     }
+    if (!playerRawResponse.player) {
+      return;
+    }
+
     const processedPlayer = await processPlayer(playerRawResponse.player);
 
     const { username } = processedPlayer;
