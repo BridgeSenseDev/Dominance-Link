@@ -97,9 +97,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
           db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
           db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
         }
-        db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points, messages, playtime) VALUES (?, ?, ?, ?)').run(
+        db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(
           uuid,
-          0,
           0,
           0
         );
@@ -127,9 +126,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
       db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
     }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points, messages, playtime) VALUES (?, ?, ?, ?)').run(
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(
       uuid,
-      0,
       0,
       0
     );
@@ -413,9 +411,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
       db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
     }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points, messages, playtime) VALUES (?, ?, ?, ?)').run(
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(
       uuid,
-      0,
       0,
       0
     );
