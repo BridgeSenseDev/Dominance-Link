@@ -139,7 +139,7 @@ export async function gexpUpdate() {
     const gainedText = gained >= 0 ? 'gained' : 'lost';
     const difference = dominanceGexp - rebelGexp;
     const absoluteDifference = Math.abs(difference);
-    const differenceText = difference >= 0 ? 'ahead' : 'behind';
+    const differenceText = difference >= 0 ? 'ahead of' : 'behind';
 
     await chat(`/gc We earned ${formatNumber(dominanceGexp - global.dominanceGexp)} GEXP in the past hour`);
     await sleep(1000);
