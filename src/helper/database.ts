@@ -138,11 +138,7 @@ export async function database() {
         db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
         db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
       }
-      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(
-        uuid,
-        0,
-        0
-      );
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
 
       try {
         db.prepare(

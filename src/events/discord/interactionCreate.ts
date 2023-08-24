@@ -350,7 +350,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       modal.addComponents(firstActionRow, secondActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId === 'endBreak') {
-      await interaction.deferReply();
+      await interaction.deferReply({ fetchReply: true });
       const breakData = db
         .prepare('SELECT * FROM breaks WHERE discord = ?')
         .get(interaction.message.embeds[0].fields[1].value.slice(2, -1)) as BreakMember;
@@ -438,7 +438,7 @@ export default async function execute(client: Client, interaction: Interaction) 
           .setLabel('Confirm')
           .setEmoji('a:checkmark:1011799454959022081')
       );
-      const message = await interaction.reply({ embeds: [embed], components: [row] });
+      const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
       const collector = message.createMessageComponentCollector({
         componentType: ComponentType.Button,
         time: 60 * 1000
