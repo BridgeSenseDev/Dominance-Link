@@ -27,7 +27,7 @@
     "skyhelper-networth": "^1.15.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.22.10",
+    "@babel/eslint-parser": "^7.22.11",
     "@types/better-sqlite3": "^7.6.4",
     "@types/node": "^20.5.4",
     "@types/node-cron": "^3.0.8",
