@@ -1,9 +1,9 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
-import { Count } from '../types/global';
-import { discordToUuid, uuidToName } from '../helper/utils';
-import pagination from '../helper/pagination';
+import { Count } from '../types/global.d.js';
+import { discordToUuid, uuidToName } from '../helper/utils.js';
+import pagination from '../helper/pagination.js';
 
 const db = new Database('guild.db');
 
