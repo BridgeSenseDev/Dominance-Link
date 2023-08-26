@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
-import { Canvas, Image } from 'skia-canvas';
+import { Canvas, Image } from '@julusian/skia-canvas';
 import renderBox, { renderSkin } from '../helper/render.js';
 import { abbreviateNumber, doubleDigits, nameToUuid, uuidToName } from '../helper/utils.js';
 import { DiscordMember, HypixelGuildMember, StringObject } from '../types/global.d.js';

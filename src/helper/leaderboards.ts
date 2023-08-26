@@ -1,4 +1,4 @@
-import { Canvas, FontLibrary } from 'skia-canvas';
+import { Canvas, FontLibrary } from '@julusian/skia-canvas';
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import Database from 'better-sqlite3';
 import { ButtonStyle, GuildChannel, Message } from 'discord.js';

@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { CanvasRenderingContext2D, CanvasGradient, CanvasPattern, CanvasTexture } from 'skia-canvas';
+import { CanvasRenderingContext2D, CanvasGradient, CanvasPattern, CanvasTexture } from '@julusian/skia-canvas';
 
 export type Fill = string | CanvasGradient | CanvasPattern | CanvasTexture;
 

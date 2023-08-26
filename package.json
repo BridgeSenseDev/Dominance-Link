@@ -15,6 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "@discordjs/builders": "^1.6.5",
+    "@julusian/skia-canvas": "^1.0.4",
     "better-sqlite3": "^8.5.1",
     "discord-emoji-converter": "^1.2.8",
     "discord.js": "^14.13.0",
@@ -24,7 +25,6 @@
     "math-expression-evaluator": "^2.0.3",
     "mineflayer": "^4.12.0",
     "node-cron": "^3.0.2",
-    "skia-canvas": "^1.0.1",
     "skyhelper-networth": "^1.15.1"
   },
   "devDependencies": {
