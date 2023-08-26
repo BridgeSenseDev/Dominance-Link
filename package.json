@@ -21,6 +21,7 @@
     "ffmpeg-static": "^5.2.0",
     "google-auth-library": "^8.9.0",
     "googleapis": "^123.0.0",
+    "math-expression-evaluator": "^2.0.3",
     "mineflayer": "^4.12.0",
     "node-cron": "^3.0.2",
     "skia-canvas": "^1.0.1",
