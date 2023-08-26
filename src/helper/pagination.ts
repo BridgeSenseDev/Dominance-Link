@@ -32,7 +32,7 @@ export default async function pagination(
 
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    time: 5 *  60 * 1000
+    time: 5 * 60 * 1000
   });
 
   collector.on('collect', async (collectorInteraction) => {

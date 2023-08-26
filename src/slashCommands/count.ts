@@ -9,7 +9,7 @@ const db = new Database('guild.db');
 
 export const data = new SlashCommandBuilder().setName('count').setDescription('View counting stats');
 export async function execute(interaction: ChatInputCommandInteraction) {
-  await interaction.deferReply({fetchReply: true});
+  await interaction.deferReply({ fetchReply: true });
 
   const counts = db.prepare('SELECT * FROM counting').all() as Count[];
 
@@ -56,5 +56,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     embeds.push(embed);
   }
 
-  await pagination(interaction, embeds)
+  await pagination(interaction, embeds);
 }
