@@ -238,6 +238,10 @@ export type SkyblockProfilesResponse =
       }[];
     }
   | {
+      success: true;
+      profiles: null;
+    }
+  | {
       success: false;
       cause: string;
     }

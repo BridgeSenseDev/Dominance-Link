@@ -209,6 +209,10 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         await chat(`/gc Error: ${skyblockProfilesResponse.cause}`);
         return;
       }
+      if (!skyblockProfilesResponse.profiles) {
+          await chat(`/gc Error: No profiles found for ${name}`);
+          return;
+      }
 
       const profile = skyblockProfilesResponse.profiles.find((i: any) => i.selected);
       if (!profile) {
