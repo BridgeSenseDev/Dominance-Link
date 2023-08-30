@@ -39,7 +39,7 @@
     "eslint-config-airbnb-typescript": "^17.1.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
-    "prettier": "^3.0.2",
+    "prettier": "^3.0.3",
     "tsx": "^3.12.7",
     "typescript": "^5.2.2"
   }
