@@ -16,7 +16,7 @@
   "dependencies": {
     "@discordjs/builders": "^1.6.5",
     "@julusian/skia-canvas": "^1.0.4",
-    "better-sqlite3": "^8.5.2",
+    "better-sqlite3": "^8.6.0",
     "discord-emoji-converter": "^1.2.8",
     "discord.js": "^14.13.0",
     "ffmpeg-static": "^5.2.0",
