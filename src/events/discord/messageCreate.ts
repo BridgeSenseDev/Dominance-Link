@@ -166,7 +166,11 @@ export default async function execute(client: Client, message: Message) {
         return;
       }
 
-      await chat(`/gc ${name} [Break]: ${messageContent}`);
+      if (channel.id === textChannels.officerChat.id) {
+        await chat(`/oc ${name} [Break]: ${messageContent}`);
+      } else {
+        await chat(`/gc ${name} [Break]: ${messageContent}`);
+      }
       await message.delete();
       return;
     }
