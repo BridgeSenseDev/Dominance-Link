@@ -22,7 +22,7 @@ client.on('ready', async () => {
     .setAuthor({ name: 'Verification', iconURL: config.guild.icon })
     .setDescription(
       `Welcome to the official **Dominance** discord server!\n\n${dividers(22)}\n\n**How To Verify:**\n\n**To gain access ` +
-        `to our public channels, click verify below**\nMessage <@485703283839860736> if you need any help`
+        `to our public channels, click verify below**\nCreate a ticket in <#867160066704146482> if you have any trouble verifying`
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,

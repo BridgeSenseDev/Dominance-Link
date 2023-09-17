@@ -17,6 +17,7 @@
     "no-plusplus": "off",
     "guard-for-in": "off",
     "no-control-regex": "off",
-    "default-case": "off"
+    "default-case": "off",
+    "consistent-return": "off"
   }
 }

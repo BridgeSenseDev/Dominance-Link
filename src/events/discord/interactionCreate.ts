@@ -113,17 +113,6 @@ export default async function execute(client: Client, interaction: Interaction) 
         );
       await interaction.editReply({ embeds: [embed] });
     } else if (interaction.customId === 'verify') {
-      if (
-        (interaction.member as GuildMember).roles.cache.has(discordRoles.verified) &&
-        db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id)
-      ) {
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle('Verification Unsuccessful')
-          .setDescription(`<a:across:986170696512204820> <@${interaction.user.id}> is already verified`);
-        await interaction.reply({ embeds: [embed], ephemeral: true });
-        return;
-      }
       const modal = new ModalBuilder().setCustomId('verification').setTitle('Verification');
       const name = new TextInputBuilder()
         .setCustomId('verificationInput')
@@ -471,29 +460,65 @@ export default async function execute(client: Client, interaction: Interaction) 
   } else if (interaction.type === InteractionType.ModalSubmit) {
     if (interaction.customId === 'verification') {
       await interaction.deferReply({ ephemeral: true });
+
+      let name;
+      let uuid;
       const ign = interaction.fields.getTextInputValue('verificationInput');
 
-      const uuid = await nameToUuid(ign);
-      if (!uuid) {
+      try {
+        const playerData = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player;
+        uuid = playerData.raw_id;
+        name = playerData.username;
+      } catch (e) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Error')
-          .setDescription(`<a:across:986170696512204820> **${ign}** is an invalid IGN`);
+          .setDescription(`<a:across:986170696512204820> [${ign}](https://mcuuid.net/?q=${ign}) does not exist`);
         await interaction.editReply({ embeds: [embed] });
         return;
       }
 
-      if (
-        db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) &&
-        member.roles.cache.has(discordRoles.verified) &&
-        !member.roles.cache.has(discordRoles.unverified)
-      ) {
-        const name = await uuidToName(uuid);
+      if (!uuid || !name) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Error')
+          .setDescription(`<a:across:986170696512204820> [${ign}](https://mcuuid.net/?q=${ign}) does not exist`);
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      let memberDb = db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) as DiscordMember;
+      if (memberDb) {
+        if (memberDb.discord === interaction.user.id) {
+          await member.roles.remove(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
+          await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.verified) as Role);
+        }
+
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle('Verification Unsuccessful')
-          .setDescription(`<a:across:986170696512204820> **${name}** is already verified`);
-        await interaction.editReply({ embeds: [embed] });
+          .setDescription(
+            `<a:across:986170696512204820> **\`${name}\`** is already verified to the discord account <@${memberDb.discord}>`
+          );
+        interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      memberDb = db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id) as DiscordMember;
+      if (memberDb) {
+        if (memberDb.uuid === uuid) {
+          await member.roles.remove(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
+          await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.verified) as Role);
+        }
+
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Verification Unsuccessful')
+          .setDescription(
+            `<a:across:986170696512204820> ${interaction.user} is already verified to [this](https://namemc.com/search?q=${memberDb.uuid}) ` +
+              `minecraft account`
+          );
+        interaction.editReply({ embeds: [embed] });
         return;
       }
 
@@ -508,7 +533,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       }
 
       const processedPlayer = processPlayer(playerRawResponse.player);
-      const name = processedPlayer.username;
+      name = processedPlayer.username;
       const discord = processedPlayer.links.DISCORD;
 
       if (!discord) {
@@ -522,24 +547,33 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [embed] });
         return;
       }
+
       if (discord === interaction.user.tag) {
         let messages = 0;
         let xp = 0;
-        if (db.prepare('SELECT * FROM memberArchives WHERE discord = ?').get(interaction.user.id)) {
-          const memberData = db
-            .prepare('SELECT * FROM memberArchives WHERE discord = ?')
-            .get(interaction.user.id) as DiscordMember;
-          ({ messages, xp } = memberData);
+
+        const memberArchivesDiscord = db
+          .prepare('SELECT * FROM memberArchives WHERE discord = ?')
+          .get(interaction.user.id) as DiscordMember;
+        const memberArchivesUuid = db.prepare('SELECT * FROM memberArchives WHERE uuid = ?').get(uuid) as DiscordMember;
+        if (memberArchivesDiscord) {
+          ({ messages, xp } = memberArchivesDiscord);
           db.prepare('DELETE FROM memberArchives WHERE discord = ?').run(interaction.user.id);
+        } else if (memberArchivesUuid) {
+          ({ messages, xp } = memberArchivesUuid);
+          db.prepare('DELETE FROM memberArchives WHERE uuid = ?').run(uuid);
         }
+
         db.prepare('INSERT OR IGNORE INTO members (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
           interaction.user.id,
           uuid,
           messages,
           xp
         );
+
         await member.roles.remove(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
         await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.verified) as Role);
+
         const { displayName } = member;
         if (!displayName.toUpperCase().includes(name.toUpperCase())) {
           if (/\(.*?\)/.test(displayName.split(' ')[1])) {
@@ -550,6 +584,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         } else if (!displayName.includes(name)) {
           await member.setNickname(displayName.replace(new RegExp(name, 'gi'), name));
         }
+
         const guildResponse = await fetchGuildByPlayer(uuid);
         if (guildResponse.success) {
           const { guild } = guildResponse;
