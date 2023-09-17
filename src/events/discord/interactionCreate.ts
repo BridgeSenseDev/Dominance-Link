@@ -149,7 +149,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         discordRoles.hero,
         discordRoles.godlike,
         discordRoles.dominator,
-        discordRoles.rebelSlayer,
+        discordRoles.goat,
         discordRoles.staff
       ]) {
         if (member.roles.cache.has(role)) {

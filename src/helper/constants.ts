@@ -66,18 +66,20 @@ export const rankColor: StringObject = {
 };
 
 export const hypixelRoles = {
-  rebelSlayer: { name: 'Rebel Slayer', gexp: 1000000, days: 1000 },
-  dominator: { name: 'Dominator', gexp: 800000, days: 600 },
-  godlike: { name: 'Godlike', gexp: 600000, days: 300 },
-  hero: { name: 'Hero', gexp: 400000, days: 100 },
-  elite: { name: 'Elite', gexp: 200000, days: 50 }
+  goat: { name: 'Goat', gexp: 800000, days: 1000 },
+  dominator: { name: 'Dominator', gexp: 600000, days: 600 },
+  godlike: { name: 'Godlike', gexp: 400000, days: 300 },
+  hero: { name: 'Hero', gexp: 250000, days: 100 },
+  elite: { name: 'Elite', gexp: 175000, days: 50 }
 } as const;
 
 export const discordRoles = {
   owner: '1066802933687132190',
+  headStaff: '1038567890158354563',
   seniorStaff: '844591760294281226',
+  developer: '1031236481026637914',
   staff: '1005725104430395452',
-  rebelSlayer: '1142652461425889371',
+  goat: '1142652461425889371',
   dominator: '1142652458355658873',
   godlike: '1142652454450778132',
   hero: '950083054326677514',

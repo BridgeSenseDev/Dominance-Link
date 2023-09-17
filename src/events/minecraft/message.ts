@@ -514,7 +514,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         await member.roles.remove(discordRoles.hero);
         await member.roles.remove(discordRoles.godlike);
         await member.roles.remove(discordRoles.dominator);
-        await member.roles.remove(discordRoles.rebelSlayer);
+        await member.roles.remove(discordRoles.goat);
         await member.roles.remove(discordRoles.staff);
       } catch (e) {
         /* empty */
