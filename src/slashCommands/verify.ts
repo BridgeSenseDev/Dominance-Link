@@ -213,14 +213,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   const memberRoles = (interaction.member as GuildMember).roles.cache.map((role) => role.id);
   if (
-    ![discordRoles.headStaff, discordRoles.seniorStaff, discordRoles.developer].every((val) =>
-      memberRoles.includes(val)
+    !memberRoles.some((role) =>
+      ([discordRoles.headStaff, discordRoles.seniorStaff, discordRoles.developer] as string[]).includes(role)
     )
   ) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> You do not have the permission to use this command`);
+      .setDescription(`<a:across:986170696512204820> You do not have permission to use this command`);
     return interaction.editReply({ embeds: [embed] });
   }
 
