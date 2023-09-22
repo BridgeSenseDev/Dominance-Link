@@ -329,6 +329,7 @@ export async function players() {
         db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
         const memberData = db.prepare('SELECT * FROM members WHERE discord = ?').get(data.discord) as DiscordMember;
         if (!memberData) {
+          db.prepare('UPDATE guildMembers set (discord) = null WHERE discord = ?').run(data.dis);
           return;
         }
         db.prepare('INSERT INTO memberArchives (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
@@ -427,25 +428,25 @@ export async function players() {
           }
         }
       }
-
-      if (networth) {
-        db.prepare(
-          'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
-        ).run(
-          processedPlayer.rankTagF,
-          bwStars,
-          bwFkdr,
-          duelsWins,
-          duelsWlr,
-          Math.round(networth * 100) / 100,
-          Math.round(sa * 100) / 100,
-          data.uuid
-        );
-      } else {
-        db.prepare(
-          'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
-        ).run(processedPlayer.rankTagF, bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
-      }
+    }
+  
+    if (networth) {
+      db.prepare(
+        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
+      ).run(
+        processedPlayer.rankTagF,
+        bwStars,
+        bwFkdr,
+        duelsWins,
+        duelsWlr,
+        Math.round(networth * 100) / 100,
+        Math.round(sa * 100) / 100,
+        data.uuid
+      );
+    } else {
+      db.prepare(
+        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
+      ).run(processedPlayer.rankTagF, bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
     }
   }, 7 * 1000);
 
