@@ -24,6 +24,35 @@ function gexpGained(gained: number): [string, number] {
   return ['<:down:969182381162500097> Lost', config.colors.red];
 }
 
+// Format "DD/MM/YYYY"
+function getPreviousDate(date: string) {
+  const currentDate = new Date(date.split('/').reverse().join('-'));
+  currentDate.setDate(currentDate.getDate() - 1);
+  return `${doubleDigits(currentDate.getDate())}/${doubleDigits(
+    currentDate.getMonth() + 1
+  )}/${currentDate.getFullYear()}`;
+}
+
+function ensureDataForDate(date: string, guild: string) {
+  console.log(date);
+  console.log(guild);
+  let currentDate = date;
+  let existingData = db.prepare(`SELECT * FROM ${guild}Watch WHERE date = ?`).get(currentDate) as GuildWatch;
+
+  // Loop backward until it finds the most recent filled-in date
+  while (!existingData) {
+    currentDate = getPreviousDate(currentDate);
+    existingData = db.prepare(`SELECT * FROM ${guild}Watch WHERE date = ?`).get(currentDate) as GuildWatch;
+  }
+
+  db.prepare(`INSERT OR IGNORE INTO ${guild}Watch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)`).run(
+    date,
+    existingData.gexp,
+    existingData.separation,
+    0
+  );
+}
+
 export async function gexpWatch() {
   schedule('00 50 11 * * 0-6', async () => {
     const guildThumbnails: StringObject = {
@@ -62,37 +91,49 @@ export async function gexpWatch() {
     const embeds = [];
 
     // Dominance
+    ensureDataForDate(previous, 'dominance');
     let gained =
       guildGexp.dominance -
       (db.prepare('SELECT gexp FROM dominanceWatch WHERE date = ?').get(previous) as GuildWatch).gexp;
-    db.prepare('INSERT INTO dominanceWatch (date, gexp, gained) VALUES (?, ?, ?)').run(
+    db.prepare('INSERT OR IGNORE INTO dominanceWatch (date, gexp, gained) VALUES (?, ?, ?)').run(
       today,
       guildGexp.dominance,
       gained
     );
 
-    for (const i in guildGexp) {
-      if (i === 'dominance') {
+    for (const guildName in guildGexp) {
+      if (guildName === 'dominance') {
         continue;
       }
-      const daily = (db.prepare(`SELECT separation FROM ${i}Watch WHERE date=?`).get(previous) as GuildWatch)
+      console.log(previous);
+      ensureDataForDate(previous, guildName);
+      const daily = (db.prepare(`SELECT separation FROM ${guildName}Watch WHERE date=?`).get(previous) as GuildWatch)
         .separation;
-      const weekly = (db.prepare(`SELECT separation FROM ${i}Watch WHERE date=?`).get(prevWeek) as GuildWatch)
+
+      ensureDataForDate(prevWeek, guildName);
+      const weekly = (db.prepare(`SELECT separation FROM ${guildName}Watch WHERE date=?`).get(prevWeek) as GuildWatch)
         .separation;
-      const monthly = (db.prepare(`SELECT separation FROM ${i}Watch WHERE date=?`).get(prevMonth) as GuildWatch)
+
+      ensureDataForDate(prevMonth, guildName);
+      const monthly = (db.prepare(`SELECT separation FROM ${guildName}Watch WHERE date=?`).get(prevMonth) as GuildWatch)
         .separation;
-      const difference = guildGexp.dominance - guildGexp[i];
+
+      const difference = guildGexp.dominance - guildGexp[guildName];
       gained = difference - daily;
-      db.prepare(`INSERT INTO ${i}Watch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)`).run(
+      db.prepare(`INSERT OR IGNORE INTO ${guildName}Watch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)`).run(
         today,
-        guildGexp[i],
+        guildGexp[guildName],
         difference,
         gained
       );
       embeds.push(
         new EmbedBuilder()
           .setColor(gexpGained(gained)[1])
-          .setTitle(`We are ${difference.toLocaleString()} GEXP ahead of ${i.charAt(0).toUpperCase() + i.slice(1)}`)
+          .setTitle(
+            `We are ${difference.toLocaleString()} GEXP ahead of ${
+              guildName.charAt(0).toUpperCase() + guildName.slice(1)
+            }`
+          )
           .setDescription(
             `${gexpGained(gained)[0]} **${Math.abs(
               gained
@@ -112,7 +153,7 @@ export async function gexpWatch() {
               inline: true
             }
           )
-          .setThumbnail(guildThumbnails[i])
+          .setThumbnail(guildThumbnails[guildName])
       );
     }
     await textChannels.guildWatch.send({ embeds });

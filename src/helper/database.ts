@@ -429,7 +429,7 @@ export async function players() {
         }
       }
     }
-  
+
     if (networth) {
       db.prepare(
         'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
