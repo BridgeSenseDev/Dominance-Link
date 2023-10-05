@@ -1,5 +1,5 @@
-import { Client, Collection, REST, Routes } from 'discord.js';
 import fs from 'fs';
+import { Client, Collection, REST, Routes } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 
 export default async function discordCommands(client: Client) {
@@ -10,7 +10,7 @@ export default async function discordCommands(client: Client) {
 
   for (const file of commandFiles) {
     const command = await import(`../slashCommands/${file}`);
-    if (command.data.name === 'member') {
+    if (['member', 'automod'].includes(command.data.name)) {
       globalCommands.push(command.data.toJSON());
       if (command.data.name) {
         client.commands.set(command.data.name, command);
