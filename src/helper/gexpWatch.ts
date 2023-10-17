@@ -34,8 +34,6 @@ function getPreviousDate(date: string) {
 }
 
 function ensureDataForDate(date: string, guild: string) {
-  console.log(date);
-  console.log(guild);
   let currentDate = date;
   let existingData = db.prepare(`SELECT * FROM ${guild}Watch WHERE date = ?`).get(currentDate) as GuildWatch;
 
@@ -105,7 +103,7 @@ export async function gexpWatch() {
       if (guildName === 'dominance') {
         continue;
       }
-      console.log(previous);
+
       ensureDataForDate(previous, guildName);
       const daily = (db.prepare(`SELECT separation FROM ${guildName}Watch WHERE date=?`).get(previous) as GuildWatch)
         .separation;
