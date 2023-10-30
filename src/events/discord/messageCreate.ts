@@ -1,6 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Message } from 'discord.js';
 import Database from 'better-sqlite3';
 import { google } from 'googleapis';
+import Mexp from 'math-expression-evaluator';
 import { addXp, discordToUuid, formatMentions, uuidToName } from '../../helper/utils.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
@@ -107,11 +108,13 @@ export default async function execute(client: Client, message: Message) {
   }
 
   if (channel.id === textChannels.counting.id) {
-    if (/^-?\d+$/.test(content.split(' ')[0])) {
+    const expression = content.split(' ')[0];
+    const count = new Mexp().eval(expression, [], {});
+    if (count) {
       const currentCount = db.prepare('SELECT * FROM counting ORDER BY count DESC LIMIT 1').get() as Count;
-      if (currentCount.count + 1 === parseInt(content.split(' ')[0], 10) && currentCount.discord !== author.id) {
+      if (currentCount.count + 1 === count && currentCount.discord !== author.id) {
         await message.react('a:atick:986173414723162113');
-        db.prepare('INSERT INTO counting (count, discord) VALUES (?, ?)').run(content.split(' ')[0], author.id);
+        db.prepare('INSERT INTO counting (count, discord) VALUES (?, ?)').run(count, author.id);
       } else {
         await message.react('a:across:986170696512204820');
       }
