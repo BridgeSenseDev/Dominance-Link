@@ -66,11 +66,11 @@ export const rankColor: StringObject = {
 };
 
 export const hypixelRoles = {
-  goat: { name: 'Goat', gexp: 800000, days: 1000 },
-  dominator: { name: 'Dominator', gexp: 600000, days: 600 },
-  godlike: { name: 'Godlike', gexp: 400000, days: 300 },
-  hero: { name: 'Hero', gexp: 250000, days: 100 },
-  elite: { name: 'Elite', gexp: 175000, days: 50 }
+  goat: { name: 'Goat', gexp: 700000, days: 1000 },
+  dominator: { name: 'Dominator', gexp: 500000, days: 600 },
+  godlike: { name: 'Godlike', gexp: 300000, days: 300 },
+  hero: { name: 'Hero', gexp: 200000, days: 100 },
+  elite: { name: 'Elite', gexp: 150000, days: 50 }
 } as const;
 
 export const discordRoles = {
