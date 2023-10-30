@@ -109,15 +109,19 @@ export default async function execute(client: Client, message: Message) {
 
   if (channel.id === textChannels.counting.id) {
     const expression = content.split(' ')[0];
-    const count = new Mexp().eval(expression, [], {});
-    if (count) {
-      const currentCount = db.prepare('SELECT * FROM counting ORDER BY count DESC LIMIT 1').get() as Count;
-      if (currentCount.count + 1 === count && currentCount.discord !== author.id) {
-        await message.react('a:atick:986173414723162113');
-        db.prepare('INSERT INTO counting (count, discord) VALUES (?, ?)').run(count, author.id);
-      } else {
-        await message.react('a:across:986170696512204820');
+    try {
+      const count = new Mexp().eval(expression, [], {});
+      if (count) {
+        const currentCount = db.prepare('SELECT * FROM counting ORDER BY count DESC LIMIT 1').get() as Count;
+        if (currentCount.count + 1 === count && currentCount.discord !== author.id) {
+          await message.react('a:atick:986173414723162113');
+          db.prepare('INSERT INTO counting (count, discord) VALUES (?, ?)').run(count, author.id);
+        } else {
+          await message.react('a:across:986170696512204820');
+        }
       }
+    } catch (e) {
+      await message.react('a:across:986170696512204820');
     }
   }
 
