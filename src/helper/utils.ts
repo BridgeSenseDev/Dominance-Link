@@ -397,3 +397,24 @@ export function toCamelCase(str: string): string {
     .replace(/(?:^\w|[A-Z]|\b\w)/g, (word, index) => (index === 0 ? word.toLowerCase() : word.toUpperCase()))
     .replace(/\s+/g, '');
 }
+
+export function getLevelDetails(totalXP: number) {
+  let level = 0;
+  let xpForNextLevel;
+  for (
+    xpForNextLevel = 5 * level ** 2 + 50 * level + 100;
+    totalXP >= xpForNextLevel;
+    xpForNextLevel = 5 * level ** 2 + 50 * level + 100
+  ) {
+    totalXP -= xpForNextLevel;
+    level++;
+  }
+  const xpForCurrentLevel = totalXP;
+  const xpTillNextLevel = xpForNextLevel - xpForCurrentLevel;
+
+  return {
+    currentLevel: level,
+    xpInCurrentLevel: xpForCurrentLevel,
+    xpTillNextLevel
+  };
+}

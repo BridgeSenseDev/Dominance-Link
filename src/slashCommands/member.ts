@@ -145,7 +145,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   let dcMessages;
-  if (member.discord!) {
+  if (!member.discord!) {
     dcMessages = 0;
   } else {
     dcMessages = (db.prepare('SELECT messages FROM members WHERE discord = ?').get(member.discord) as DiscordMember)

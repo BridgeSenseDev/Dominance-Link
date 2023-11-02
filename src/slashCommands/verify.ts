@@ -252,8 +252,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       if (collectorInteraction.customId === 'confirmVerification') {
         await collectorInteraction.deferReply();
 
-        let messages;
-        let xp;
+        let messages = 0;
+        let xp = 0;
 
         const playerData = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player;
         const uuid = playerData.raw_id;
