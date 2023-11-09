@@ -24,7 +24,7 @@
     "googleapis": "^123.0.0",
     "math-expression-evaluator": "^2.0.4",
     "mineflayer": "^4.14.0",
-    "node-cron": "^3.0.2",
+    "node-cron": "^3.0.3",
     "skyhelper-networth": "^1.16.6"
   },
   "devDependencies": {
