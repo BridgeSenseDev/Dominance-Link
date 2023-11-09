@@ -1,4 +1,4 @@
-import { Canvas, FontLibrary } from 'skia-canvas';
+import { Canvas, FontLibrary } from '@julusian/skia-canvas';
 import { rgbaColor } from './constants.js';
 
 FontLibrary.use('Uni Sans Heavy', './fonts/Uni Sans Heavy Regular.ttf');

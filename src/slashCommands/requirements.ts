@@ -26,6 +26,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply(hypixelApiError(playerRawResponse.cause));
     return;
   }
+  if (!playerRawResponse.player) {
+    await interaction.editReply(hypixelApiError(String(playerRawResponse.player)));
+    return;
+  }
 
   const requirementData = await requirements(uuid, playerRawResponse.player);
 

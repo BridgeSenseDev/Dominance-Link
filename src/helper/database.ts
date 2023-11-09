@@ -5,9 +5,9 @@ import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { uuidToName, skillAverage, uuidToDiscord, doubleDigits } from './utils.js';
-import { bwPrestiges, duelsDivisionRoles, ranks, roles } from './constants.js';
-import { DiscordMember, HypixelGuildMember } from '../types/global.d.js';
+import { uuidToName, skillAverage, uuidToDiscord, doubleDigits, abbreviateNumber, toCamelCase } from './utils.js';
+import { bwPrestiges, duelsDivisionRoles, discordRoles, hypixelRoles } from './constants.js';
+import { DiscordMember, HypixelGuildMember, HypixelRoleKeys, StringObject } from '../types/global.d.js';
 import { fetchGuildByName, fetchPlayerRaw, fetchSkyblockProfiles } from '../api.js';
 import { processPlayer } from '../types/api/processors/processPlayers.js';
 import { textChannels } from '../events/discord/ready.js';
@@ -21,136 +21,80 @@ export const sheet = new google.auth.JWT(config.sheets.clientEmail, undefined, c
 
 sheet.authorize();
 
-function calculatePointsFromGexp(weeklyGexp: number) {
-  if (weeklyGexp >= 1000000) return 225;
-  if (weeklyGexp >= 750000) return 150;
-  if (weeklyGexp >= 600000) return 120;
-  if (weeklyGexp >= 500000) return 100;
-  if (weeklyGexp >= 400000) return 80;
-  if (weeklyGexp >= 250000) return 60;
-  if (weeklyGexp >= 200000) return 50;
-  if (weeklyGexp >= 175000) return 45;
-  if (weeklyGexp >= 150000) return 40;
-  return 0;
-}
-
 export async function weekly(client: Client) {
-  schedule('50 11 * * 0', async () => {
-    const guildResponse = await fetchGuildByName('Dominance');
-    if (!guildResponse.success || !guildResponse.guild) {
-      return;
-    }
-
-    const { members } = guildResponse.guild;
-    const memberPoints: Array<[uuid: string, points: number]> = [];
-
-    for (const member of members) {
-      const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
-      const points = calculatePointsFromGexp(weeklyGexp);
-      if (points !== 0) {
-        memberPoints.push([member.uuid, points]);
-      }
-    }
-
-    memberPoints.sort((a, b) => b[1] - a[1]);
-
-    memberPoints[0][1] += 25;
-    memberPoints[1][1] += 15;
-    memberPoints[2][1] += 10;
-    for (const member of memberPoints) {
-      db.prepare('UPDATE guildMembers SET points = points + (?) WHERE uuid = ?').run(member[1], member[0]);
-    }
-  });
-
   schedule('55 11 * * 0', async () => {
-    let noLiferDesc = '';
-    let proDesc = '';
+    const roleDesc: StringObject = {};
+    const assignedMembers = new Set();
 
-    const noLiferReq = db
-      .prepare(
-        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND tag != '[Staff]' ORDER BY points DESC"
-      )
-      .all(100) as HypixelGuildMember[];
-    const topNoLifer = db
-      .prepare(
-        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE tag != '[Staff]' ORDER BY points DESC LIMIT 3"
-      )
-      .all() as HypixelGuildMember[];
-    const staffNoLifer = db
-      .prepare(
-        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND tag = '[Staff]' ORDER BY points"
-      )
-      .all(100) as HypixelGuildMember[];
+    for (const [role, data] of Object.entries(hypixelRoles)) {
+      roleDesc[role] = '';
 
-    const proReq = db
-      .prepare(
-        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND points < (?) AND tag != '[Staff]' ORDER BY points DESC"
-      )
-      .all(50, 100) as HypixelGuildMember[];
-    const topPro = db
-      .prepare(
-        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE tag != '[Staff]' ORDER BY points DESC LIMIT 20"
-      )
-      .all() as HypixelGuildMember[];
-    const staffPro = db
-      .prepare(
-        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points >= (?) AND points < (?) AND tag = '[Staff]' ORDER BY points DESC LIMIT 20"
-      )
-      .all(50, 100) as HypixelGuildMember[];
+      const roleMembers = db
+        .prepare(
+          `SELECT uuid, discord, weeklyGexp, joined FROM guildMembers WHERE weeklyGexp >= (?) AND uuid NOT IN (${Array.from(
+            assignedMembers
+          )
+            .map(() => '?')
+            .join(',')}) ORDER BY weeklyGexp DESC`
+        )
+        .all(data.gexp, ...Array.from(assignedMembers)) as HypixelGuildMember[];
 
-    const member = db
-      .prepare(
-        "SELECT uuid, discord, points, weeklyGexp FROM guildMembers WHERE points < (?) AND tag != '[Staff]' ORDER BY points DESC"
-      )
-      .all(50) as HypixelGuildMember[];
+      roleMembers.sort((a, b) => b.weeklyGexp - a.weeklyGexp);
 
-    let noLifer = noLiferReq;
-    let pro = proReq;
+      for (const i in roleMembers) {
+        assignedMembers.add(roleMembers[i].uuid);
 
-    if (noLifer.length < 3) {
-      const additionalMembers = topNoLifer.filter(
-        (guildMember) => !noLiferReq.find((req) => req.uuid === guildMember.uuid)
-      );
-      noLifer = noLifer.concat(additionalMembers.slice(0, 3 - noLifer.length));
-    }
+        const days = (new Date().getTime() - new Date(roleMembers[i].joined).getTime()) / (1000 * 3600 * 24);
 
-    pro = pro.filter((proMember) => !noLifer.find((noLiferMember) => noLiferMember.uuid === proMember.uuid));
+        if (days >= data.days) {
+          for (const j in hypixelRoles) {
+            if (days >= hypixelRoles[j as HypixelRoleKeys].days) {
+              db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(
+                `[${hypixelRoles[j as HypixelRoleKeys].name}]`,
+                roleMembers[i].uuid
+              );
+              break;
+            }
+          }
+        } else {
+          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(
+            `[${data.name}]`,
+            roleMembers[i].uuid
+          );
+        }
 
-    if (pro.length < 20) {
-      const additionalMembers = topPro.filter((guildMember) => !proReq.find((req) => req.uuid === guildMember.uuid));
-      pro = pro.concat(additionalMembers.slice(0, 20 - pro.length));
-    }
-
-    noLifer = noLifer.concat(staffNoLifer);
-    pro = pro.concat(staffPro);
-
-    noLifer.sort((a, b) => b.points - a.points);
-    pro.sort((a, b) => b.points - a.points);
-
-    for (const i in noLifer) {
-      db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[NoLifer]', noLifer[i].uuid);
-      if (noLifer[i].discord) {
-        noLiferDesc += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(noLifer[i].uuid)} (${await client.users.fetch(
-          noLifer[i].discord
-        )}) - ${noLifer[i].points}`;
-      } else {
-        noLiferDesc += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(noLifer[i].uuid)} - ${noLifer[i].points}`;
+        if (roleMembers[i].discord) {
+          roleDesc[role] += `\n\`${parseInt(i, 10) + 1}.\` ${await client.users.fetch(
+            roleMembers[i].discord
+          )} - \`${abbreviateNumber(roleMembers[i].weeklyGexp)}\``;
+        } else {
+          roleDesc[role] += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(
+            roleMembers[i].uuid
+          )} - \`${abbreviateNumber(roleMembers[i].weeklyGexp)}\``;
+        }
       }
     }
 
-    for (const i in pro) {
-      db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Pro]', pro[i].uuid);
-      if (pro[i].discord) {
-        proDesc += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(pro[i].uuid)} (${await client.users.fetch(
-          pro[i].discord
-        )}) - ${pro[i].points}`;
-      } else {
-        proDesc += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(pro[i].uuid)} - ${pro[i].points}`;
-      }
-    }
+    const slayerMembers = db
+      .prepare(
+        `SELECT uuid, discord, weeklyGexp, joined FROM guildMembers WHERE uuid NOT IN (${Array.from(assignedMembers)
+          .map(() => '?')
+          .join(',')})`
+      )
+      .all(...Array.from(assignedMembers)) as HypixelGuildMember[];
 
-    for (const i in member) {
-      db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run('[Member]', member[i].uuid);
+    for (const i in slayerMembers) {
+      const days = (new Date().getTime() - new Date(slayerMembers[i].joined).getTime()) / (1000 * 3600 * 24);
+
+      for (const j in hypixelRoles) {
+        if (days >= hypixelRoles[j as HypixelRoleKeys].days) {
+          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(
+            `[${hypixelRoles[j as HypixelRoleKeys].name}]`,
+            slayerMembers[i].uuid
+          );
+          break;
+        }
+      }
     }
 
     const date = new Date();
@@ -163,14 +107,17 @@ export async function weekly(client: Client) {
       .setColor(config.colors.discordGray)
       .setTitle(`Weekly Roles Update ${prevWeek} - ${previous}`)
       .setDescription(
-        `Congrats to the following **NoLifer** members${noLiferDesc}\n\nCongrats to the following **Pro** members${proDesc}\n\n**Detailed ` +
-          `stats can be found in https://dominance.cf/sheets**`
+        `${Object.entries(roleDesc)
+          .filter(([, desc]) => desc.trim() !== '')
+          .map(
+            ([role, desc]) =>
+              `Congrats to the following **${hypixelRoles[role as HypixelRoleKeys].name}** members:${desc}`
+          )
+          .join('\n\n')}\n\n**Detailed stats can be found in https://dominance.cf/sheets**`
       )
       .setImage(config.guild.banner);
 
     await textChannels.announcements.send({ content: '<@&1031926129822539786>', embeds: [embed] });
-
-    db.prepare('UPDATE guildMembers SET points = 0;').run();
   });
 }
 
@@ -183,7 +130,6 @@ export async function database() {
 
     const members = response.guild.members.map((member) => {
       const { uuid, rank, expHistory, joined } = member;
-      const tag = ranks[rank];
       const weeklyGexp = Object.values(expHistory).reduce((acc, cur) => acc + cur, 0);
       const firstExpKey = Object.keys(expHistory)[0];
       const firstExpValue = Object.values(expHistory)[0];
@@ -192,23 +138,18 @@ export async function database() {
         db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
         db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
       }
-      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points , messages, playtime) VALUES (?, ?, ?, ?)').run(
-        uuid,
-        0,
-        0,
-        0
-      );
+      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
 
       try {
         db.prepare(
           `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${firstExpKey}") = (?, ?, ?, ?) WHERE uuid = ?`
-        ).run(tag, weeklyGexp, joined, firstExpValue, uuid);
+        ).run(`[${rank}]`, weeklyGexp, joined, firstExpValue, uuid);
       } catch {
         db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${firstExpKey}" INTEGER`).run();
         db.prepare(`ALTER TABLE guildMemberArchives ADD COLUMN "${firstExpKey}" INTEGER`).run();
         db.prepare(
           `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${firstExpKey}") = (?, ?, ?, ?) WHERE uuid = ?`
-        ).run(tag, weeklyGexp, joined, firstExpValue, uuid);
+        ).run(`[${rank}]`, weeklyGexp, joined, firstExpValue, uuid);
       }
 
       return uuid;
@@ -288,11 +229,11 @@ export async function gsrun(sheets: JWT, client: Client) {
 export async function players() {
   const client = (await import('../index.js')).default;
   const guild = client.guilds.cache.get('242357942664429568') as Guild;
-  const breakRole = guild.roles.cache.get(roles.Break) as Role;
-  const memberRole = guild.roles.cache.get(roles['[Member]']) as Role;
-  const noLiferRole = guild.roles.cache.get(roles['[NoLifer]']) as Role;
-  const proRole = guild.roles.cache.get(roles['[Pro]']) as Role;
-  const staffRole = guild.roles.cache.get(roles['[Staff]']) as Role;
+  const breakRole = guild.roles.cache.get(discordRoles.Break) as Role;
+  const slayerRole = guild.roles.cache.get(discordRoles.slayer) as Role;
+  const eliteRole = guild.roles.cache.get(discordRoles.elite) as Role;
+  const heroRole = guild.roles.cache.get(discordRoles.hero) as Role;
+  const staffRole = guild.roles.cache.get(discordRoles.staff) as Role;
   let count = 0;
 
   setInterval(
@@ -301,14 +242,14 @@ export async function players() {
         .prepare('SELECT discord FROM guildMembers')
         .all()
         .map((i) => (i as { discord: string }).discord);
-      const members = Array.from(memberRole.members).concat(
-        Array.from(noLiferRole.members),
-        Array.from(proRole.members),
+      const members = Array.from(slayerRole.members).concat(
+        Array.from(eliteRole.members),
+        Array.from(heroRole.members),
         Array.from(staffRole.members)
       );
       for (const member of members) {
         if (!discordId.includes(member[0])) {
-          await member[1].roles.remove([memberRole, noLiferRole, proRole]);
+          await member[1].roles.remove([slayerRole, eliteRole, heroRole]);
         }
       }
     },
@@ -327,6 +268,8 @@ export async function players() {
       return;
     }
 
+    const ingameRole = data.tag.replace(/\[|\]/g, '');
+
     const skyblockProfilesResponse = await fetchSkyblockProfiles(data.uuid);
     if (!skyblockProfilesResponse.success) {
       return;
@@ -337,6 +280,10 @@ export async function players() {
     if (!playerRawResponse.success) {
       return;
     }
+    if (!playerRawResponse.player) {
+      return;
+    }
+
     const processedPlayer = processPlayer(playerRawResponse.player, ['duels', 'bedwars', 'skywars']);
 
     let networth = 0;
@@ -359,16 +306,18 @@ export async function players() {
 
     if (data.targetRank && !['[Staff]', '[Owner]', '[GM]'].includes(data.tag) && data.targetRank !== data.tag) {
       const ign = await uuidToName(data.uuid);
-      if (data.targetRank === '[NoLifer]') {
+      if (data.targetRank === '[Hero]') {
         await chat(`/g promote ${ign}`);
-      } else if (data.targetRank === '[Pro]') {
-        if (data.tag === '[Member]') {
+      } else if (data.targetRank === '[Elite]') {
+        if (data.tag === '[Slayer]') {
           await chat(`/g promote ${ign}`);
-        } else if (data.tag === '[NoLifer]') {
+        } else if (data.tag === '[Hero]') {
           await chat(`/g demote ${ign}`);
         }
-      } else if (data.targetRank === '[Member]') {
+      } else if (data.targetRank === '[Slayer]') {
         await chat(`/g demote ${ign}`);
+      } else if (['[Slayer]', '[Elite]'].includes(data.tag)) {
+        await chat(`/g promote ${ign}`);
       }
     }
 
@@ -380,6 +329,7 @@ export async function players() {
         db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
         const memberData = db.prepare('SELECT * FROM members WHERE discord = ?').get(data.discord) as DiscordMember;
         if (!memberData) {
+          db.prepare('UPDATE guildMembers set (discord) = null WHERE discord = ?').run(data.dis);
           return;
         }
         db.prepare('INSERT INTO memberArchives (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
@@ -418,9 +368,9 @@ export async function players() {
         }
       }
 
-      if (!['[Owner]', '[GM]'].includes(data.tag)) {
+      if (!['[Owner]', '[GUILDMASTER]'].includes(data.tag)) {
         const ign = processedPlayer.username;
-        await member.roles.add(memberRole);
+        await member.roles.add(slayerRole);
         const { displayName } = member;
         if (!displayName.toUpperCase().includes(ign.toUpperCase())) {
           if (/\(.*?\)/.test(displayName.split(' ')[1])) {
@@ -431,20 +381,51 @@ export async function players() {
         } else if (!displayName.includes(ign)) {
           await member.setNickname(displayName.replace(new RegExp(ign, 'gi'), ign));
         }
-        if (!['[Member]', '[Staff]'].includes(data.tag)) {
-          await member.roles.add(guild.roles.cache.get(roles[data.tag]) as Role);
+
+        const memberRoles = member.roles.cache.map((role) => role.id);
+
+        const role = guild.roles.cache.get(discordRoles[ingameRole.toLowerCase() as HypixelRoleKeys]) as Role;
+        if (!memberRoles.includes(role.id)) {
+          await member.roles.add(role);
         }
-        if (data.tag === '[Member]') {
-          await member.roles.remove(noLiferRole);
-          await member.roles.remove(proRole);
-          await member.roles.remove(staffRole);
+
+        if (data.targetRank) {
+          const targetRole = guild.roles.cache.get(
+            discordRoles[toCamelCase(data.targetRank.replace(/\[|\]/g, '')) as HypixelRoleKeys]
+          ) as Role;
+          if (!memberRoles.includes(targetRole.id)) {
+            await member.roles.add(targetRole);
+          }
         }
-        if (data.tag === '[Pro]') {
-          await member.roles.remove(noLiferRole);
-          await member.roles.remove(staffRole);
+
+        if (data.tag === '[Slayer]') {
+          if (memberRoles.includes(eliteRole.id)) {
+            await member.roles.remove(eliteRole);
+          }
+          if (memberRoles.includes(heroRole.id)) {
+            await member.roles.remove(heroRole);
+          }
+          if (memberRoles.includes(staffRole.id)) {
+            await member.roles.remove(staffRole);
+          }
         }
-        if (data.tag === '[NoLifer]') {
-          await member.roles.remove(staffRole);
+
+        if (data.tag === '[Elite]') {
+          if (memberRoles.includes(heroRole.id)) {
+            await member.roles.remove(heroRole);
+          }
+          if (memberRoles.includes(staffRole.id)) {
+            await member.roles.remove(staffRole);
+          }
+        }
+
+        if (data.tag === '[Hero]') {
+          if (memberRoles.includes(eliteRole.id)) {
+            await member.roles.remove(eliteRole);
+          }
+          if (memberRoles.includes(staffRole.id)) {
+            await member.roles.remove(staffRole);
+          }
         }
       }
     }

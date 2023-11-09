@@ -23,23 +23,23 @@ client.on('ready', async () => {
       {
         name: '<a:economy:1006182871314219169> Economy Roles',
         value:
-          `${bullet} <@&800074267944681512>\n${bullet} <@&488352639671599125>\n` +
-          `${bullet} <@&488352623884500992>\n${bullet} <@&488352607807733791>\n` +
-          `${bullet} <@&1028890537979297853>\n${bullet} <@&488352576568557568>\n` +
-          `${bullet} <@&488352546579152907>\n${bullet} <@&488352526110818304>\n` +
-          `${bullet} <@&488352505953255440>\n${bullet} <@&488352481634418710>\n` +
-          `${bullet} <@&488352447819939861>\n${bullet} <@&488352345613271070>\n` +
-          `${bullet} <@&477063574309830667>\n${bullet} <@&465226964677165056>\n` +
-          `${bullet} <@&1028900715189514350>\n${bullet} <@&349212066164244480>\n` +
-          `${bullet} <@&348946342707462144>\n${bullet} <@&348938634227089411>`,
+          `${bullet} <@&349212066164244480>\n${bullet} <@&348938634227089411>\n` +
+          `${bullet} <@&1028900715189514350>\n${bullet} <@&348946342707462144>\n` +
+          `${bullet} <@&465226964677165056>\n${bullet} <@&477063574309830667>\n` +
+          `${bullet} <@&488352345613271070>\n${bullet} <@&488352481634418710>\n` +
+          `${bullet} <@&488352447819939861>\n${bullet} <@&488352505953255440>\n` +
+          `${bullet} <@&488352546579152907>`,
         inline: true
       },
       {
-        name: '<a:talking:1004962079154896967> Discord Activity Roles',
+        name: '<a:economy:1006182871314219169> Economy Roles',
         value:
-          `${bullet} <@&755123430256279633>\n${bullet} <@&932285657903161374>\n` +
-          `${bullet} <@&919688791361466368>\n${bullet} <@&932284834791960628>\n` +
-          `${bullet} <@&755122545488822534>\n${bullet} <@&755123236114792468>`,
+          `${bullet} <@&488352526110818304>\n${bullet} <@&488352576568557568>\n` +
+          `${bullet} <@&1028890537979297853>\n${bullet} <@&488352607807733791>\n` +
+          `${bullet} <@&488352623884500992>\n${bullet} <@&488352639671599125>\n` +
+          `${bullet} <@&800074267944681512>\n${bullet} <@&1120155168256839680>\n` +
+          `${bullet} <@&1120155457110163566>\n${bullet} <@&1120157621471678665>\n` +
+          `${bullet} <@&1120157854557544498>`,
         inline: true
       },
       {
@@ -48,10 +48,20 @@ client.on('ready', async () => {
         inline: true
       },
       {
+        name: '<a:talking:1004962079154896967> Discord Activity Roles',
+        value:
+          `${bullet} <@&755123236114792468>\n${bullet} <@&755122545488822534>\n` +
+          `${bullet} <@&932284834791960628>\n${bullet} <@&919688791361466368>\n` +
+          `${bullet} <@&932285657903161374>\n${bullet} <@&755123430256279633>\n`,
+        inline: true
+      },
+      {
         name: '<:staff:1006186955941347419> Guild Member Roles',
         value:
-          `${bullet} <@&1005725104430395452>\n${bullet} <@&1031566725432492133>\n` +
-          `${bullet} <@&950083054326677514>\n${bullet} <@&1031926129822539786>`,
+          `${bullet} <@&817133925834162177>\n${bullet} <@&1031926129822539786>\n` +
+          `${bullet} <@&1031566725432492133>\n${bullet} <@&950083054326677514>\n` +
+          `${bullet} <@&1142652454450778132>\n${bullet} <@&1142652458355658873>\n` +
+          `${bullet} <@&1142652461425889371>\n${bullet} <@&1005725104430395452>`,
         inline: true
       }
     );
@@ -97,22 +107,22 @@ client.on('ready', async () => {
       .setCustomId('bedwars')
       .setLabel('Bedwars')
       .setStyle(ButtonStyle.Success)
-      .setEmoji(':bedwars:1006049483383115867'),
+      .setEmoji(':BedWars:862909669362499584'),
     new ButtonBuilder()
       .setCustomId('duels')
       .setLabel('Duels')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(':duels:1006051301534212147'),
+      .setEmoji(':Duels:1154626664379187321'),
     new ButtonBuilder()
       .setCustomId('skyblock')
       .setLabel('Skyblock')
       .setStyle(ButtonStyle.Success)
-      .setEmoji(':skyblock:1006051295695745065'),
+      .setEmoji(':SkyBlock:862923987259490324'),
     new ButtonBuilder()
       .setCustomId('skywars')
       .setLabel('Skywars')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(':skywars:1006052635062829066')
+      .setEmoji(':Skywars:862910064649044029')
   );
 
   const gamemodesEmbed = new EmbedBuilder()

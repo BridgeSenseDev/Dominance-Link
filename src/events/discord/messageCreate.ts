@@ -1,11 +1,12 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Message } from 'discord.js';
 import Database from 'better-sqlite3';
 import { google } from 'googleapis';
+import Mexp from 'math-expression-evaluator';
 import { addXp, discordToUuid, formatMentions, uuidToName } from '../../helper/utils.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { textChannels } from './ready.js';
-import { roles } from '../../helper/constants.js';
+import { discordRoles } from '../../helper/constants.js';
 import { Count, HypixelGuildMember, NumberObject } from '../../types/global.d.js';
 
 const db = new Database('guild.db');
@@ -107,14 +108,20 @@ export default async function execute(client: Client, message: Message) {
   }
 
   if (channel.id === textChannels.counting.id) {
-    if (/^-?\d+$/.test(content.split(' ')[0])) {
-      const currentCount = db.prepare('SELECT * FROM counting ORDER BY count DESC LIMIT 1').get() as Count;
-      if (currentCount.count + 1 === parseInt(content.split(' ')[0], 10) && currentCount.discord !== author.id) {
-        await message.react('a:atick:986173414723162113');
-        db.prepare('INSERT INTO counting (count, discord) VALUES (?, ?)').run(content.split(' ')[0], author.id);
-      } else {
-        await message.react('a:across:986170696512204820');
+    const expression = content.split(' ')[0];
+    try {
+      const count = new Mexp().eval(expression, [], {});
+      if (count) {
+        const currentCount = db.prepare('SELECT * FROM counting ORDER BY count DESC LIMIT 1').get() as Count;
+        if (currentCount.count + 1 === count && currentCount.discord !== author.id) {
+          await message.react('a:atick:986173414723162113');
+          db.prepare('INSERT INTO counting (count, discord) VALUES (?, ?)').run(count, author.id);
+        } else {
+          await message.react('a:across:986170696512204820');
+        }
       }
+    } catch (e) {
+      await message.react('a:across:986170696512204820');
     }
   }
 
@@ -125,7 +132,7 @@ export default async function execute(client: Client, message: Message) {
 
   if (!user) {
     if (!uuid) {
-      await member!.roles.add(member!.guild.roles.cache.get(roles.unverified)!);
+      await member!.roles.add(member!.guild.roles.cache.get(discordRoles.unverified)!);
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle('Error')
@@ -134,7 +141,7 @@ export default async function execute(client: Client, message: Message) {
       return;
     }
 
-    if (member?.roles.cache.has(roles.Break)) {
+    if (member?.roles.cache.has(discordRoles.Break)) {
       if (await checkProfanity(content)) {
         try {
           await message.member!.timeout(12 * 60 * 60 * 1000);
@@ -166,7 +173,11 @@ export default async function execute(client: Client, message: Message) {
         return;
       }
 
-      await chat(`/gc ${name} [Break]: ${messageContent}`);
+      if (channel.id === textChannels.officerChat.id) {
+        await chat(`/oc ${name} [Break]: ${messageContent}`);
+      } else {
+        await chat(`/gc ${name} [Break]: ${messageContent}`);
+      }
       await message.delete();
       return;
     }
@@ -188,7 +199,7 @@ export default async function execute(client: Client, message: Message) {
           .setDescription(
             `**You have been timed out for 12 hours. A staff member will review this as soon as possible**`
           );
-        await channel.send({ content: `<@${author.id}>>`, embeds: [embed] });
+        await channel.send({ content: `<@${author.id}>`, embeds: [embed] });
       } catch (e) {
         /* empty */
       }
@@ -225,7 +236,7 @@ export default async function execute(client: Client, message: Message) {
           .setDescription(
             `**You have been timed out for 12 hours. A staff member will review this as soon as possible**`
           );
-        await channel.send({ content: `<@${author.id}>>`, embeds: [embed] });
+        await channel.send({ content: `<@${author.id}>`, embeds: [embed] });
       } catch (e) {
         /* empty */
       }

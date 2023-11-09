@@ -1,4 +1,4 @@
-import { CanvasRenderingContext2D, FontLibrary, loadImage } from 'skia-canvas';
+import { CanvasRenderingContext2D, FontLibrary, loadImage } from '@julusian/skia-canvas';
 import { BoxProps, DeferredGradient, Fill, TextProps } from '../types/box.js';
 import { rgbaColor } from './constants.js';
 import { removeSectionSymbols } from './utils.js';

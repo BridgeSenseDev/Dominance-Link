@@ -64,7 +64,9 @@ export default async function requirements(uuid: string, playerData: RawPlayer) 
   } else {
     requirementEmbed += `:red_circle: **GEXP**\n<a:atick:986173414723162113> **Guild:** \`${
       guild[0]
-    }\`\n<a:across:986170696512204820> **Weekly GEXP:** \`${formatNumber(guild[1])} / 150,000\`\n\n`;
+    }\`\n<a:across:986170696512204820> **Weekly GEXP:** \`${formatNumber(guild[1])} / ${formatNumber(
+      config.guild.gexpReqNum
+    )}\`\n\n`;
   }
 
   if (!playerData.achievementPoints) {

@@ -14,7 +14,7 @@ import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { textChannels } from '../discord/ready.js';
-import { roles } from '../../helper/constants.js';
+import { discordRoles } from '../../helper/constants.js';
 import { BreakMember, WaitlistMember } from '../../types/global.d.js';
 import { fetchPlayerRaw, fetchSkyblockProfiles } from '../../api.js';
 import { processPlayer } from '../../types/api/processors/processPlayers.js';
@@ -97,12 +97,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
           db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
           db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
         }
-        db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points, messages, playtime) VALUES (?, ?, ?, ?)').run(
-          uuid,
-          0,
-          0,
-          0
-        );
+        db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
         db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
       }
       return;
@@ -127,12 +122,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
       db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
     }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points, messages, playtime) VALUES (?, ?, ?, ?)').run(
-      uuid,
-      0,
-      0,
-      0
-    );
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
 
     if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
@@ -142,11 +132,17 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         await chat(`/gc Error: ${name} is an invalid IGN`);
         return;
       }
+
       const playerRawResponse = await fetchPlayerRaw(uuid);
       if (!playerRawResponse.success) {
         await chat(`/gc Error: ${playerRawResponse.cause}`);
         return;
       }
+      if (!playerRawResponse.player) {
+        await chat(`/gc Error: ${playerRawResponse.player}`);
+        return;
+      }
+
       const processedPlayer = processPlayer(playerRawResponse.player, ['bedwars']);
       const bedwars = processedPlayer.stats.Bedwars;
 
@@ -167,11 +163,17 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         await chat(`/gc Error: ${name} is an invalid IGN`);
         return;
       }
+
       const playerRawResponse = await fetchPlayerRaw(uuid);
       if (!playerRawResponse.success) {
         await chat(`/gc Error: ${playerRawResponse.cause}`);
         return;
       }
+      if (!playerRawResponse.player) {
+        await chat(`/gc Error: ${playerRawResponse.player}`);
+        return;
+      }
+
       const processedPlayer = processPlayer(playerRawResponse.player, ['duels']);
       const duels = processedPlayer.stats.Duels;
 
@@ -190,15 +192,25 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         await chat(`/gc Error: ${name} is an invalid IGN`);
         return;
       }
+
       const playerRawResponse = await fetchPlayerRaw(uuid);
       if (!playerRawResponse.success) {
         await chat(`/gc Error: ${playerRawResponse.cause}`);
         return;
       }
+      if (!playerRawResponse.player) {
+        await chat(`/gc Error: ${playerRawResponse.player}`);
+        return;
+      }
+
       const processedPlayer = processPlayer(playerRawResponse.player);
       const skyblockProfilesResponse = await fetchSkyblockProfiles(uuid);
       if (!skyblockProfilesResponse.success) {
         await chat(`/gc Error: ${skyblockProfilesResponse.cause}`);
+        return;
+      }
+      if (!skyblockProfilesResponse.profiles) {
+        await chat(`/gc Error: No profiles found for ${name}`);
         return;
       }
 
@@ -395,12 +407,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
       db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
     }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, points, messages, playtime) VALUES (?, ?, ?, ?)').run(
-      uuid,
-      0,
-      0,
-      0
-    );
+    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
 
     try {
       const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid) as WaitlistMember;
@@ -414,8 +421,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       const member = await textChannels.guildChat.guild.members.fetch(breakData.discord);
       const thread = client.channels.cache.get(breakData.thread) as ThreadChannel;
       db.prepare('DELETE FROM breaks WHERE uuid = ?').run(uuid);
-      await member.roles.remove(thread.guild!.roles.cache.get(roles.Break) as Role);
-      await member.roles.add(roles['[Member]']);
+      await member.roles.remove(thread.guild!.roles.cache.get(discordRoles.Break) as Role);
+      await member.roles.add(discordRoles.slayer);
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`Welcome back, ${name}!`)
@@ -444,7 +451,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discordId}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
       );
       const member = await textChannels.guildChat.guild.members.fetch(discordId);
-      await member.roles.add(roles['[Member]']);
+      await member.roles.add(discordRoles.slayer);
     } else {
       await textChannels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
@@ -502,10 +509,13 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     if (discordId) {
       try {
         const member = await textChannels.guildChat.guild.members.fetch(discordId);
-        await member.roles.remove(roles['[Member]']);
-        await member.roles.remove(roles['[NoLifer]']);
-        await member.roles.remove(roles['[Pro]']);
-        await member.roles.remove(roles['[Staff]']);
+        await member.roles.remove(discordRoles.slayer);
+        await member.roles.remove(discordRoles.elite);
+        await member.roles.remove(discordRoles.hero);
+        await member.roles.remove(discordRoles.godlike);
+        await member.roles.remove(discordRoles.dominator);
+        await member.roles.remove(discordRoles.goat);
+        await member.roles.remove(discordRoles.staff);
       } catch (e) {
         /* empty */
       }

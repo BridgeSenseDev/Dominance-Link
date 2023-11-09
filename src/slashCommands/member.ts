@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
-import { Canvas, Image } from 'skia-canvas';
+import { Canvas, Image } from '@julusian/skia-canvas';
 import renderBox, { renderSkin } from '../helper/render.js';
 import { abbreviateNumber, doubleDigits, nameToUuid, uuidToName } from '../helper/utils.js';
 import { DiscordMember, HypixelGuildMember, StringObject } from '../types/global.d.js';
@@ -10,9 +10,9 @@ import { fetchStatus } from '../api.js';
 const db = new Database('guild.db');
 
 const tagColor: StringObject = {
-  '[Member]': '§2[Member]',
-  '[NoLifer]': '§6[NoLifer]',
-  '[Pro]': '§5[Pro]',
+  '[Slayer]': '§2[Slayer]',
+  '[Hero]': '§6[Hero]',
+  '[Elite]': '§5[Elite]',
   '[Staff]': '§c[Staff]',
   '[Owner]': '§4[Owner]',
   '[GM]': '§4[GM]'
@@ -145,7 +145,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   let dcMessages;
-  if (member.discord!) {
+  if (!member.discord!) {
     dcMessages = 0;
   } else {
     dcMessages = (db.prepare('SELECT messages FROM members WHERE discord = ?').get(member.discord) as DiscordMember)

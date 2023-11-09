@@ -17,7 +17,7 @@ export type MojangAPIResponse =
 export type PlayerResponse =
   | {
       success: true;
-      player: RawPlayer;
+      player: RawPlayer | null;
     }
   | {
       success: false;
@@ -236,6 +236,10 @@ export type SkyblockProfilesResponse =
           transactions: [];
         };
       }[];
+    }
+  | {
+      success: true;
+      profiles: null;
     }
   | {
       success: false;
