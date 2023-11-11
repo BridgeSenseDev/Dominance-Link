@@ -19,4 +19,6 @@ client.on('ready', () => {
 
 client.login(config.keys.discordBotToken);
 
+setInterval(() => fetch(config.keys.uptimeKuma), 60000);
+
 export default client;
