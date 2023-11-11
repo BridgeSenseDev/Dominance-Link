@@ -5,7 +5,8 @@ import { getLevelDetails } from '../helper/utils.js';
 import { DiscordMember } from '../types/global.js';
 import config from '../config.json' assert { type: 'json' };
 
-FontLibrary.use('Nunito', './fonts/Nunito.ttf');
+FontLibrary.use('Nunito-Semibold', './fonts/Nunito-Semibold.ttf');
+FontLibrary.use('Nunito-ExtraBold', './fonts/Nunito-ExtraBold.ttf');
 const db = new Database('guild.db');
 
 interface RankCardOptions {
@@ -16,7 +17,6 @@ interface RankCardOptions {
   requiredXP: number;
   status: string | undefined;
   avatar: string;
-  font?: string;
   colorTextDefault?: string;
   currentXPColor?: string;
   requiredXPColor?: string;
@@ -30,7 +30,6 @@ async function createRankCard({
   requiredXP,
   status,
   avatar,
-  font = 'Nunito',
   colorTextDefault = '#FFFFFF',
   currentXPColor = '#FFFFFF',
   requiredXPColor = '#7F8384'
@@ -126,7 +125,7 @@ async function createRankCard({
 
   // XP
   ctx.save();
-  ctx.font = `600 35px '${font}'`;
+  ctx.font = `600 35px Nunito-Semibold`;
   ctx.textAlign = 'right';
   ctx.fillStyle = requiredXPColor;
   ctx.fillText(`${requiredXP} XP`, offsetLvlXP, 150);
@@ -139,7 +138,7 @@ async function createRankCard({
   ctx.restore();
 
   // Username
-  ctx.font = `800 40px '${font}'`;
+  ctx.font = `800 40px Nunito-ExtraBold`;
   ctx.fillStyle = colorTextDefault;
   ctx.fillText(displayName.toUpperCase(), 210, 150, offsetLvlXP - 210 - 15);
 
@@ -151,20 +150,20 @@ async function createRankCard({
 
   ctx.fillStyle = colorTextDefault;
 
-  ctx.font = `600 60px '${font}'`;
+  ctx.font = `600 60px Nunito-Semibold`;
   ctx.fillText(`${currentLvl}`, offsetRankX, 75);
   offsetRankX -= ctx.measureText(`${currentLvl}`).width + 5;
 
-  ctx.font = `600 35px '${font}'`;
+  ctx.font = `600 35px Nunito-Semibold`;
   ctx.fillText(`LEVEL `, offsetRankX, 75);
   offsetRankX -= ctx.measureText('LEVEL ').width;
 
   // Rank
-  ctx.font = `600 60px '${font}'`;
+  ctx.font = `600 60px Nunito-Semibold`;
   ctx.fillText(`#${rank}`, offsetRankX, 75);
   offsetRankX -= ctx.measureText(`#${rank}`).width + 5;
 
-  ctx.font = `600 35px '${font}'`;
+  ctx.font = `600 35px Nunito-Semibold`;
   ctx.fillText(' RANK ', offsetRankX, 75);
   ctx.restore();
 
