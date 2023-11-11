@@ -3,7 +3,7 @@ import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
 import { textChannels } from '../events/discord/ready.js';
-import { doubleDigits, formatNumber, sleep } from './utils.js';
+import { doubleDigits, formatNumber, sleep, toCamelCase } from './utils.js';
 import { NumberObject, StringObject } from '../types/global.d.js';
 import { fetchGuildByName } from '../api.js';
 import { chat } from '../handlers/workerHandler.js';
@@ -55,18 +55,18 @@ export async function gexpWatch() {
   schedule('00 50 11 * * 0-6', async () => {
     const guildThumbnails: StringObject = {
       rebel: `https://cdn.discordapp.com/attachments/986281342457237624/1001705614264778803/a_96a019775f60ebe70d0e5ea3d762ff57.webp`,
-      cronos: `https://cdn.discordapp.com/attachments/986281342457237624/1001839326033879080/ezgif-1-9402e80289.png`,
+      sailorMoon: `https://cdn.discordapp.com/attachments/986281342457237624/1001839326033879080/ezgif-1-9402e80289.png`,
       dawns: `https://cdn.discordapp.com/icons/406305465341837313/bdabc7a8bd14a701e104ec9800c12fd1.webp?size=4096&width=656&height=656`,
-      abyss: `https://cdn.discordapp.com/icons/549722930251300865/a_581a4ba9007bfc5b62d27e4bd89a0d67.webp?size=4096&width=656&height=656`,
-      lucid: `https://cdn.discordapp.com/avatars/1014274693596983326/9d5bddb15cd0b0ef69035198f1d68914.webp?size=4096&width=656&height=656`
+      lucid: `https://cdn.discordapp.com/avatars/1014274693596983326/9d5bddb15cd0b0ef69035198f1d68914.webp?size=4096&width=656&height=656`,
+      leman: `https://cdn.discordapp.com/icons/672088522852663297/3764b2ec1103bcb8d1f034791d4be16b.webp?size=4096&width=656&height=656`
     };
     const guildNames: StringObject = {
       dominance: 'Dominance',
       rebel: 'Rebel',
-      cronos: 'Sailor Moon',
+      sailorMoon: 'Sailor Moon',
       dawns: 'The Dawns Awakening',
-      abyss: 'The Abyss',
-      lucid: 'Lucid'
+      lucid: 'Lucid',
+      leman: 'Leman'
     };
     const guildGexp: NumberObject = {};
 
@@ -124,14 +124,11 @@ export async function gexpWatch() {
         difference,
         gained
       );
+
       embeds.push(
         new EmbedBuilder()
           .setColor(gexpGained(gained)[1])
-          .setTitle(
-            `We are ${difference.toLocaleString()} GEXP ahead of ${
-              guildName.charAt(0).toUpperCase() + guildName.slice(1)
-            }`
-          )
+          .setTitle(`We are ${difference.toLocaleString()} GEXP ahead of ${toCamelCase(guildName)}`)
           .setDescription(
             `${gexpGained(gained)[0]} **${Math.abs(
               gained
