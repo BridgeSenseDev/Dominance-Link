@@ -440,13 +440,34 @@ export default async function execute(client: Client, interaction: Interaction) 
           collector.stop();
         }
       });
-    } else if (interaction.customId === 'removeTimeout') {
+    } else if (interaction.customId === 'removeMute') {
       await interaction.deferReply();
       const timeoutMember = await interaction.guild!.members.fetch(
         interaction.message.embeds[0].description!.match(/<@(\d+)>/)?.[1]!
       );
-      await timeoutMember.timeout(null);
-      const embed = new EmbedBuilder()
+
+      try {
+        await textChannels.minecraftLink.permissionOverwrites.delete(timeoutMember);
+      } catch (e) {
+        /* empty */
+      }
+
+      try {
+        await textChannels.officerChat.permissionOverwrites.delete(timeoutMember);
+      } catch (e) {
+        /* empty */
+      }
+
+      let embed = new EmbedBuilder()
+        .setColor(config.colors.green)
+        .setTitle('Timeout Removed')
+        .setDescription(
+          `After manual review, your timeout has been removed.\nAutomod filters can be tested using </automod:1159506896043118622> in <#1017269021927817236>`
+        );
+
+      await timeoutMember.send({ embeds: [embed] });
+
+      embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
         .setDescription(

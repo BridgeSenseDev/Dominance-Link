@@ -79,8 +79,6 @@ export async function formatMentions(client: Client, message: Message) {
     }
   }
 
-  msg = msg.replaceAll(/(?:\d{1,3}\.){2,3}\d{1,3}/g, '[IP Address Removed]');
-
   try {
     return demojify(msg);
   } catch (e) {

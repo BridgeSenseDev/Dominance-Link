@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Message } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Message, TextChannel } from 'discord.js';
 import Database from 'better-sqlite3';
 import { google } from 'googleapis';
 import Mexp from 'math-expression-evaluator';
@@ -91,6 +91,10 @@ async function checkProfanity(message: string) {
     }
   }
 
+  if (/(?:\d{1,3}\.){2,3}\d{1,3}/g.test(message)) {
+    return true;
+  }
+
   return false;
 }
 
@@ -130,6 +134,9 @@ export default async function execute(client: Client, message: Message) {
   const uuid = discordToUuid(author.id);
   let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(author.id) as HypixelGuildMember;
 
+  const messageContent = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');
+  let tag;
+
   if (!user) {
     if (!uuid) {
       await member!.roles.add(member!.guild.roles.cache.get(discordRoles.unverified)!);
@@ -142,130 +149,67 @@ export default async function execute(client: Client, message: Message) {
     }
 
     if (member?.roles.cache.has(discordRoles.Break)) {
-      if (await checkProfanity(content)) {
-        try {
-          await message.member!.timeout(12 * 60 * 60 * 1000);
-        } catch (e) {
-          /* empty */
-        }
-        const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
-          .setDescription(`**<@${author.id}> has been timed out until <t:${timestamp}:f>**\n**Message: **${content}`);
-        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId('removeTimeout')
-            .setLabel('Remove Timeout')
-            .setStyle(ButtonStyle.Danger)
-            .setEmoji(':three_oclock_3d:1029704628310388796')
-        );
-        await textChannels.automod.send({ embeds: [embed], components: [row] });
-        return;
-      }
-
-      const messageContent = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');
-      const name = await uuidToName(uuid!);
-      const messageLength = `/gc ${name} [Break]: ${messageContent}`.length;
-
-      if (messageLength > 256) {
-        await textChannels.minecraftLink.send(`Character limit exceeded (${messageLength})`);
-        return;
-      }
-
-      if (channel.id === textChannels.officerChat.id) {
-        await chat(`/oc ${name} [Break]: ${messageContent}`);
-      } else {
-        await chat(`/gc ${name} [Break]: ${messageContent}`);
-      }
-      await message.delete();
-      return;
+      tag = '[Break]';
     }
 
     db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(author.id, uuid);
     user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(author.id) as HypixelGuildMember;
+  } else {
+    tag = user.tag;
   }
 
-  const messageContent = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');
-  const messageLength = `/gc ${await uuidToName(user.uuid)} ${user.tag}: ${messageContent}`.length;
+  const name = await uuidToName(uuid!);
+  const messageLength = `/gc ${name} ${user.tag}: ${messageContent}`.length;
+
+  // Automod
+  if (await checkProfanity(content)) {
+    try {
+      await (channel as TextChannel).permissionOverwrites.edit(member!, {
+        SendMessages: false
+      });
+    } catch (e) {
+      /* empty */
+    }
+
+    let embed = new EmbedBuilder()
+      .setColor(config.colors.red)
+      .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
+      .setDescription(
+        `<@${author.id}> has been muted from <#${textChannels.minecraftLink.id}>.\nThis mute will be reviewed by staff ASAP.`
+      );
+
+    await message.reply({ embeds: [embed] });
+
+    embed = new EmbedBuilder()
+      .setColor(config.colors.red)
+      .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
+      .setDescription(
+        `**<@${author.id}> has been muted from <#${textChannels.minecraftLink.id}>.**\n**Message: **${content}`
+      );
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId('removeMute')
+        .setLabel('Remove Mute')
+        .setStyle(ButtonStyle.Danger)
+        .setEmoji(':three_oclock_3d:1029704628310388796')
+    );
+
+    await textChannels.automod.send({ embeds: [embed], components: [row] });
+    return;
+  }
+
+  if (messageLength > 256) {
+    await message.reply(`Character limit exceeded (${messageLength})`);
+    return;
+  }
 
   if (channel.id === textChannels.minecraftLink.id) {
-    if (await checkProfanity(content)) {
-      try {
-        await message.member!.timeout(12 * 60 * 60 * 1000);
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
-          .setDescription(
-            `**You have been timed out for 12 hours. A staff member will review this as soon as possible**`
-          );
-        await channel.send({ content: `<@${author.id}>`, embeds: [embed] });
-      } catch (e) {
-        /* empty */
-      }
-      const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
-      const embed = new EmbedBuilder()
-        .setColor(config.colors.red)
-        .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
-        .setDescription(`**<@${author.id}> has been timed out until <t:${timestamp}:f>**\n**Message: **${content}`);
-      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId('removeTimeout')
-          .setLabel('Remove Timeout')
-          .setStyle(ButtonStyle.Danger)
-          .setEmoji(':three_oclock_3d:1029704628310388796')
-      );
-      await textChannels.automod.send({ embeds: [embed], components: [row] });
-      return;
-    }
-
-    if (messageLength > 256) {
-      await textChannels.minecraftLink.send(`Character limit exceeded (${messageLength})`);
-      return;
-    }
-
-    await chat(`/gc ${await uuidToName(user.uuid)} ${user.tag}: ${messageContent}`);
-    await message.delete();
+    await chat(`/gc ${name} ${tag}: ${messageContent}`);
   } else if (channel.id === textChannels.officerChat.id) {
-    if (await checkProfanity(content)) {
-      try {
-        await message.member!.timeout(12 * 60 * 60 * 1000);
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
-          .setDescription(
-            `**You have been timed out for 12 hours. A staff member will review this as soon as possible**`
-          );
-        await channel.send({ content: `<@${author.id}>`, embeds: [embed] });
-      } catch (e) {
-        /* empty */
-      }
-      const timestamp = Math.floor(Date.now() / 1000) + 12 * 60 * 60;
-      const embed = new EmbedBuilder()
-        .setColor(config.colors.red)
-        .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
-        .setDescription(`**<@${author.id}> has been timed out until <t:${timestamp}:f>**\n**Message: **${content}`);
-      const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId('removeTimeout')
-          .setLabel('Remove Timeout')
-          .setStyle(ButtonStyle.Danger)
-          .setEmoji(':three_oclock_3d:1029704628310388796')
-      );
-      await textChannels.automod.send({ embeds: [embed], components: [row] });
-      return;
-    }
-
-    if (messageLength > 256) {
-      await textChannels.minecraftLink.send(`Character limit exceeded (${messageLength})`);
-      return;
-    }
-
-    await chat(`/oc ${await uuidToName(user.uuid)} ${user.tag}: ${messageContent}`);
-    await message.delete();
-  } else if (channel.id === textChannels.chatLogs.id) {
-    await chat(messageContent);
+    await chat(`/oc ${name} ${tag}: ${messageContent}`);
   }
+
+  await message.delete();
 
   db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
 }
