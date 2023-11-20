@@ -7,8 +7,7 @@ import {
   ButtonBuilder,
   ActionRowBuilder,
   ButtonStyle,
-  ComponentType,
-  GuildMember
+  ComponentType
 } from 'discord.js';
 import Database from 'better-sqlite3';
 import { DiscordMember } from '../types/global.d.js';
@@ -211,12 +210,7 @@ async function verify(
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
 
-  const memberRoles = (interaction.member as GuildMember).roles.cache.map((role) => role.id);
-  if (
-    !memberRoles.some((role) =>
-      ([discordRoles.headStaff, discordRoles.seniorStaff, discordRoles.developer] as string[]).includes(role)
-    )
-  ) {
+  if (config.admins.includes(interaction.member!.user.id)) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
