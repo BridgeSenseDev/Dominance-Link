@@ -385,7 +385,7 @@ export async function players() {
         const memberRoles = member.roles.cache.map((role) => role.id);
 
         const role = guild.roles.cache.get(discordRoles[ingameRole.toLowerCase() as HypixelRoleKeys]) as Role;
-        if (!memberRoles.includes(role.id)) {
+        if (!memberRoles.includes(role.id) && ingameRole !== 'Staff') {
           await member.roles.add(role);
         }
 
