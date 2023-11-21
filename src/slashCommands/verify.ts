@@ -210,7 +210,7 @@ async function verify(
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
 
-  if (config.admins.includes(interaction.member!.user.id)) {
+  if (!config.admins.includes(interaction.member!.user.id)) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
