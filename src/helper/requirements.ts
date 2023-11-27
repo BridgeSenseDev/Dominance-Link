@@ -1,18 +1,18 @@
 import { getNetworth } from 'skyhelper-networth';
+import { Guild, Player } from 'hypixel-api-reborn';
 import { abbreviateNumber, formatNumber, uuidToName, skillAverage } from './utils.js';
 import config from '../config.json' assert { type: 'json' };
-import { fetchGuildByPlayer, fetchSkyblockProfiles } from '../api.js';
-import { processPlayer } from '../types/api/processors/processPlayers.js';
-import { RawPlayer } from '../types/api/raw/RawPlayer.js';
+import { hypixel } from '../index.js';
 
-export default async function requirements(uuid: string, playerData: RawPlayer) {
+export default async function requirements(uuid: string, playerData: Player) {
   let guild: [string, number] = ['None', 0];
   let skyblock = [0, 0];
   const name = await uuidToName(uuid);
 
-  const guildResponse = await fetchGuildByPlayer(uuid);
-  const skyblockProfilesResponse = await fetchSkyblockProfiles(uuid);
-  const processedPlayer = processPlayer(playerData, ['duels', 'bedwars', 'skywars']);
+  const guildData = (await hypixel.getGuild('player', uuid, {}).catch(() => {
+    /* empty */
+  })) as Guild;
+  const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(uuid, { raw: true })) as any;
 
   if (skyblockProfilesResponse.success && skyblockProfilesResponse.profiles) {
     const { profiles } = skyblockProfilesResponse;
@@ -25,27 +25,20 @@ export default async function requirements(uuid: string, playerData: RawPlayer) 
     }
   }
 
-  const bedwars = [
-    processedPlayer.stats.Bedwars?.star ?? 0,
-    +(processedPlayer.stats.Bedwars?.overall.fkdr.toFixed(1) ?? 0),
-    processedPlayer.stats.Bedwars?.overall.wins ?? 0
-  ];
+  const bedwarsData = playerData.stats?.bedwars;
+  const bedwars = [bedwarsData?.level ?? 0, +(bedwarsData?.finalKDRatio.toFixed(1) ?? 0), bedwarsData?.wins ?? 0];
 
-  const duels = [
-    processedPlayer.stats.Duels?.general.wins ?? 0,
-    +(processedPlayer.stats.Duels?.general.wlr.toFixed(1) ?? 0)
-  ];
+  const duelsData = playerData.stats?.duels;
+  const duels = [duelsData?.wins ?? 0, +(duelsData?.WLRatio.toFixed(1) ?? 0)];
 
-  const skywars: [string, number] = [
-    processedPlayer.stats.Skywars?.levelFormatted?.slice(2) ?? '1⋆',
-    processedPlayer.stats.Skywars?.kdr ?? 0
-  ];
+  const skywarsData = playerData.stats?.skywars;
+  const skywars: [string, number] = [skywarsData?.levelFormatted ?? '1⋆', skywarsData?.KDRatio ?? 0];
 
-  if (guildResponse.success && guildResponse.guild) {
-    const member = guildResponse.guild.members.find((i: any) => i.uuid === uuid);
+  if (guildData) {
+    const member = guildData.members.find((i) => i.uuid === uuid);
     if (member) {
-      const weeklyGexp = (Object.values(member.expHistory) as number[]).reduce((acc, cur) => acc + cur, 0);
-      guild = [guildResponse.guild.name, weeklyGexp];
+      const weeklyGexp = member.expHistory.reduce((acc, cur) => acc + cur.exp, 0);
+      guild = [guildData.name, weeklyGexp];
     }
   }
 

@@ -1,11 +1,11 @@
 import { Client, EmbedBuilder, GuildMember, Role } from 'discord.js';
 import Database from 'better-sqlite3';
+import { Guild } from 'hypixel-api-reborn';
 import config from '../../config.json' assert { type: 'json' };
 import { invis, discordRoles } from '../../helper/constants.js';
 import { textChannels } from './ready.js';
 import { DiscordMember } from '../../types/global.d.js';
-import { fetchGuildByPlayer, fetchPlayerRaw } from '../../api.js';
-import { processPlayer } from '../../types/api/processors/processPlayers.js';
+import { hypixel } from '../../index.js';
 
 const db = new Database('guild.db');
 
@@ -14,31 +14,22 @@ export default async function execute(client: Client, member: GuildMember) {
 
   if (db.prepare('SELECT * FROM members WHERE discord = ?').get(member.user.id)) {
     const { uuid } = db.prepare('SELECT * FROM members WHERE discord = ?').get(member.user.id) as DiscordMember;
-    const playerRawResponse = await fetchPlayerRaw(uuid);
+    const player = await hypixel.getPlayer(uuid);
 
-    if (!playerRawResponse.success) {
-      return;
-    }
-    if (!playerRawResponse.player) {
-      return;
-    }
-
-    const processedPlayer = await processPlayer(playerRawResponse.player);
-
-    const { username } = processedPlayer;
-    const discord = processedPlayer.links.DISCORD;
+    const discord = player.socialMedia.find((media) => media.name === 'Discord')?.link;
 
     if (discord === member.user.tag) {
-      const guildResponse = await fetchGuildByPlayer(uuid);
-      if (guildResponse.success) {
-        if (guildResponse.guild?.name_lower === 'dominance') {
-          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(member.user.id, uuid);
-          await member.roles.add(member.guild!.roles.cache.get(discordRoles.slayer) as Role);
-        }
-        await member.setNickname(username);
-        await member.roles.add(member.guild!.roles.cache.get(discordRoles.verified) as Role);
-        await member.roles.remove(member.guild!.roles.cache.get(discordRoles.unverified) as Role);
+      const guild = (await hypixel.getGuild('player', uuid, {}).catch(() => {
+        /* empty */
+      })) as Guild;
+
+      if (guild?.name?.toLowerCase() === 'dominance') {
+        db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(member.user.id, uuid);
+        await member.roles.add(member.guild!.roles.cache.get(discordRoles.slayer) as Role);
       }
+      await member.setNickname(player.nickname);
+      await member.roles.add(member.guild!.roles.cache.get(discordRoles.verified) as Role);
+      await member.roles.remove(member.guild!.roles.cache.get(discordRoles.unverified) as Role);
     }
   }
 

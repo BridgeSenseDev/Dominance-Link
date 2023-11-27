@@ -1,5 +1,6 @@
 import { Client, EmbedBuilder, Message } from 'discord.js';
 import Database from 'better-sqlite3';
+import { Player } from 'hypixel-api-reborn';
 import { demojify } from 'discord-emoji-converter';
 import { rankColor, levelingXp } from './constants.js';
 import { DiscordMember } from '../types/global.d.js';
@@ -415,4 +416,35 @@ export function getLevelDetails(totalXP: number) {
     xpInCurrentLevel: xpForCurrentLevel,
     xpTillNextLevel
   };
+}
+
+export function rankTagF(player: Player) {
+  if (!player) {
+    return '';
+  }
+
+  if (player.rank === 'Default') {
+    return `§7${player.nickname}`;
+  }
+  if (player.rank === 'VIP') {
+    return `§a[VIP] ${player.nickname}`;
+  }
+  if (player.rank === 'VIP+') {
+    return `§a[VIP§6+§a] ${player.nickname}`;
+  }
+  if (player.rank === 'MVP') {
+    return `§b[MVP] ${player.nickname}`;
+  }
+  if (player.rank === 'MVP+') {
+    if (!player.plusColor) {
+      return `§b[MVP§c+§b] ${player.nickname}`;
+    }
+    return `§b[MVP${rankColor[player.plusColor.toCode()]}+§b] ${player.nickname}`;
+  }
+  if (player.rank === 'MVP++') {
+    if (!player.prefixColor || player.prefixColor.toCode() === 'GOLD') {
+      return `§6[MVP++§6] ${player.nickname}`;
+    }
+    return `§b[MVP++§b] ${player.nickname}`;
+  }
 }

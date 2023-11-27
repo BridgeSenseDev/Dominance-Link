@@ -12,9 +12,8 @@ import {
 import Database from 'better-sqlite3';
 import { DiscordMember } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
-import { fetchGuildByPlayer, fetchPlayerRaw } from '../api.js';
-import { processPlayer } from '../types/api/processors/processPlayers.js';
 import { discordRoles } from '../helper/constants.js';
+import { hypixel } from '../index.js';
 
 const db = new Database('guild.db');
 
@@ -31,7 +30,7 @@ async function verify(
 ): Promise<EmbedBuilder | undefined> {
   let discordMember;
   let uuid;
-  let name;
+  let name: string;
 
   try {
     discordMember = await interaction.guild!.members.fetch(discordUser.id);
@@ -90,31 +89,21 @@ async function verify(
     return embed;
   }
 
-  const playerRawResponse = await fetchPlayerRaw(uuid);
-  if (!playerRawResponse.success) {
+  let player;
+  try {
+    player = await hypixel.getPlayer(uuid);
+  } catch (e) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Caution')
       .setDescription(
-        `<:warning_3d:1144472923885801532> Hypixel API request for **\`${name}\`**'s discord tag failed\nCause: ${playerRawResponse.cause}` +
-          `\n\nAre you **CERTAIN
-        ** \`${name}\`'s discord account is ${discordUser}?`
-      );
-    return embed;
-  }
-  if (!playerRawResponse.player) {
-    const embed = new EmbedBuilder()
-      .setColor(config.colors.red)
-      .setTitle('Caution')
-      .setDescription(
-        `<:warning_3d:1144472923885801532> Hypixel API request for **\`${name}\`**'s discord tag failed\nCause: ${playerRawResponse.player}` +
-          `\n\nAre you **CERTAIN** that \`${name}\`'s discord account is ${discordUser}?`
+        `<:warning_3d:1144472923885801532> Hypixel API request for **\`${name}\`**'s discord tag failed\nError: ${e}` +
+          `\n\nAre you **CERTAIN** \`${name}\`'s discord account is ${discordUser}?`
       );
     return embed;
   }
 
-  const processedPlayer = processPlayer(playerRawResponse.player);
-  const discord = processedPlayer.links.DISCORD;
+  const discord = player.socialMedia.find((media) => media.name === 'Discord')?.link;
 
   if (!discord) {
     const embed = new EmbedBuilder()
@@ -164,36 +153,39 @@ async function verify(
       await discordMember.setNickname(displayName.replace(new RegExp(name, 'gi'), name));
     }
 
-    const guildResponse = await fetchGuildByPlayer(uuid);
-    if (guildResponse.success) {
-      const { guild } = guildResponse;
-      if (!guild || guild.name_lower !== 'dominance') {
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.green)
-          .setTitle('Verification Successful')
-          .setDescription(
-            `<a:atick:986173414723162113> **\`${name}\`** is not in Dominance\n<:add:1005843961652453487>\
-                Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
-          )
-          .setThumbnail(
-            `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-          );
-        await interaction.editReply({ embeds: [embed] });
-      } else {
-        await discordMember.roles.add(interaction.guild!.roles.cache.get(discordRoles.slayer) as Role);
-        db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordUser.id, uuid);
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.green)
-          .setTitle('Verification Successful')
-          .setDescription(
-            `<a:atick:986173414723162113> **\`${name}\`** is in Dominance\n<:add:1005843961652453487> Added: <@&445669382539051008>, ` +
-              `<@&1031926129822539786>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
-          )
-          .setThumbnail(
-            `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-          );
-        await interaction.editReply({ embeds: [embed] });
-      }
+    let guild;
+    try {
+      guild = await hypixel.getGuild('player', uuid, {});
+    } catch (e) {
+      /* empty */
+    }
+
+    if (!guild || guild.name.toLowerCase() !== 'dominance') {
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.green)
+        .setTitle('Verification Successful')
+        .setDescription(
+          `<a:atick:986173414723162113> **\`${name}\`** is not in Dominance\n<:add:1005843961652453487>\
+              Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
+        )
+        .setThumbnail(
+          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+        );
+      await interaction.editReply({ embeds: [embed] });
+    } else {
+      await discordMember.roles.add(interaction.guild!.roles.cache.get(discordRoles.slayer) as Role);
+      db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordUser.id, uuid);
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.green)
+        .setTitle('Verification Successful')
+        .setDescription(
+          `<a:atick:986173414723162113> **\`${name}\`** is in Dominance\n<:add:1005843961652453487> Added: <@&445669382539051008>, ` +
+            `<@&1031926129822539786>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
+        )
+        .setThumbnail(
+          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+        );
+      await interaction.editReply({ embeds: [embed] });
     }
   } else {
     const embed = new EmbedBuilder()

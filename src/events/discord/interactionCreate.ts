@@ -32,8 +32,7 @@ import config from '../../config.json' assert { type: 'json' };
 import { textChannels } from './ready.js';
 import { bullet, dividers, discordRoles } from '../../helper/constants.js';
 import { BreakMember, DiscordMember, HypixelGuildMember } from '../../types/global.d.js';
-import { fetchPlayerRaw, fetchGuildByPlayer } from '../../api.js';
-import { processPlayer } from '../../types/api/processors/processPlayers.js';
+import { hypixel } from '../../index.js';
 
 const db = new Database('guild.db');
 
@@ -93,17 +92,13 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
 
-      const playerRawResponse = await fetchPlayerRaw(uuid);
-      if (!playerRawResponse.success) {
-        await interaction.editReply(hypixelApiError(playerRawResponse.cause));
-        return;
-      }
-      if (!playerRawResponse.player) {
-        await interaction.editReply(hypixelApiError(String(playerRawResponse.player)));
-        return;
-      }
+      const playerResponse = await hypixel.getPlayer(uuid).catch(async (e) => {
+        await interaction.editReply(hypixelApiError(e.message));
+      });
 
-      const requirementData = await requirements(uuid, playerRawResponse.player);
+      if (!playerResponse) return;
+
+      const requirementData = await requirements(uuid, playerResponse);
       const embed = new EmbedBuilder()
         .setColor(requirementData.color)
         .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
@@ -543,19 +538,14 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
 
-      const playerRawResponse = await fetchPlayerRaw(uuid);
-      if (!playerRawResponse.success) {
-        await interaction.editReply(hypixelApiError(playerRawResponse.cause));
-        return;
-      }
-      if (!playerRawResponse.player) {
-        await interaction.editReply(hypixelApiError(String(playerRawResponse.player)));
-        return;
-      }
+      const playerResponse = await hypixel.getPlayer(uuid).catch(async (e) => {
+        await interaction.editReply(hypixelApiError(e.message));
+      });
 
-      const processedPlayer = processPlayer(playerRawResponse.player);
-      name = processedPlayer.username;
-      const discord = processedPlayer.links.DISCORD;
+      if (!playerResponse) return;
+
+      name = playerResponse.nickname;
+      const discord = playerResponse.socialMedia.find((media) => media.name === 'Discord')?.link;
 
       if (!discord) {
         const embed = new EmbedBuilder()
@@ -606,36 +596,33 @@ export default async function execute(client: Client, interaction: Interaction) 
           await member.setNickname(displayName.replace(new RegExp(name, 'gi'), name));
         }
 
-        const guildResponse = await fetchGuildByPlayer(uuid);
-        if (guildResponse.success) {
-          const { guild } = guildResponse;
-          if (!guild || guild.name_lower !== 'dominance') {
-            const embed = new EmbedBuilder()
-              .setColor(config.colors.green)
-              .setTitle('Verification Successful')
-              .setDescription(
-                `<a:atick:986173414723162113> **${name}** is not in Dominance\n<:add:1005843961652453487>\
+        const guild = await hypixel.getGuild('player', uuid, {});
+        if (!guild || guild.name.toLowerCase() !== 'dominance') {
+          const embed = new EmbedBuilder()
+            .setColor(config.colors.green)
+            .setTitle('Verification Successful')
+            .setDescription(
+              `<a:atick:986173414723162113> **${name}** is not in Dominance\n<:add:1005843961652453487>\
                     Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
-              )
-              .setThumbnail(
-                `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-              );
-            await interaction.editReply({ embeds: [embed] });
-          } else {
-            await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.slayer) as Role);
-            db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(interaction.user.id, uuid);
-            const embed = new EmbedBuilder()
-              .setColor(config.colors.green)
-              .setTitle('Verification Successful')
-              .setDescription(
-                `<a:atick:986173414723162113> **${name}** is in Dominance\n<:add:1005843961652453487>\
+            )
+            .setThumbnail(
+              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+            );
+          await interaction.editReply({ embeds: [embed] });
+        } else {
+          await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.slayer) as Role);
+          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(interaction.user.id, uuid);
+          const embed = new EmbedBuilder()
+            .setColor(config.colors.green)
+            .setTitle('Verification Successful')
+            .setDescription(
+              `<a:atick:986173414723162113> **${name}** is in Dominance\n<:add:1005843961652453487>\
                       Added: <@&445669382539051008>, <@&1031926129822539786>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
-              )
-              .setThumbnail(
-                `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-              );
-            await interaction.editReply({ embeds: [embed] });
-          }
+            )
+            .setThumbnail(
+              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
+            );
+          await interaction.editReply({ embeds: [embed] });
         }
       } else {
         const embed = new EmbedBuilder().setColor(config.colors.red).setTitle('Verification Unsuccessful')
@@ -650,17 +637,13 @@ export default async function execute(client: Client, interaction: Interaction) 
       const q3 = interaction.fields.getTextInputValue('q3Input');
 
       const uuid = discordToUuid(interaction.user.id)!;
-      const playerRawResponse = await fetchPlayerRaw(uuid);
-      if (!playerRawResponse.success) {
-        await interaction.editReply(hypixelApiError(playerRawResponse.cause));
-        return;
-      }
-      if (!playerRawResponse.player) {
-        await interaction.editReply(hypixelApiError(String(playerRawResponse.player)));
-        return;
-      }
+      const playerResponse = await hypixel.getPlayer(uuid).catch(async (e) => {
+        await interaction.editReply(hypixelApiError(e.message));
+      });
 
-      const requirementData = await requirements(uuid, playerRawResponse.player);
+      if (!playerResponse) return;
+
+      const requirementData = await requirements(uuid, playerResponse);
       const name = (await uuidToName(uuid))!;
 
       const applicationEmbed = new EmbedBuilder()

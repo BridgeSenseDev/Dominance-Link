@@ -1,5 +1,6 @@
 import { Client, EmbedBuilder, Guild, Role, TextChannel, ThreadChannel, WebhookClient } from 'discord.js';
 import { getNetworth } from 'skyhelper-networth';
+import { Player } from 'hypixel-api-reborn';
 import Database from 'better-sqlite3';
 import {
   abbreviateNumber,
@@ -16,8 +17,7 @@ import { chat } from '../../handlers/workerHandler.js';
 import { textChannels } from '../discord/ready.js';
 import { discordRoles } from '../../helper/constants.js';
 import { BreakMember, WaitlistMember } from '../../types/global.d.js';
-import { fetchPlayerRaw, fetchSkyblockProfiles } from '../../api.js';
-import { processPlayer } from '../../types/api/processors/processPlayers.js';
+import { hypixel } from '../../index.js';
 
 const db = new Database('guild.db');
 db.defaultSafeIntegers(true);
@@ -127,35 +127,22 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
 
     if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
       name = msg.split('!bw ')[1]?.split(' ')[0];
-      uuid = await nameToUuid(name);
-      if (!uuid) {
-        await chat(`/gc Error: ${name} is an invalid IGN`);
-        return;
-      }
 
-      const playerRawResponse = await fetchPlayerRaw(uuid);
-      if (!playerRawResponse.success) {
-        await chat(`/gc Error: ${playerRawResponse.cause}`);
-        return;
-      }
-      if (!playerRawResponse.player) {
-        await chat(`/gc Error: ${playerRawResponse.player}`);
-        return;
-      }
+      const player = (await hypixel.getPlayer(name).catch(async (e) => {
+        await chat(`/gc Error: ${e}`);
+      })) as Player;
+      if (!player) return;
 
-      const processedPlayer = processPlayer(playerRawResponse.player, ['bedwars']);
-      const bedwars = processedPlayer.stats.Bedwars;
+      const bedwars = player.stats?.bedwars;
+      const star = bedwars?.level ?? 0;
+      const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
+      const fk = formatNumber(bedwars?.finalKills ?? 0);
+      const fkdr = formatNumber(bedwars?.finalKDRatio ?? 0);
+      const wins = formatNumber(bedwars?.wins ?? 0);
+      const wlr = formatNumber(bedwars?.WLRatio ?? 0);
+      const ws = formatNumber(bedwars?.winstreak ?? 0);
 
-      const star = bedwars?.star ?? 0;
-      const { rankTag } = processedPlayer;
-      const fk = formatNumber(bedwars?.overall.finalKills ?? 0);
-      const fkdr = formatNumber(bedwars?.overall.fkdr ?? 0);
-      const wins = formatNumber(bedwars?.overall.wins ?? 0);
-      const wlr = formatNumber(bedwars?.overall.wlr ?? 0);
-      const bblr = formatNumber(bedwars?.overall.bblr ?? 0);
-      const ws = formatNumber(bedwars?.overall.winstreak ?? 0);
-
-      await chat(`/gc [${star}✫] ${rankTag} FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} BBLR: ${bblr} WS: ${ws}`);
+      await chat(`/gc [${star}✫] ${rankTag}FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`);
     } else if (msg.includes('!d') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
       name = msg.split('!d ')[1]?.split(' ')[0];
       uuid = await nameToUuid(name);
@@ -164,47 +151,32 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         return;
       }
 
-      const playerRawResponse = await fetchPlayerRaw(uuid);
-      if (!playerRawResponse.success) {
-        await chat(`/gc Error: ${playerRawResponse.cause}`);
-        return;
-      }
-      if (!playerRawResponse.player) {
-        await chat(`/gc Error: ${playerRawResponse.player}`);
-        return;
-      }
+      const player = (await hypixel.getPlayer(name).catch(async (e) => {
+        await chat(`/gc Error: ${e}`);
+      })) as Player;
+      if (!player) return;
 
-      const processedPlayer = processPlayer(playerRawResponse.player, ['duels']);
-      const duels = processedPlayer.stats.Duels;
+      const duels = player.stats?.duels;
+      const division = duels?.division ? '' : `[${duels?.division}] `;
+      const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
+      const wins = formatNumber(duels?.wins ?? 0);
+      const wlr = formatNumber(duels?.WLRatio ?? 0);
+      const cws = formatNumber(duels?.winstreak ?? 0);
+      const bws = formatNumber(duels?.bestWinstreak ?? 0);
 
-      const division = duels?.general.division;
-      const { rankTag } = processedPlayer;
-      const wins = formatNumber(duels?.general.wins ?? 0);
-      const wlr = formatNumber(duels?.general.wlr ?? 0);
-      const cws = formatNumber(duels?.general.winstreaks.current.overall ?? 0);
-      const bws = formatNumber(duels?.general.winstreaks.best.overall ?? 0);
-
-      await chat(`/gc [${division}] ${rankTag} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`);
+      await chat(`/gc ${division}${rankTag} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`);
     } else if (msg.includes('!sb') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
       name = msg.split('!sb ')[1]?.split(' ')[0];
-      uuid = await nameToUuid(name);
-      if (!uuid) {
-        await chat(`/gc Error: ${name} is an invalid IGN`);
-        return;
-      }
 
-      const playerRawResponse = await fetchPlayerRaw(uuid);
-      if (!playerRawResponse.success) {
-        await chat(`/gc Error: ${playerRawResponse.cause}`);
-        return;
-      }
-      if (!playerRawResponse.player) {
-        await chat(`/gc Error: ${playerRawResponse.player}`);
-        return;
-      }
+      const player = (await hypixel.getPlayer(name).catch(async (e) => {
+        await chat(`/gc Error: ${e}`);
+      })) as Player;
+      if (!player) return;
 
-      const processedPlayer = processPlayer(playerRawResponse.player);
-      const skyblockProfilesResponse = await fetchSkyblockProfiles(uuid);
+      const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(name, { raw: true }).catch(async (e) => {
+        await chat(`/gc Error: ${e}`);
+      })) as any;
+
       if (!skyblockProfilesResponse.success) {
         await chat(`/gc Error: ${skyblockProfilesResponse.cause}`);
         return;
@@ -214,17 +186,13 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         return;
       }
 
-      const profile = skyblockProfilesResponse.profiles.find((i: any) => i.selected);
-      if (!profile) {
-        await chat(`/gc Error: ${name} has no skyblock profiles`);
-        return;
-      }
-      const profileData = profile.members[uuid];
+      const { profiles } = skyblockProfilesResponse;
+      const profile = profiles.find((i: any) => i.selected);
       const bankBalance = profile.banking?.balance;
-      const networth = abbreviateNumber((await getNetworth(profileData, bankBalance)).networth);
-      const sa = formatNumber(await skillAverage(profileData));
-      const level = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
-      const { rankTag } = processedPlayer;
+      const networth = abbreviateNumber((await getNetworth(profile, bankBalance)).networth);
+      const sa = formatNumber(await skillAverage(profile));
+      const level = Math.floor(profile.leveling?.experience ? profile.leveling.experience / 100 : 0);
+      const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
 
       await chat(`/gc [${level}] ${rankTag} NW: ${networth} SA: ${sa}`);
     }

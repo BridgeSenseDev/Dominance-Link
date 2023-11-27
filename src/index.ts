@@ -1,6 +1,9 @@
 import { Client, GatewayIntentBits } from 'discord.js';
+import Hypixel from 'hypixel-api-reborn';
 import config from './config.json' assert { type: 'json' };
 import ready from './events/discord/ready.js';
+
+export const hypixel = new Hypixel.Client(config.keys.hypixelApiKey);
 
 const client: Client = new Client({
   intents: [

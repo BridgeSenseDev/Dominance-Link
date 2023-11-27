@@ -2,7 +2,7 @@ import { Worker } from 'worker_threads';
 import { fileURLToPath } from 'url';
 import { Client, Message, TextChannel, VoiceChannel } from 'discord.js';
 import { database, gsrun, players, sheet, weekly } from '../../helper/database.js';
-import { gexpWatch } from '../../helper/gexpWatch.js';
+import gexpWatch from '../../helper/gexpWatch.js';
 import channelUpdate from '../../helper/channelUpdate.js';
 import { autoRejoin, startBot } from '../../handlers/workerHandler.js';
 import config from '../../config.json' assert { type: 'json' };
@@ -11,7 +11,6 @@ import { breakUpdate, unverifiedUpdate } from '../../helper/messageUpdate.js';
 import { logInterval } from '../minecraft/message.js';
 import discordCommands from '../../handlers/discordCommands.js';
 import discordEvents from '../../handlers/discordEvents.js';
-import { fetchGuildByName } from '../../api.js';
 
 let worker: Worker;
 
@@ -29,17 +28,6 @@ interface VoiceChannels {
   [key: string]: VoiceChannel;
 }
 const voiceChannels: VoiceChannels = {};
-
-const dominanceResponse = await fetchGuildByName('Dominance');
-const rebelResponse = await fetchGuildByName('Rebel');
-
-if (rebelResponse.success && dominanceResponse.success) {
-  global.dominanceGexp = dominanceResponse.guild?.exp ?? 0;
-  global.rebelGexp = rebelResponse.guild?.exp ?? 0;
-} else {
-  global.dominanceGexp = 0;
-  global.rebelGexp = 0;
-}
 
 global.onlineMembers = 0;
 global.lastMessage = {};

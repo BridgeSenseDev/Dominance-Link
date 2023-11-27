@@ -1,12 +1,11 @@
 import { schedule } from 'node-cron';
 import { EmbedBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
+import { hypixel } from '../index.js';
 import config from '../config.json' assert { type: 'json' };
 import { textChannels } from '../events/discord/ready.js';
-import { doubleDigits, formatNumber, sleep, toCamelCase } from './utils.js';
+import { doubleDigits, toCamelCase } from './utils.js';
 import { NumberObject, StringObject } from '../types/global.d.js';
-import { fetchGuildByName } from '../api.js';
-import { chat } from '../handlers/workerHandler.js';
 
 const db = new Database('guild.db');
 
@@ -51,7 +50,7 @@ function ensureDataForDate(date: string, guild: string) {
   );
 }
 
-export async function gexpWatch() {
+export default async function gexpWatch() {
   schedule(
     '00 50 11 * * 0-6',
     async () => {
@@ -73,10 +72,8 @@ export async function gexpWatch() {
       const guildGexp: NumberObject = {};
 
       for (const i in guildNames) {
-        const guildResponse = await fetchGuildByName(guildNames[i]);
-        if (guildResponse.success && guildResponse.guild) {
-          guildGexp[i] = guildResponse.guild.exp;
-        }
+        const guildResponse = await hypixel.getGuild('name', i, {});
+        guildGexp[i] = guildResponse.experience;
       }
 
       const date = new Date();
@@ -162,39 +159,4 @@ export async function gexpWatch() {
       timezone: 'Asia/Hong_Kong'
     }
   );
-}
-
-export async function gexpUpdate() {
-  schedule('0 * * * *', async () => {
-    const dominanceResponse = await fetchGuildByName('Dominance');
-    const rebelResponse = await fetchGuildByName('Rebel');
-
-    if (!rebelResponse.success || !dominanceResponse.success) {
-      return;
-    }
-
-    if (!dominanceResponse.guild?.exp || !rebelResponse.guild?.exp) {
-      return;
-    }
-
-    const dominanceGexp = dominanceResponse.guild.exp;
-    const rebelGexp = rebelResponse.guild.exp;
-    const gained = dominanceGexp - rebelGexp - (global.dominanceGexp - global.rebelGexp);
-    const absoluteGained = Math.abs(gained);
-    const gainedText = gained >= 0 ? 'gained' : 'lost';
-    const difference = dominanceGexp - rebelGexp;
-    const absoluteDifference = Math.abs(difference);
-    const differenceText = difference >= 0 ? 'ahead of' : 'behind';
-
-    await chat(`/gc We earned ${formatNumber(dominanceGexp - global.dominanceGexp)} GEXP in the past hour`);
-    await sleep(1000);
-    await chat(
-      `/gc We ${gainedText} ${formatNumber(absoluteGained)} GEXP over rebel and are now ${formatNumber(
-        absoluteDifference
-      )} GEXP ${differenceText} them`
-    );
-
-    global.dominanceGexp = dominanceGexp;
-    global.rebelGexp = rebelGexp;
-  });
 }

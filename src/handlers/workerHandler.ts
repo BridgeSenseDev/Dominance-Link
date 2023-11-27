@@ -1,7 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import { textChannels, worker } from '../events/discord/ready.js';
-import { fetchStatus } from '../api.js';
+import { hypixel } from '../index.js';
 
 export async function startBot() {
   const client = (await import('../index.js')).default;
@@ -30,8 +30,8 @@ export async function quit() {
 
 export async function autoRejoin() {
   setInterval(async () => {
-    const statusResponse = await fetchStatus(config.minecraft.ign);
-    if (statusResponse.success && !statusResponse.session.online) {
+    const status = await hypixel.getStatus(config.minecraft.ign);
+    if (!status.online) {
       console.log('[MINECRAFT] Restarting bot');
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)

@@ -5,13 +5,20 @@ import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import { uuidToName, skillAverage, uuidToDiscord, doubleDigits, abbreviateNumber, toCamelCase } from './utils.js';
+import {
+  uuidToName,
+  skillAverage,
+  uuidToDiscord,
+  doubleDigits,
+  abbreviateNumber,
+  toCamelCase,
+  rankTagF
+} from './utils.js';
 import { bwPrestiges, duelsDivisionRoles, discordRoles, hypixelRoles } from './constants.js';
 import { DiscordMember, HypixelGuildMember, HypixelRoleKeys, StringObject } from '../types/global.d.js';
-import { fetchGuildByName, fetchPlayerRaw, fetchSkyblockProfiles } from '../api.js';
-import { processPlayer } from '../types/api/processors/processPlayers.js';
 import { textChannels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
+import { hypixel } from '../index.js';
 
 const db = new Database('guild.db');
 
@@ -129,16 +136,13 @@ export async function weekly(client: Client) {
 
 export async function database() {
   setInterval(async () => {
-    const response = await fetchGuildByName('Dominance');
-    if (!response.success || !response.guild) {
-      return;
-    }
+    const guild = await hypixel.getGuild('name', 'Dominance', {});
 
-    const members = response.guild.members.map((member) => {
-      const { uuid, rank, expHistory, joined } = member;
-      const weeklyGexp = Object.values(expHistory).reduce((acc, cur) => acc + cur, 0);
-      const firstExpKey = Object.keys(expHistory)[0];
-      const firstExpValue = Object.values(expHistory)[0];
+    const members = guild.members.map((member) => {
+      const { uuid, rank, expHistory, joinedAtTimestamp } = member;
+      const weeklyGexp = member.expHistory.reduce((acc, cur) => acc + cur.exp, 0);
+      const currentDay = expHistory[0].day;
+      const currentDailyExp = expHistory[0].exp;
 
       if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
         db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
@@ -148,14 +152,14 @@ export async function database() {
 
       try {
         db.prepare(
-          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${firstExpKey}") = (?, ?, ?, ?) WHERE uuid = ?`
-        ).run(`[${rank}]`, weeklyGexp, joined, firstExpValue, uuid);
+          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${currentDay}") = (?, ?, ?, ?) WHERE uuid = ?`
+        ).run(`[${rank}]`, weeklyGexp, joinedAtTimestamp, currentDailyExp, uuid);
       } catch {
-        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${firstExpKey}" INTEGER`).run();
-        db.prepare(`ALTER TABLE guildMemberArchives ADD COLUMN "${firstExpKey}" INTEGER`).run();
+        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${currentDay}" INTEGER`).run();
+        db.prepare(`ALTER TABLE guildMemberArchives ADD COLUMN "${currentDay}" INTEGER`).run();
         db.prepare(
-          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${firstExpKey}") = (?, ?, ?, ?) WHERE uuid = ?`
-        ).run(`[${rank}]`, weeklyGexp, joined, firstExpValue, uuid);
+          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${currentDay}") = (?, ?, ?, ?) WHERE uuid = ?`
+        ).run(`[${rank}]`, weeklyGexp, joinedAtTimestamp, currentDailyExp, uuid);
       }
 
       return uuid;
@@ -176,11 +180,9 @@ export async function gsrun(sheets: JWT, client: Client) {
     async () => {
       const gsapi = google.sheets({ version: 'v4', auth: sheets });
       const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
-      const response = await fetchGuildByName('Dominance');
-      if (!response.success || !response.guild) {
-        return;
-      }
-      const guildMembers = response.guild.members;
+      const guild = await hypixel.getGuild('name', 'Dominance', {});
+
+      const guildMembers = guild.members;
       const array = [];
       for (let i = data.length - 1; i >= 0; i--) {
         for (let j = Object.keys(data[i]).length; j >= 0; j--) {
@@ -276,29 +278,26 @@ export async function players() {
 
     const ingameRole = data.tag.replace(/\[|\]/g, '');
 
-    const skyblockProfilesResponse = await fetchSkyblockProfiles(data.uuid);
+    const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(data.uuid, { raw: true })) as any;
     if (!skyblockProfilesResponse.success) {
       return;
     }
     const { profiles } = skyblockProfilesResponse;
 
-    const playerRawResponse = await fetchPlayerRaw(data.uuid);
-    if (!playerRawResponse.success) {
+    let player;
+    try {
+      player = await hypixel.getPlayer(data.uuid);
+    } catch (e) {
       return;
     }
-    if (!playerRawResponse.player) {
-      return;
-    }
-
-    const processedPlayer = processPlayer(playerRawResponse.player, ['duels', 'bedwars', 'skywars']);
 
     let networth = 0;
     let sa = 0;
 
-    const bwFkdr = +(processedPlayer.stats.Bedwars?.overall.fkdr.toFixed(1) ?? 0);
-    const bwStars = processedPlayer.stats.Bedwars?.star ?? 0;
-    const duelsWins = processedPlayer.stats.Duels?.general.wins ?? 0;
-    const duelsWlr = +(processedPlayer.stats.Duels?.general.wlr.toFixed(1) ?? 0);
+    const bwFkdr = +(player.stats?.bedwars?.finalKDRatio.toFixed(1) ?? 0);
+    const bwStars = player.stats?.bedwars?.level ?? 0;
+    const duelsWins = player.stats?.duels?.wins ?? 0;
+    const duelsWlr = +(player.stats?.duels?.WLRatio.toFixed(1) ?? 0);
 
     if (profiles) {
       const profile = profiles.find((i: any) => i.selected);
@@ -375,7 +374,7 @@ export async function players() {
       }
 
       if (!['[Owner]', '[GUILDMASTER]'].includes(data.tag)) {
-        const ign = processedPlayer.username;
+        const ign = player.nickname;
         await member.roles.add(slayerRole);
         const { displayName } = member;
         if (!displayName.toUpperCase().includes(ign.toUpperCase())) {
@@ -440,7 +439,7 @@ export async function players() {
       db.prepare(
         'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
       ).run(
-        processedPlayer.rankTagF,
+        rankTagF(player),
         bwStars,
         bwFkdr,
         duelsWins,
@@ -452,7 +451,7 @@ export async function players() {
     } else {
       db.prepare(
         'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
-      ).run(processedPlayer.rankTagF, bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
+      ).run(rankTagF(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
     }
   }, 7 * 1000);
 

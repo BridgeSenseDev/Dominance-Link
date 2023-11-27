@@ -5,7 +5,7 @@ import renderBox, { renderSkin } from '../helper/render.js';
 import { abbreviateNumber, doubleDigits, nameToUuid, uuidToName } from '../helper/utils.js';
 import { DiscordMember, HypixelGuildMember, StringObject } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
-import { fetchStatus } from '../api.js';
+import { hypixel } from '../index.js';
 
 const db = new Database('guild.db');
 
@@ -244,8 +244,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   );
 
   let online = '§cCurrently Offline';
-  const status = await fetchStatus(uuid);
-  if (status.success && status.session.online) {
+  const status = await hypixel.getStatus(uuid);
+  if (status.online) {
     online = '§aCurrently Online';
   } else if ((await uuidToName(uuid))! in global.playtime) {
     online = '§aCurrently Online';
