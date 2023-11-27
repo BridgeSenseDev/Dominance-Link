@@ -431,30 +431,26 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       await thread.setArchived();
       await thread.setLocked();
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(breakData.discord, uuid);
-      await chat(
-        `/gc Welcome back from your break, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`
-      );
+      await chat(`/gc Welcome back from your break, ${name}! ${funFact}`);
       await textChannels.guildChat.send(
-        `<a:wave_animated:1036265311390928897> Welcome back from your break, <@${breakData.discord}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
+        `<a:wave_animated:1036265311390928897> Welcome back from your break, <@${breakData.discord}>! ${funFacts[2].fact}`
       );
       return;
     } catch (e) {
       /* empty */
     }
-    await chat(
-      `/gc Welcome to Dominance, ${name}! Our current GEXP requirement is ${config.guild.gexpReq} per week. ${funFact}`
-    );
+    await chat(`/gc Welcome to Dominance, ${name}! ${funFact}`);
     const discordId = uuidToDiscord(uuid);
     if (discordId) {
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId, uuid);
       await textChannels.guildChat.send(
-        `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discordId}>! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
+        `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discordId}>! ${funFacts[2].fact}`
       );
       const member = await textChannels.guildChat.guild.members.fetch(discordId);
       await member.roles.add(discordRoles.slayer);
     } else {
       await textChannels.guildChat.send(
-        `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! Our current gexp requirement is ${config.guild.gexpReq} per week. ${funFacts[2].fact}`
+        `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! ${funFacts[2].fact}`
       );
     }
   } else if (msg.includes('have 5 minutes to accept') && msg.includes('invite')) {

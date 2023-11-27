@@ -21,14 +21,14 @@ client.on('ready', async () => {
     .setColor(config.colors.discordGray)
     .setAuthor({ name: 'Guild Requirements', iconURL: config.guild.icon })
     .setDescription(
-      `**Our current GEXP requirement is \`${config.guild.gexpReq}\` per week\nClick the button below to check if you meet our ` +
-        `requirements**\n\n${dividers(23)}\n\n**Requirements:**\n\n**You can join if you meet at least one of these requirements:**\n` +
-        `${bullet}**Weekly GEXP**\n${invis}${sub} \`${formatNumber(config.guild.gexpReqNum)}\` Weekly GEXP\n${bullet}**Achievement ` +
-        `Points**\n${invis}${sub} \`9,000\` Achievement Points\n${bullet}**Bedwars 1**\n${invis}${sub} \`300\` Stars\n${invis}${sub} ` +
-        `\`3\` FKDR\n${bullet}**Bedwars 2**\n${invis}${sub} \`150\` Stars\n${invis}${sub} \`5\` FKDR\n${bullet}**Duels 1**\n${invis}` +
-        `${sub} \`6,500\` Wins\n${invis}${sub} \`2\` WLR\n${bullet}**Duels 2**\n${invis}${sub} \`3,000\` Wins\n${invis}${sub} \`4\` WLR\n${bullet}` +
-        `**Skywars 1**\n${invis}${sub} \`12\` Stars\n${invis}${sub} \`1\` KDR\n${bullet}**Skywars 2**\n${invis}${sub} \`10\` Stars\n${invis}${sub} ` +
-        `\`1.5\` KDR\n${bullet}**Skyblock (API ON)**\n${invis}${sub} \`3b\` Networth\n${invis}${sub} \`40\` Skill Average`
+      `**We have NO GEXP requirements\nClick the button below to check if you meet our requirements**\n\n${dividers(23)}\n\n**Requirements:` +
+        `**\n\n**You can join if you meet at least one of these requirements:**\n${bullet}**Weekly GEXP**\n${invis}${sub} \`` +
+        `${formatNumber(config.guild.gexpReqNum)}\` Weekly GEXP\n${bullet}**Achievement Points**\n${invis}${sub} \`9,000\` Achievement ` +
+        `Points\n${bullet}**Bedwars 1**\n${invis}${sub} \`300\` Stars\n${invis}${sub} \`3\` FKDR\n${bullet}**Bedwars 2**\n${invis}${sub} ` +
+        `\`150\` Stars\n${invis}${sub} \`5\` FKDR\n${bullet}**Duels 1**\n${invis}${sub} \`6,500\` Wins\n${invis}${sub} \`2\` WLR\n` +
+        `${bullet}**Duels 2**\n${invis}${sub} \`3,000\` Wins\n${invis}${sub} \`4\` WLR\n${bullet}**Skywars 1**\n${invis}${sub} \`12\` ` +
+        `Stars\n${invis}${sub} \`1\` KDR\n${bullet}**Skywars 2**\n${invis}${sub} \`10\` Stars\n${invis}${sub} \`1.5\` KDR\n${bullet}` +
+        `**Skyblock (API ON)**\n${invis}${sub} \`3b\` Networth\n${invis}${sub} \`40\` Skill Average`
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,
