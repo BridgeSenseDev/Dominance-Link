@@ -22,103 +22,109 @@ export const sheet = new google.auth.JWT(config.sheets.clientEmail, undefined, c
 sheet.authorize();
 
 export async function weekly(client: Client) {
-  schedule('55 11 * * 0', async () => {
-    const roleDesc: StringObject = {};
-    const assignedMembers = new Set();
+  schedule(
+    '55 11 * * 0',
+    async () => {
+      const roleDesc: StringObject = {};
+      const assignedMembers = new Set();
 
-    for (const [role, data] of Object.entries(hypixelRoles)) {
-      roleDesc[role] = '';
+      for (const [role, data] of Object.entries(hypixelRoles)) {
+        roleDesc[role] = '';
 
-      const roleMembers = db
-        .prepare(
-          `SELECT uuid, discord, weeklyGexp, joined FROM guildMembers WHERE weeklyGexp >= (?) AND uuid NOT IN (${Array.from(
-            assignedMembers
+        const roleMembers = db
+          .prepare(
+            `SELECT uuid, discord, weeklyGexp, joined FROM guildMembers WHERE weeklyGexp >= (?) AND uuid NOT IN (${Array.from(
+              assignedMembers
+            )
+              .map(() => '?')
+              .join(',')}) ORDER BY weeklyGexp DESC`
           )
-            .map(() => '?')
-            .join(',')}) ORDER BY weeklyGexp DESC`
-        )
-        .all(data.gexp, ...Array.from(assignedMembers)) as HypixelGuildMember[];
+          .all(data.gexp, ...Array.from(assignedMembers)) as HypixelGuildMember[];
 
-      roleMembers.sort((a, b) => b.weeklyGexp - a.weeklyGexp);
+        roleMembers.sort((a, b) => b.weeklyGexp - a.weeklyGexp);
 
-      for (const i in roleMembers) {
-        assignedMembers.add(roleMembers[i].uuid);
+        for (const i in roleMembers) {
+          assignedMembers.add(roleMembers[i].uuid);
 
-        const days = (new Date().getTime() - new Date(roleMembers[i].joined).getTime()) / (1000 * 3600 * 24);
+          const days = (new Date().getTime() - new Date(roleMembers[i].joined).getTime()) / (1000 * 3600 * 24);
 
-        if (days >= data.days) {
-          for (const j in hypixelRoles) {
-            if (days >= hypixelRoles[j as HypixelRoleKeys].days) {
-              db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(
-                `[${hypixelRoles[j as HypixelRoleKeys].name}]`,
-                roleMembers[i].uuid
-              );
-              break;
+          if (days >= data.days) {
+            for (const j in hypixelRoles) {
+              if (days >= hypixelRoles[j as HypixelRoleKeys].days) {
+                db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(
+                  `[${hypixelRoles[j as HypixelRoleKeys].name}]`,
+                  roleMembers[i].uuid
+                );
+                break;
+              }
             }
+          } else {
+            db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(
+              `[${data.name}]`,
+              roleMembers[i].uuid
+            );
           }
-        } else {
-          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(
-            `[${data.name}]`,
-            roleMembers[i].uuid
-          );
-        }
 
-        if (roleMembers[i].discord) {
-          roleDesc[role] += `\n\`${parseInt(i, 10) + 1}.\` ${await client.users.fetch(
-            roleMembers[i].discord
-          )} - \`${abbreviateNumber(roleMembers[i].weeklyGexp)}\``;
-        } else {
-          roleDesc[role] += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(
-            roleMembers[i].uuid
-          )} - \`${abbreviateNumber(roleMembers[i].weeklyGexp)}\``;
+          if (roleMembers[i].discord) {
+            roleDesc[role] += `\n\`${parseInt(i, 10) + 1}.\` ${await client.users.fetch(
+              roleMembers[i].discord
+            )} - \`${abbreviateNumber(roleMembers[i].weeklyGexp)}\``;
+          } else {
+            roleDesc[role] += `\n\`${parseInt(i, 10) + 1}.\` ${await uuidToName(
+              roleMembers[i].uuid
+            )} - \`${abbreviateNumber(roleMembers[i].weeklyGexp)}\``;
+          }
         }
       }
-    }
 
-    const slayerMembers = db
-      .prepare(
-        `SELECT uuid, discord, weeklyGexp, joined FROM guildMembers WHERE uuid NOT IN (${Array.from(assignedMembers)
-          .map(() => '?')
-          .join(',')})`
-      )
-      .all(...Array.from(assignedMembers)) as HypixelGuildMember[];
+      const slayerMembers = db
+        .prepare(
+          `SELECT uuid, discord, weeklyGexp, joined FROM guildMembers WHERE uuid NOT IN (${Array.from(assignedMembers)
+            .map(() => '?')
+            .join(',')})`
+        )
+        .all(...Array.from(assignedMembers)) as HypixelGuildMember[];
 
-    for (const i in slayerMembers) {
-      const days = (new Date().getTime() - new Date(slayerMembers[i].joined).getTime()) / (1000 * 3600 * 24);
+      for (const i in slayerMembers) {
+        const days = (new Date().getTime() - new Date(slayerMembers[i].joined).getTime()) / (1000 * 3600 * 24);
 
-      for (const j in hypixelRoles) {
-        if (days >= hypixelRoles[j as HypixelRoleKeys].days) {
-          db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(
-            `[${hypixelRoles[j as HypixelRoleKeys].name}]`,
-            slayerMembers[i].uuid
-          );
-          break;
+        for (const j in hypixelRoles) {
+          if (days >= hypixelRoles[j as HypixelRoleKeys].days) {
+            db.prepare('UPDATE guildMembers SET targetRank = ? WHERE uuid = ?').run(
+              `[${hypixelRoles[j as HypixelRoleKeys].name}]`,
+              slayerMembers[i].uuid
+            );
+            break;
+          }
         }
       }
+
+      const date = new Date();
+      date.setDate(date.getDate() - 1);
+      const previous = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
+      date.setDate(date.getDate() - 6);
+      const prevWeek = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
+
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.discordGray)
+        .setTitle(`Weekly Roles Update ${prevWeek} - ${previous}`)
+        .setDescription(
+          `${Object.entries(roleDesc)
+            .filter(([, desc]) => desc.trim() !== '')
+            .map(
+              ([role, desc]) =>
+                `Congrats to the following **${hypixelRoles[role as HypixelRoleKeys].name}** members:${desc}`
+            )
+            .join('\n\n')}\n\n**Detailed stats can be found in https://dominance.cf/sheets**`
+        )
+        .setImage(config.guild.banner);
+
+      await textChannels.announcements.send({ content: '<@&1031926129822539786>', embeds: [embed] });
+    },
+    {
+      timezone: 'Asia/Hong_Kong'
     }
-
-    const date = new Date();
-    date.setDate(date.getDate() - 1);
-    const previous = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
-    date.setDate(date.getDate() - 6);
-    const prevWeek = `${doubleDigits(date.getDate())}/${doubleDigits(date.getMonth() + 1)}/${date.getFullYear()}`;
-
-    const embed = new EmbedBuilder()
-      .setColor(config.colors.discordGray)
-      .setTitle(`Weekly Roles Update ${prevWeek} - ${previous}`)
-      .setDescription(
-        `${Object.entries(roleDesc)
-          .filter(([, desc]) => desc.trim() !== '')
-          .map(
-            ([role, desc]) =>
-              `Congrats to the following **${hypixelRoles[role as HypixelRoleKeys].name}** members:${desc}`
-          )
-          .join('\n\n')}\n\n**Detailed stats can be found in https://dominance.cf/sheets**`
-      )
-      .setImage(config.guild.banner);
-
-    await textChannels.announcements.send({ content: '<@&1031926129822539786>', embeds: [embed] });
-  });
+  );
 }
 
 export async function database() {
