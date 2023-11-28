@@ -144,7 +144,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       const wlr = formatNumber(bedwars?.WLRatio ?? 0);
       const ws = formatNumber(bedwars?.winstreak ?? 0);
 
-      await chat(`/gc [${star}✫] ${rankTag}FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`);
+      await chat(
+        `/gc [${star}✫] ${rankTag}${player.nickname} FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`
+      );
     } else if (msg.includes('!d') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
       if (!msg.endsWith('!d')) {
         name = msg.split('!d ')[1]?.split(' ')[0];
@@ -163,7 +165,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       const cws = formatNumber(duels?.winstreak ?? 0);
       const bws = formatNumber(duels?.bestWinstreak ?? 0);
 
-      await chat(`/gc ${division}${rankTag} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`);
+      await chat(`/gc ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`);
     } else if (msg.includes('!sb') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
       if (!msg.endsWith('!sb')) {
         name = msg.split('!sb ')[1]?.split(' ')[0];
@@ -174,28 +176,27 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       })) as Player;
       if (!player) return;
 
-      const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(name, { raw: true }).catch(async (e) => {
-        await chat(`/gc Error: ${e}`);
-      })) as any;
+      const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(player.uuid, { raw: true })) as any;
 
-      if (!skyblockProfilesResponse.success) {
-        await chat(`/gc Error: ${skyblockProfilesResponse.cause}`);
-        return;
-      }
-      if (!skyblockProfilesResponse.profiles) {
+      if (skyblockProfilesResponse.success && skyblockProfilesResponse.profiles) {
+        const { profiles } = skyblockProfilesResponse;
+        const profile = profiles.find((i: any) => i.selected);
+        if (profile) {
+          const profileData = profile.members[player.uuid];
+          const bankBalance = profile.banking?.balance;
+          const networth = abbreviateNumber((await getNetworth(profileData, bankBalance)).networth);
+          const sa = formatNumber(await skillAverage(profileData));
+          const level = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
+
+          const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
+
+          await chat(`/gc [${level}] ${rankTag}${player.nickname} NW: ${networth} SA: ${sa}`);
+        } else {
+          await chat(`/gc Error: No profiles found for ${name}`);
+        }
+      } else {
         await chat(`/gc Error: No profiles found for ${name}`);
-        return;
       }
-
-      const { profiles } = skyblockProfilesResponse;
-      const profile = profiles.find((i: any) => i.selected);
-      const bankBalance = profile.banking?.balance;
-      const networth = abbreviateNumber((await getNetworth(profile, bankBalance)).networth);
-      const sa = formatNumber(await skillAverage(profile));
-      const level = Math.floor(profile.leveling?.experience ? profile.leveling.experience / 100 : 0);
-      const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
-
-      await chat(`/gc [${level}] ${rankTag} NW: ${networth} SA: ${sa}`);
     }
   } else if (msg.includes('Officer >')) {
     await ocWebhook.send({
