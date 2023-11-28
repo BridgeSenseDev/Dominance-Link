@@ -435,16 +435,16 @@ export function rankTagF(player: Player) {
   if (player.rank === 'MVP') {
     return `§b[MVP] ${player.nickname}`;
   }
+
+  const plusColor = rankColor[player.plusColor?.toCode() ?? 'RED'];
+
   if (player.rank === 'MVP+') {
-    if (!player.plusColor) {
-      return `§b[MVP§c+§b] ${player.nickname}`;
-    }
-    return `§b[MVP${rankColor[player.plusColor.toCode()]}+§b] ${player.nickname}`;
+    return `§b[MVP${plusColor}+§b] ${player.nickname}`;
   }
   if (player.rank === 'MVP++') {
     if (!player.prefixColor || player.prefixColor.toCode() === 'GOLD') {
-      return `§6[MVP++§6] ${player.nickname}`;
+      return `§6[MVP${plusColor}++§6] ${player.nickname}`;
     }
-    return `§b[MVP++§b] ${player.nickname}`;
+    return `§b[MVP${plusColor}++§b] ${player.nickname}`;
   }
 }
