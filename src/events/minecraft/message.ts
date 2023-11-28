@@ -126,7 +126,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
 
     if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
-      name = msg.split('!bw ')[1]?.split(' ')[0];
+      if (!msg.endsWith('!bw')) {
+        name = msg.split('!bw ')[1]?.split(' ')[0];
+      }
 
       const player = (await hypixel.getPlayer(name).catch(async (e) => {
         await chat(`/gc Error: ${e}`);
@@ -144,11 +146,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
 
       await chat(`/gc [${star}✫] ${rankTag}FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`);
     } else if (msg.includes('!d') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
-      name = msg.split('!d ')[1]?.split(' ')[0];
-      uuid = await nameToUuid(name);
-      if (!uuid) {
-        await chat(`/gc Error: ${name} is an invalid IGN`);
-        return;
+      if (!msg.endsWith('!d')) {
+        name = msg.split('!d ')[1]?.split(' ')[0];
       }
 
       const player = (await hypixel.getPlayer(name).catch(async (e) => {
@@ -166,7 +165,9 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
 
       await chat(`/gc ${division}${rankTag} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`);
     } else if (msg.includes('!sb') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
-      name = msg.split('!sb ')[1]?.split(' ')[0];
+      if (!msg.endsWith('!sb')) {
+        name = msg.split('!sb ')[1]?.split(' ')[0];
+      }
 
       const player = (await hypixel.getPlayer(name).catch(async (e) => {
         await chat(`/gc Error: ${e}`);
