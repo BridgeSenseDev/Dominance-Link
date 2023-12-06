@@ -126,14 +126,13 @@ export function fetchGuildMember(identifier: string): HypixelGuildMember | null 
 }
 
 export async function createGuildMember(uuid: string): Promise<void> {
-  const player = await hypixel.getPlayer(uuid);
-
-  if (!player) {
-    throw new Error(`Player with UUID ${uuid} not found`);
-  }
-
   if (fetchGuildMember(uuid)) {
     return;
+  }
+
+  const player = await hypixel.getPlayer(uuid);
+  if (!player) {
+    throw new Error(`Player with UUID ${uuid} not found`);
   }
 
   let messages = 0;
