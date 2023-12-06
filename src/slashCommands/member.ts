@@ -1,15 +1,19 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
-import Database from 'better-sqlite3';
 import { Canvas, Image } from '@julusian/skia-canvas';
 import renderBox, { renderSkin } from '../helper/render.js';
-import { abbreviateNumber, doubleDigits, nameToUuid, uuidToName } from '../helper/utils.js';
-import { DiscordMember, HypixelGuildMember, StringObject } from '../types/global.d.js';
+import { abbreviateNumber, nameToUuid, uuidToName } from '../helper/utils.js';
+import { StringObject } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
 import { hypixel } from '../index.js';
+import {
+  fetchGexpForMember,
+  fetchGuildMember,
+  fetchMember,
+  fetchTotalLifetimeGexp,
+  fetchTotalWeeklyGexp
+} from '../handlers/databaseHandler.js';
 
-const db = new Database('guild.db');
-
-const tagColor: StringObject = {
+const tagColorCodes: StringObject = {
   '[Slayer]': '§2[Slayer]',
   '[Hero]': '§6[Hero]',
   '[Elite]': '§5[Elite]',
@@ -18,14 +22,29 @@ const tagColor: StringObject = {
   '[GM]': '§4[GM]'
 };
 
+async function getOnlineStatus(uuid: string) {
+  async function isOnline() {
+    const status = await hypixel.getStatus(uuid);
+    return status.online;
+  }
+
+  async function isInPlaytime() {
+    return (await uuidToName(uuid))! in global.playtime;
+  }
+
+  return (await (isOnline() || isInPlaytime())) ? '§aCurrently Online' : '§cCurrently Offline';
+}
+
 export const data = new SlashCommandBuilder()
   .setName('member')
   .setDescription('View individual guild member stats')
   .addStringOption((option) =>
     option.setName('name').setDescription('Minecraft username').setRequired(true).setAutocomplete(true)
   );
+
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
+
   const uuid = await nameToUuid(interaction.options.getString('name')!);
   if (!uuid) {
     const embed = new EmbedBuilder()
@@ -35,8 +54,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({ embeds: [embed] });
     return;
   }
-  const member = db.prepare('SELECT * FROM guildMembers WHERE uuid = (?)').get(uuid) as HypixelGuildMember;
-  if (!member) {
+
+  const guildMember = fetchGuildMember(uuid);
+  if (!guildMember) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
@@ -44,6 +64,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({ embeds: [embed] });
     return;
   }
+
+  const gexpHistory = fetchGexpForMember(uuid);
+
   const canvas = new Canvas(591, 568);
   const ctx = canvas.getContext('2d');
   const image = new Image();
@@ -75,7 +98,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       height: 52
     },
     {
-      text: member.nameColor,
+      text: guildMember.nameColor,
       font: '40px Minecraft'
     }
   );
@@ -89,7 +112,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       height: 32
     },
     {
-      text: `§f${new Date(member.joined).toLocaleDateString('en-GB', {
+      text: `§f${new Date(guildMember.joined).toLocaleDateString('en-GB', {
         timeZone: 'UTC'
       })} ➔ ${new Date().toLocaleDateString('en-GB', { timeZone: 'UTC' })}`,
       font: '20px Minecraft'
@@ -105,7 +128,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       height: 32
     },
     {
-      text: tagColor[member.tag],
+      text: tagColorCodes[guildMember.tag],
       font: '22px Minecraft Bold'
     }
   );
@@ -127,48 +150,23 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   let y = 154;
   let x = 13;
 
-  let monthlyGexp = 0;
-  const date = new Date();
-  for (let i = 0; i < 30; i++) {
-    const gexp = member[`${date.getFullYear()}-${doubleDigits(date.getMonth() + 1)}-${doubleDigits(date.getDate())}`];
-    if (gexp && gexp) {
-      monthlyGexp += gexp;
-    }
-    date.setDate(date.getDate() - 1);
-  }
-
-  let lifetimeGexp = 0;
-  for (const i in member) {
-    if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(i)) {
-      lifetimeGexp += Number(member[i]);
-    }
-  }
-
-  let dcMessages;
-  if (!member.discord!) {
-    dcMessages = 0;
-  } else {
-    dcMessages = (db.prepare('SELECT messages FROM members WHERE discord = ?').get(member.discord) as DiscordMember)
-      .messages;
-    if (!dcMessages) {
-      dcMessages = 0;
-    }
-  }
+  const dcMessages = fetchMember(uuid)?.messages ?? 0;
 
   const mainData = [
-    ['§aDaily GEXP', `§a${abbreviateNumber(member[Object.keys(member)[Object.keys(member).length - 1]])}`],
-    ['§aWeekly GEXP', `§a${abbreviateNumber(member.weeklyGexp)}`],
-    ['§aMonthly GEXP', `§a${abbreviateNumber(monthlyGexp)}`],
-    ['§cLifetime GEXP', `§c${abbreviateNumber(lifetimeGexp)}`],
+    ['§aDaily GEXP', `§a${abbreviateNumber(gexpHistory.dailyGexp)}`],
+    ['§aWeekly GEXP', `§a${abbreviateNumber(gexpHistory.weeklyGexp)}`],
+    ['§aMonthly GEXP', `§a${abbreviateNumber(gexpHistory.monthlyGexp)}`],
+    ['§cLifetime GEXP', `§c${abbreviateNumber(gexpHistory.lifetimeGexp)}`],
     [
       '§cGEXP / Day',
       `§c${abbreviateNumber(
-        lifetimeGexp / Number((new Date().getTime() - new Date(member.joined).getTime()) / (1000 * 3600 * 24))
+        gexpHistory.lifetimeGexp /
+          Number((new Date().getTime() - new Date(guildMember.joined).getTime()) / (1000 * 3600 * 24))
       )}`
     ],
-    ['§cGEXP / Playtime', `§c${abbreviateNumber(lifetimeGexp / (member.playtime / 3600))} / H`],
-    ['§6Playtime', `§6${(member.playtime / 3600).toFixed(1)}H`],
-    ['§6MC Messages', `§6${member.messages}`],
+    ['§cGEXP / Playtime', `§c${abbreviateNumber(gexpHistory.lifetimeGexp / (guildMember.playtime / 3600))} / H`],
+    ['§6Playtime', `§6${(guildMember.playtime / 3600).toFixed(1)}H`],
+    ['§6MC Messages', `§6${guildMember.messages}`],
     ['§6DC Messages', `§6${dcMessages}`]
   ];
 
@@ -195,12 +193,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     x += 191;
   }
 
-  let totalWeeklyGexp = 0;
-  const allWeeklyGexp = db.prepare('SELECT weeklyGexp FROM guildMembers').all() as HypixelGuildMember[];
-  for (const i of allWeeklyGexp) {
-    totalWeeklyGexp += i.weeklyGexp;
-  }
-
   renderBox(
     ctx,
     {
@@ -211,21 +203,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     },
     {
       header: '§bWeekly Guild Contribution',
-      text: `§b${((member.weeklyGexp / totalWeeklyGexp) * 100).toFixed(1)}%`,
+      text: `§b${((guildMember.weeklyGexp / fetchTotalWeeklyGexp()) * 100).toFixed(1)}%`,
       font: '20px Minecraft',
       textY: [3, 30]
     }
   );
-
-  let totalLifetimeGexp = 0;
-  const allLifetimeGexp = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
-  for (const memberData of allLifetimeGexp) {
-    for (const i in memberData) {
-      if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(i)) {
-        totalLifetimeGexp += Number(memberData[i]);
-      }
-    }
-  }
 
   renderBox(
     ctx,
@@ -237,19 +219,11 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     },
     {
       header: '§bLifetime Guild Contribution',
-      text: `§b${((lifetimeGexp / totalLifetimeGexp) * 100).toFixed(1)}%`,
+      text: `§b${((gexpHistory.lifetimeGexp / fetchTotalLifetimeGexp()) * 100).toFixed(1)}%`,
       font: '20px Minecraft',
       textY: [3, 30]
     }
   );
-
-  let online = '§cCurrently Offline';
-  const status = await hypixel.getStatus(uuid);
-  if (status.online) {
-    online = '§aCurrently Online';
-  } else if ((await uuidToName(uuid))! in global.playtime) {
-    online = '§aCurrently Online';
-  }
 
   renderBox(
     ctx,
@@ -260,7 +234,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       height: 32
     },
     {
-      text: online,
+      text: await getOnlineStatus(uuid),
       font: '20px Minecraft'
     }
   );

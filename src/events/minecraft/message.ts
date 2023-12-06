@@ -18,6 +18,7 @@ import { textChannels } from '../discord/ready.js';
 import { discordRoles } from '../../helper/constants.js';
 import { BreakMember, WaitlistMember } from '../../types/global.d.js';
 import { hypixel } from '../../index.js';
+import { archiveGuildMember, createGuildMember } from '../../handlers/databaseHandler.js';
 
 const db = new Database('guild.db');
 db.defaultSafeIntegers(true);
@@ -93,11 +94,11 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       const time = Math.floor(Date.now() / 1000) - global.playtime[name];
       if (!Number.isNaN(time)) {
         delete global.playtime[name];
-        if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
-          db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
-          db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
+
+        if (uuid) {
+          createGuildMember(uuid);
         }
-        db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+
         db.prepare('UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)').run(time, uuid);
       }
       return;
@@ -115,14 +116,10 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     }
 
     if (uuid) {
+      createGuildMember(uuid);
       addXp('', uuid);
     }
 
-    if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
-      db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
-      db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
-    }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
     db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
 
     if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
@@ -373,11 +370,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       ]
     });
 
-    if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
-      db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
-      db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
-    }
-    db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+    createGuildMember(uuid);
 
     try {
       const { channel } = db.prepare('SELECT channel FROM waitlist WHERE uuid = ?').get(uuid) as WaitlistMember;
@@ -465,26 +458,20 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     if (!name) {
       name = msg.split(' ')[msg.split(' ').indexOf('was') - 1];
     }
+
     const uuid = await nameToUuid(name);
     if (!uuid) return;
+
+    let member = null;
     const discordId = uuidToDiscord(uuid);
-
-    db.prepare(`INSERT INTO guildMemberArchives SELECT * FROM guildMembers WHERE uuid = ?`).run(uuid);
-    db.prepare('DELETE FROM guildMembers WHERE uuid = ?').run(uuid);
-
     if (discordId) {
       try {
-        const member = await textChannels.guildChat.guild.members.fetch(discordId);
-        await member.roles.remove(discordRoles.slayer);
-        await member.roles.remove(discordRoles.elite);
-        await member.roles.remove(discordRoles.hero);
-        await member.roles.remove(discordRoles.godlike);
-        await member.roles.remove(discordRoles.dominator);
-        await member.roles.remove(discordRoles.goat);
-        await member.roles.remove(discordRoles.staff);
+        member = await textChannels.guildChat.guild.members.fetch(discordId);
       } catch (e) {
         /* empty */
       }
     }
+
+    archiveGuildMember(member, uuid);
   }
 }

@@ -3,8 +3,9 @@ import Database from 'better-sqlite3';
 import { Player } from 'hypixel-api-reborn';
 import { demojify } from 'discord-emoji-converter';
 import { rankColor, levelingXp } from './constants.js';
-import { DiscordMember } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
+import { fetchMember } from '../handlers/databaseHandler.js';
+import { StringObject } from '../types/global.js';
 
 const db = new Database('guild.db');
 
@@ -307,21 +308,17 @@ export function timeStringToSeconds(time: string) {
 }
 
 export function uuidToDiscord(uuid: string): string | null {
-  const discord: { discord: string } | undefined = db
-    .prepare('SELECT discord FROM members WHERE uuid = ?')
-    .get(uuid) as DiscordMember;
-  if (discord) {
-    return discord.discord;
+  const member = fetchMember(uuid);
+  if (member) {
+    return member.discord;
   }
   return null;
 }
 
 export function discordToUuid(discordId: string): string | null {
-  const uuid: { uuid: string } | undefined = db
-    .prepare('SELECT uuid FROM members WHERE discord = ?')
-    .get(discordId) as DiscordMember;
-  if (uuid) {
-    return uuid.uuid;
+  const member = fetchMember(discordId);
+  if (member) {
+    return member.uuid;
   }
   return null;
 }
@@ -446,5 +443,44 @@ export function rankTagF(player: Player) {
       return `§6[MVP${plusColor}++§6] ${player.nickname}`;
     }
     return `§b[MVP${plusColor}++§b] ${player.nickname}`;
+  }
+}
+
+export function formatDateForDb(date: Date): string {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+export function getESTDate(): Date {
+  const date = new Date();
+  const estDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  return estDate;
+}
+
+export function updateTable(startDate: string, endDate: string) {
+  const columns = db.prepare('PRAGMA table_info(gexpHistory)').all() as StringObject[];
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
+  columns.forEach((column) => {
+    const date = column.name;
+    if (date === 'uuid') return;
+    if (!dateRegex.test(date)) {
+      db.exec(`ALTER TABLE gexpHistory DROP COLUMN ${date}`);
+    }
+  });
+
+  for (
+    let currentDate = new Date(startDate);
+    currentDate <= new Date(endDate);
+    currentDate.setDate(currentDate.getDate() + 1)
+  ) {
+    const date = `"${currentDate.toISOString().split('T')[0]}"`;
+    if (!columns.some((column) => `"${column.name}"` === date)) {
+      db.exec(`ALTER TABLE gexpHistory ADD COLUMN ${date} INTEGER`);
+      db.exec(`ALTER TABLE gexpHistoryArchives ADD COLUMN ${date} INTEGER`);
+    }
   }
 }

@@ -10,13 +10,6 @@ export interface NumberObject {
   [key: string]: number;
 }
 
-export interface DiscordMember {
-  discord: string;
-  uuid: string;
-  messages: number;
-  xp: number;
-}
-
 export interface HypixelGuildMember {
   uuid: string;
   discord: string;

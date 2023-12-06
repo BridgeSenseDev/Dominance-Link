@@ -2,8 +2,8 @@ import { Canvas, FontLibrary, loadImage } from '@julusian/skia-canvas';
 import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import { getLevelDetails } from '../helper/utils.js';
-import { DiscordMember } from '../types/global.js';
 import config from '../config.json' assert { type: 'json' };
+import { fetchMember } from '../handlers/databaseHandler.js';
 
 FontLibrary.use('Nunito-Semibold', './fonts/Nunito-Semibold.ttf');
 FontLibrary.use('Nunito-ExtraBold', './fonts/Nunito-ExtraBold.ttf');
@@ -181,7 +181,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const user = (
     interaction.options.getMember('member') ? interaction.options.getMember('member')! : interaction.member!
   ) as GuildMember;
-  const member = db.prepare('SELECT xp FROM members WHERE discord = ?').get(user.id) as DiscordMember;
+  const member = fetchMember(user.id);
 
   if (!member) {
     const embed = new EmbedBuilder()

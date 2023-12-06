@@ -10,10 +10,10 @@ import {
   ComponentType
 } from 'discord.js';
 import Database from 'better-sqlite3';
-import { DiscordMember } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
 import { discordRoles } from '../helper/constants.js';
 import { hypixel } from '../index.js';
+import { createMember, fetchMember } from '../handlers/databaseHandler.js';
 
 const db = new Database('guild.db');
 
@@ -65,7 +65,7 @@ async function verify(
     return;
   }
 
-  let member = db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) as DiscordMember;
+  let member = fetchMember(uuid);
   if (member) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
@@ -77,7 +77,7 @@ async function verify(
     return embed;
   }
 
-  member = db.prepare('SELECT * FROM members WHERE discord = ?').get(discordUser.id) as DiscordMember;
+  member = fetchMember(discordUser.id);
   if (member) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
@@ -117,30 +117,7 @@ async function verify(
   }
 
   if (discord === discordUser.tag) {
-    let messages = 0;
-    let xp = 0;
-
-    const memberArchivesDiscord = db
-      .prepare('SELECT * FROM memberArchives WHERE discord = ?')
-      .get(discordUser.id) as DiscordMember;
-    const memberArchivesUuid = db.prepare('SELECT * FROM memberArchives WHERE uuid = ?').get(uuid) as DiscordMember;
-    if (memberArchivesDiscord) {
-      ({ messages, xp } = memberArchivesDiscord);
-      db.prepare('DELETE FROM memberArchives WHERE discord = ?').run(discordUser.id);
-    } else if (memberArchivesUuid) {
-      ({ messages, xp } = memberArchivesUuid);
-      db.prepare('DELETE FROM memberArchives WHERE uuid = ?').run(uuid);
-    }
-
-    db.prepare('INSERT OR IGNORE INTO members (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
-      discordUser.id,
-      uuid,
-      messages,
-      xp
-    );
-
-    await discordMember.roles.remove(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
-    await discordMember.roles.add(interaction.guild!.roles.cache.get(discordRoles.verified) as Role);
+    createMember(discordMember, uuid);
 
     const { displayName } = discordMember;
     if (!displayName.toUpperCase().includes(name.toUpperCase())) {
@@ -238,51 +215,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       if (collectorInteraction.customId === 'confirmVerification') {
         await collectorInteraction.deferReply();
 
-        let messages = 0;
-        let xp = 0;
-
         const playerData = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player;
         const uuid = playerData.raw_id;
         const name = playerData.username;
-
-        const memberArchivesDiscord = db
-          .prepare('SELECT * FROM memberArchives WHERE discord = ?')
-          .get(discordUser.id) as DiscordMember;
-        const memberArchivesUuid = db.prepare('SELECT * FROM memberArchives WHERE uuid = ?').get(uuid) as DiscordMember;
-        if (memberArchivesDiscord) {
-          ({ messages, xp } = memberArchivesDiscord);
-          db.prepare('DELETE FROM memberArchives WHERE discord = ?').run(discordUser.id);
-        }
-        if (memberArchivesUuid) {
-          ({ messages, xp } = memberArchivesUuid);
-          db.prepare('DELETE FROM memberArchives WHERE uuid = ?').run(uuid);
-        }
-
-        const membersDiscord = db
-          .prepare('SELECT * FROM members WHERE discord = ?')
-          .get(discordUser.id) as DiscordMember;
-        const membersUuid = db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) as DiscordMember;
-        if (membersDiscord) {
-          ({ messages, xp } = membersDiscord);
-          db.prepare('DELETE FROM members WHERE discord = ?').run(discordUser.id);
-        }
-        if (membersUuid) {
-          ({ messages, xp } = membersUuid);
-          db.prepare('DELETE FROM members WHERE uuid = ?').run(uuid);
-        }
-
-        db.prepare('UPDATE guildMembers SET discord = NULL WHERE uuid = ?').run(uuid);
-        db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordUser.id, uuid);
-        db.prepare('INSERT INTO members (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
-          discordUser.id,
-          uuid,
-          messages,
-          xp
-        );
-
         const discordMember = await interaction.guild!.members.fetch(discordUser.id);
-        await discordMember.roles.remove(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
-        await discordMember.roles.add(interaction.guild!.roles.cache.get(discordRoles.verified) as Role);
+
+        createMember(discordMember, uuid);
 
         const embed = new EmbedBuilder()
           .setColor(config.colors.green)

@@ -12,13 +12,17 @@ import {
   doubleDigits,
   abbreviateNumber,
   toCamelCase,
-  rankTagF
+  rankTagF,
+  formatDateForDb,
+  getESTDate,
+  updateTable
 } from './utils.js';
 import { bwPrestiges, duelsDivisionRoles, discordRoles, hypixelRoles } from './constants.js';
-import { DiscordMember, HypixelGuildMember, HypixelRoleKeys, StringObject } from '../types/global.d.js';
+import { HypixelGuildMember, HypixelRoleKeys, StringObject } from '../types/global.d.js';
 import { textChannels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
 import { hypixel } from '../index.js';
+import { archiveMember, createGuildMember } from '../handlers/databaseHandler.js';
 
 const db = new Database('guild.db');
 
@@ -137,6 +141,17 @@ export async function weekly(client: Client) {
 export async function database() {
   setInterval(async () => {
     const guild = await hypixel.getGuild('name', 'Dominance', {});
+    const today = getESTDate();
+
+    const tableInfo = db.prepare('PRAGMA table_info(gexpHistory)').all() as StringObject[];
+    const columnExists = tableInfo.some((column) => column.name === formatDateForDb(today));
+
+    if (!columnExists) {
+      db.prepare(`ALTER TABLE gexpHistory ADD COLUMN "${formatDateForDb(today)}" INTEGER DEFAULT 0`).run();
+      db.prepare(`ALTER TABLE gexpHistoryArchives ADD COLUMN "${formatDateForDb(today)}" INTEGER`).run();
+    }
+
+    updateTable('2022-10-17', formatDateForDb(today));
 
     const members = guild.members.map((member) => {
       const { uuid, rank, expHistory, joinedAtTimestamp } = member;
@@ -144,32 +159,25 @@ export async function database() {
       const currentDay = expHistory[0].day;
       const currentDailyExp = expHistory[0].exp;
 
-      if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
-        db.prepare(`INSERT INTO guildMembers SELECT * FROM guildMemberArchives WHERE uuid = ?`).run(uuid);
-        db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
-      }
-      db.prepare('INSERT OR IGNORE INTO guildMembers (uuid, messages, playtime) VALUES (?, ?, ?)').run(uuid, 0, 0);
+      createGuildMember(uuid);
 
-      try {
-        db.prepare(
-          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${currentDay}") = (?, ?, ?, ?) WHERE uuid = ?`
-        ).run(`[${rank}]`, weeklyGexp, joinedAtTimestamp, currentDailyExp, uuid);
-      } catch {
-        db.prepare(`ALTER TABLE guildMembers ADD COLUMN "${currentDay}" INTEGER`).run();
-        db.prepare(`ALTER TABLE guildMemberArchives ADD COLUMN "${currentDay}" INTEGER`).run();
-        db.prepare(
-          `UPDATE guildMembers SET (tag, weeklyGexp, joined, "${currentDay}") = (?, ?, ?, ?) WHERE uuid = ?`
-        ).run(`[${rank}]`, weeklyGexp, joinedAtTimestamp, currentDailyExp, uuid);
-      }
+      db.prepare(`UPDATE guildMembers SET (tag, weeklyGexp, joined) = (?, ?, ?) WHERE uuid = ?`).run(
+        `[${rank}]`,
+        weeklyGexp,
+        joinedAtTimestamp,
+        uuid
+      );
+
+      db.prepare(`UPDATE gexpHistory SET ("${currentDay}") = (?) WHERE uuid = ?`).run(currentDailyExp, uuid);
 
       return uuid;
     });
 
     const placeholders = members.map(() => '?').join(', ');
+    db.prepare(
+      `INSERT INTO guildMemberArchives SELECT uuid, discord, messages, joined, playtime FROM guildMembers WHERE uuid NOT IN (${placeholders})`
+    ).run(members);
 
-    db.prepare(`INSERT INTO guildMemberArchives SELECT * FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(
-      members
-    );
     db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
     db.prepare('DELETE FROM guildMembers WHERE uuid IS NULL').run();
   }, 60 * 1000);
@@ -333,19 +341,7 @@ export async function players() {
       try {
         member = await guild.members.fetch(data.discord);
       } catch (e) {
-        db.prepare('UPDATE guildMembers SET (discord) = null WHERE uuid = ?').run(data.uuid);
-        const memberData = db.prepare('SELECT * FROM members WHERE discord = ?').get(data.discord) as DiscordMember;
-        if (!memberData) {
-          db.prepare('UPDATE guildMembers set (discord) = null WHERE discord = ?').run(data.dis);
-          return;
-        }
-        db.prepare('INSERT INTO memberArchives (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
-          memberData.discord,
-          memberData.uuid,
-          memberData.messages,
-          memberData.xp
-        );
-        db.prepare('DELETE FROM members WHERE discord = ?').run(data.discord);
+        await archiveMember(null, data.discord);
         return;
       }
 

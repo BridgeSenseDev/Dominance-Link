@@ -31,8 +31,9 @@ import requirements from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { textChannels } from './ready.js';
 import { bullet, dividers, discordRoles } from '../../helper/constants.js';
-import { BreakMember, DiscordMember, HypixelGuildMember } from '../../types/global.d.js';
+import { BreakMember } from '../../types/global.d.js';
 import { hypixel } from '../../index.js';
+import { archiveMember, createMember, fetchGuildMember, fetchMember } from '../../handlers/databaseHandler.js';
 
 const db = new Database('guild.db');
 
@@ -50,17 +51,14 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
     }
   } else if (interaction.isAutocomplete()) {
-    const members = db
+    const nameColorArray = db
       .prepare('SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC')
-      .all() as HypixelGuildMember[];
-    const choices: string[] = [];
-    for (const guildmember of members) {
-      if (guildmember.nameColor) {
-        choices.push(
-          removeSectionSymbols(guildmember.nameColor).split(' ')[guildmember.nameColor.split(' ').length - 1]
-        );
-      }
-    }
+      .pluck()
+      .all() as Array<string>;
+    const choices: string[] = nameColorArray
+      .filter(Boolean)
+      .map((nameColor) => removeSectionSymbols(nameColor).split(' ')[nameColor.split(' ').length - 1]);
+
     const focusedValue = interaction.options.getFocused();
     const filtered = choices
       .filter((choice) => choice.toLowerCase().startsWith(focusedValue.toLowerCase()))
@@ -118,39 +116,19 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.showModal(modal);
     } else if (interaction.customId === 'unverify') {
       await interaction.deferReply({ ephemeral: true });
-      if (!db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id)) {
+
+      const memberData = fetchMember(interaction.user.id);
+
+      if (!memberData) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setDescription(`<a:across:986170696512204820> <@${interaction.user.id}> is already unverified`);
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      const memberData = db
-        .prepare('SELECT * FROM members WHERE discord = ?')
-        .get(interaction.user.id) as DiscordMember;
-      db.prepare('INSERT INTO memberArchives (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
-        memberData.discord,
-        memberData.uuid,
-        memberData.messages,
-        memberData.xp
-      );
-      db.prepare('DELETE FROM members WHERE discord = ?').run(interaction.user.id);
-      db.prepare('UPDATE guildMembers SET discord = NULL WHERE discord = ?').run(interaction.user.id);
-      await member.roles.add(discordRoles.unverified);
-      for (const role of [
-        discordRoles.verified,
-        discordRoles.slayer,
-        discordRoles.elite,
-        discordRoles.hero,
-        discordRoles.godlike,
-        discordRoles.dominator,
-        discordRoles.goat,
-        discordRoles.staff
-      ]) {
-        if (member.roles.cache.has(role)) {
-          await member.roles.remove(role);
-        }
-      }
+
+      archiveMember(member);
+
       const embed = new EmbedBuilder()
         .setColor(config.colors.green)
         .setDescription(`<a:atick:986173414723162113> <@${interaction.user.id}> has been successfully unverified`);
@@ -385,7 +363,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         });
         return;
       }
-      if (!db.prepare('SELECT uuid FROM guildMembers WHERE uuid = ?').get(breakData.uuid)) {
+      if (!fetchGuildMember(breakData.uuid)) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
           .setDescription(
@@ -503,9 +481,10 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
 
-      let memberDb = db.prepare('SELECT * FROM members WHERE uuid = ?').get(uuid) as DiscordMember;
-      if (memberDb) {
-        if (memberDb.discord === interaction.user.id) {
+      let memberData = fetchMember(uuid);
+
+      if (memberData) {
+        if (memberData.discord === interaction.user.id) {
           await member.roles.remove(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
           await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.verified) as Role);
         }
@@ -514,15 +493,15 @@ export default async function execute(client: Client, interaction: Interaction) 
           .setColor(config.colors.red)
           .setTitle('Verification Unsuccessful')
           .setDescription(
-            `<a:across:986170696512204820> **\`${name}\`** is already verified to the discord account <@${memberDb.discord}>`
+            `<a:across:986170696512204820> **\`${name}\`** is already verified to the discord account <@${memberData.discord}>`
           );
         interaction.editReply({ embeds: [embed] });
         return;
       }
 
-      memberDb = db.prepare('SELECT * FROM members WHERE discord = ?').get(interaction.user.id) as DiscordMember;
-      if (memberDb) {
-        if (memberDb.uuid === uuid) {
+      memberData = fetchMember(interaction.user.id);
+      if (memberData) {
+        if (memberData.uuid === uuid) {
           await member.roles.remove(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
           await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.verified) as Role);
         }
@@ -531,7 +510,7 @@ export default async function execute(client: Client, interaction: Interaction) 
           .setColor(config.colors.red)
           .setTitle('Verification Unsuccessful')
           .setDescription(
-            `<a:across:986170696512204820> ${interaction.user} is already verified to [this](https://namemc.com/search?q=${memberDb.uuid}) ` +
+            `<a:across:986170696512204820> ${interaction.user} is already verified to [this](https://namemc.com/search?q=${memberData.uuid}) ` +
               `minecraft account`
           );
         interaction.editReply({ embeds: [embed] });
@@ -560,30 +539,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       }
 
       if (discord === interaction.user.tag) {
-        let messages = 0;
-        let xp = 0;
-
-        const memberArchivesDiscord = db
-          .prepare('SELECT * FROM memberArchives WHERE discord = ?')
-          .get(interaction.user.id) as DiscordMember;
-        const memberArchivesUuid = db.prepare('SELECT * FROM memberArchives WHERE uuid = ?').get(uuid) as DiscordMember;
-        if (memberArchivesDiscord) {
-          ({ messages, xp } = memberArchivesDiscord);
-          db.prepare('DELETE FROM memberArchives WHERE discord = ?').run(interaction.user.id);
-        } else if (memberArchivesUuid) {
-          ({ messages, xp } = memberArchivesUuid);
-          db.prepare('DELETE FROM memberArchives WHERE uuid = ?').run(uuid);
-        }
-
-        db.prepare('INSERT OR IGNORE INTO members (discord, uuid, messages, xp) VALUES (?, ?, ?, ?)').run(
-          interaction.user.id,
-          uuid,
-          messages,
-          xp
-        );
-
-        await member.roles.remove(interaction.guild!.roles.cache.get(discordRoles.unverified) as Role);
-        await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.verified) as Role);
+        await createMember(member, uuid);
 
         const { displayName } = member;
         if (!displayName.toUpperCase().includes(name.toUpperCase())) {
@@ -608,6 +564,7 @@ export default async function execute(client: Client, interaction: Interaction) 
             .setThumbnail(
               `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
             );
+
           await interaction.editReply({ embeds: [embed] });
         } else {
           await member.roles.add(interaction.guild!.roles.cache.get(discordRoles.slayer) as Role);
@@ -712,8 +669,10 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.editReply({ embeds: [replyEmbed] });
     } else if (interaction.customId === 'breakModal') {
       await interaction.deferReply({ ephemeral: true });
+
       const q1 = interaction.fields.getTextInputValue('q1Input');
       const q2 = interaction.fields.getTextInputValue('q2Input');
+
       const uuid = discordToUuid(interaction.user.id) as string;
       const name = (await uuidToName(uuid))!;
       const thread = db.prepare('SELECT thread FROM breaks WHERE discord = ?').get(interaction.user.id) as BreakMember;
@@ -728,9 +687,21 @@ export default async function execute(client: Client, interaction: Interaction) 
         await interaction.editReply({ embeds: [replyEmbed] });
         return;
       }
-      const { joined, weeklyGexp } = db
-        .prepare('SELECT joined, weeklyGexp FROM guildMembers WHERE discord = ?')
-        .get(interaction.user.id) as HypixelGuildMember;
+
+      const guildMember = fetchGuildMember(interaction.user.id);
+      if (guildMember === null) {
+        await member.roles.remove(discordRoles.slayer);
+
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Error')
+          .setDescription('You are not a guild member!');
+
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      const { joined, weeklyGexp } = guildMember;
 
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)

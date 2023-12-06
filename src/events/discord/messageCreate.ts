@@ -7,7 +7,8 @@ import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { textChannels } from './ready.js';
 import { discordRoles } from '../../helper/constants.js';
-import { Count, HypixelGuildMember, NumberObject } from '../../types/global.d.js';
+import { Count, NumberObject } from '../../types/global.d.js';
+import { fetchGuildMember } from '../../handlers/databaseHandler.js';
 
 const db = new Database('guild.db');
 
@@ -132,7 +133,7 @@ export default async function execute(client: Client, message: Message) {
   if (![textChannels.minecraftLink.id, textChannels.officerChat.id].includes(channel.id)) return;
 
   const uuid = discordToUuid(author.id);
-  let user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(author.id) as HypixelGuildMember;
+  let user = fetchGuildMember(author.id);
 
   const messageContent = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');
   let tag;
@@ -153,13 +154,13 @@ export default async function execute(client: Client, message: Message) {
     }
 
     db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(author.id, uuid);
-    user = db.prepare('SELECT uuid, tag FROM guildMembers WHERE discord = ?').get(author.id) as HypixelGuildMember;
+    user = fetchGuildMember(author.id);
   } else {
     tag = user.tag;
   }
 
   const name = await uuidToName(uuid!);
-  const messageLength = `/gc ${name} ${user.tag}: ${messageContent}`.length;
+  const messageLength = `/gc ${name} ${user!.tag}: ${messageContent}`.length;
 
   // Automod
   if (await checkProfanity(content)) {
