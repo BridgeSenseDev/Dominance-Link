@@ -181,13 +181,21 @@ export default async function leaderboards() {
       await sleep(3000);
       generateLeaderboard(textChannels.duelsWlr, 'duelsWlr');
       await sleep(3000);
-      generateLeaderboard(textChannels.duelsWlr, 'duelsWlr');
-      await sleep(3000);
       generateLeaderboard(textChannels.networth, 'networth');
       await sleep(3000);
       generateLeaderboard(textChannels.skillAverage, 'skillAverage');
       await sleep(3000);
       generateLeaderboard(textChannels.lifetimeGexp, 'lifetimeGexp');
+      await sleep(3000);
+      generateLeaderboard(textChannels.achievementPoints, 'achievementPoints');
+      await sleep(3000);
+      generateLeaderboard(textChannels.networkLevel, 'networkLevel');
+      await sleep(3000);
+      generateLeaderboard(textChannels.swLevel, 'swLevel');
+      await sleep(3000);
+      generateLeaderboard(textChannels.sbLevel, 'sbLevel');
+      await sleep(3000);
+      generateLeaderboard(textChannels.quests, 'quests');
     },
     5 * 60 * 1000
   );

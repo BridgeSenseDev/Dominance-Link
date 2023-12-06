@@ -291,13 +291,14 @@ export async function players() {
       return;
     }
 
-    let networth = 0;
-    let sa = 0;
-
     const bwFkdr = +(player.stats?.bedwars?.finalKDRatio.toFixed(1) ?? 0);
     const bwStars = player.stats?.bedwars?.level ?? 0;
     const duelsWins = player.stats?.duels?.wins ?? 0;
     const duelsWlr = +(player.stats?.duels?.WLRatio.toFixed(1) ?? 0);
+
+    let networth = 0;
+    let sa = 0;
+    let sbLevel = 0;
 
     if (profiles) {
       const profile = profiles.find((i: any) => i.selected);
@@ -306,6 +307,7 @@ export async function players() {
         const bankBalance = profile.banking?.balance;
         ({ networth } = await getNetworth(profileData, bankBalance));
         sa = await skillAverage(profileData);
+        sbLevel = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
       }
     }
 
@@ -435,24 +437,27 @@ export async function players() {
       }
     }
 
-    if (networth) {
-      db.prepare(
-        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage) = (?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
-      ).run(
-        rankTagF(player),
-        bwStars,
-        bwFkdr,
-        duelsWins,
-        duelsWlr,
-        Math.round(networth * 100) / 100,
-        Math.round(sa * 100) / 100,
-        data.uuid
-      );
-    } else {
-      db.prepare(
-        'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr) = (?, ?, ?, ?, ?) WHERE uuid = ?'
-      ).run(rankTagF(player), bwStars, bwFkdr, duelsWins, duelsWlr, data.uuid);
-    }
+    const swLevel = player.stats?.skywars?.level ?? 0;
+    const { achievementPoints, level } = player;
+    const quests = player.achievements.generalQuestMaster;
+
+    db.prepare(
+      'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
+    ).run(
+      rankTagF(player),
+      bwStars,
+      bwFkdr,
+      duelsWins,
+      duelsWlr,
+      Math.round(networth * 100) / 100 ?? 0,
+      Math.round(sa * 100) / 100 ?? 0,
+      swLevel,
+      achievementPoints,
+      level,
+      sbLevel,
+      quests,
+      data.uuid
+    );
   }, 7 * 1000);
 
   setInterval(
