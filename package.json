@@ -21,7 +21,7 @@
     "discord.js": "^14.14.1",
     "ffmpeg-static": "^5.2.0",
     "google-auth-library": "^9.4.1",
-    "googleapis": "^128.0.0",
+    "googleapis": "^129.0.0",
     "hypixel-api-reborn": "github:BridgeSenseDev/hypixel-api-reborn",
     "math-expression-evaluator": "^2.0.4",
     "mineflayer": "^4.14.0",
