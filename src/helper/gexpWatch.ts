@@ -72,7 +72,7 @@ export default async function gexpWatch() {
       const guildGexp: NumberObject = {};
 
       for (const i in guildNames) {
-        const guildResponse = await hypixel.getGuild('name', i, {});
+        const guildResponse = await hypixel.getGuild('name', guildNames[i], {});
         guildGexp[i] = guildResponse.experience;
       }
 
