@@ -9,7 +9,7 @@ export const duelsDivisions = [
   { name: 'Master', key: 'master' },
   { name: 'Legend', key: 'legend' },
   { name: 'Grandmaster', key: 'grandmaster' },
-  { name: 'Godlike', key: 'godlike' },
+  { name: 'Supreme', key: 'supreme' },
   { name: 'WORLD ELITE', key: 'world_elite' },
   { name: 'WORLD MASTER', key: 'world_master' },
   { name: "WORLD'S BEST", key: 'worlds_best' }
@@ -66,11 +66,11 @@ export const rankColor: StringObject = {
 };
 
 export const hypixelRoles = {
-  goat: { name: 'Goat', gexp: 700000, days: 1000 },
-  dominator: { name: 'Dominator', gexp: 500000, days: 600 },
-  godlike: { name: 'Godlike', gexp: 300000, days: 300 },
+  goat: { name: 'Goat', gexp: 600000, days: 1000 },
+  dominator: { name: 'Dominator', gexp: 400000, days: 600 },
+  supreme: { name: 'Supreme', gexp: 250000, days: 300 },
   hero: { name: 'Hero', gexp: 150000, days: 100 },
-  elite: { name: 'Elite', gexp: 100000, days: 50 }
+  elite: { name: 'Elite', gexp: 750000, days: 50 }
 } as const;
 
 export const discordRoles = {
@@ -81,7 +81,7 @@ export const discordRoles = {
   staff: '1005725104430395452',
   goat: '1142652461425889371',
   dominator: '1142652458355658873',
-  godlike: '1142652454450778132',
+  supreme: '1142652454450778132',
   hero: '950083054326677514',
   elite: '1031566725432492133',
   slayer: '1031926129822539786',

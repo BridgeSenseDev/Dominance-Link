@@ -106,7 +106,7 @@ export async function archiveMember(member: GuildMember | null, discordId?: stri
       discordRoles.slayer,
       discordRoles.elite,
       discordRoles.hero,
-      discordRoles.godlike,
+      discordRoles.supreme,
       discordRoles.dominator,
       discordRoles.goat,
       discordRoles.staff
@@ -235,7 +235,7 @@ export async function archiveGuildMember(member: GuildMember | null, uuid?: stri
     await member.roles.remove(discordRoles.slayer);
     await member.roles.remove(discordRoles.elite);
     await member.roles.remove(discordRoles.hero);
-    await member.roles.remove(discordRoles.godlike);
+    await member.roles.remove(discordRoles.supreme);
     await member.roles.remove(discordRoles.dominator);
     await member.roles.remove(discordRoles.goat);
     await member.roles.remove(discordRoles.staff);
