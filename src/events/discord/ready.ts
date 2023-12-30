@@ -47,11 +47,16 @@ export default async function execute(client: Client) {
 
   for (const channelName in config.channels) {
     type ConfigChannels = keyof typeof config.channels;
-    const channel = client.channels.cache.get(config.channels[channelName as ConfigChannels])!;
-    if (channel.isTextBased()) {
+    const channel = client.channels.cache.get(config.channels[channelName as ConfigChannels]);
+    if (!channel) {
+      console.error(
+        `Error: The channel "${channelName}" with the ID "${
+          config.channels[channelName as ConfigChannels]
+        }" could not be found`
+      );
+    } else if (channel.isTextBased()) {
       textChannels[channelName] = channel as TextChannel;
-    }
-    if (channel.isVoiceBased()) {
+    } else if (channel.isVoiceBased()) {
       voiceChannels[channelName] = channel as VoiceChannel;
     }
   }
