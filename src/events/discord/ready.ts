@@ -1,6 +1,6 @@
 import { Worker } from 'worker_threads';
 import { fileURLToPath } from 'url';
-import { Client, Message, TextChannel, VoiceChannel } from 'discord.js';
+import { Channel, Client, Message, TextChannel, VoiceChannel } from 'discord.js';
 import { database, gsrun, players, sheet, weekly } from '../../helper/database.js';
 import gexpWatch from '../../helper/gexpWatch.js';
 import channelUpdate from '../../helper/channelUpdate.js';
@@ -47,7 +47,15 @@ export default async function execute(client: Client) {
 
   for (const channelName in config.channels) {
     type ConfigChannels = keyof typeof config.channels;
-    const channel = client.channels.cache.get(config.channels[channelName as ConfigChannels]);
+    let channel = client.channels.cache.get(config.channels[channelName as ConfigChannels]) as
+      | Channel
+      | undefined
+      | null;
+
+    if (!channel) {
+      channel = await client.channels.fetch(config.channels[channelName as ConfigChannels]);
+    }
+
     if (!channel) {
       console.error(
         `Error: The channel "${channelName}" with the ID "${
