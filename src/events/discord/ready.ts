@@ -62,10 +62,10 @@ export default async function execute(client: Client) {
           config.channels[channelName as ConfigChannels]
         }" could not be found`
       );
-    } else if (channel.isTextBased()) {
-      textChannels[channelName] = channel as TextChannel;
     } else if (channel.isVoiceBased()) {
       voiceChannels[channelName] = channel as VoiceChannel;
+    } else if (channel.isTextBased()) {
+      textChannels[channelName] = channel as TextChannel;
     }
   }
 
