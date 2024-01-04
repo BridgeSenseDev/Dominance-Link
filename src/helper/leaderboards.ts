@@ -6,6 +6,7 @@ import { rgbaColor } from './constants.js';
 import { abbreviateNumber, formatNumber, sleep } from './utils.js';
 import { textChannels } from '../events/discord/ready.js';
 import { HypixelGuildMember } from '../types/global.d.js';
+import { fetchGexpForMember } from '../handlers/databaseHandler.js';
 
 const db = new Database('guild.db');
 FontLibrary.use('Minecraft', './fonts/Minecraft Regular.ttf');
@@ -48,64 +49,50 @@ async function generateLeaderboardImage(message: string[]) {
   return buffer;
 }
 
-async function generateLeaderboard(channel: GuildChannel, order: keyof HypixelGuildMember) {
-  const leaderboard: string[] = [];
-  const images = [];
-
+function fetchData(order: keyof HypixelGuildMember): HypixelGuildMember[] {
   if (order === 'lifetimeGexp') {
     const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
     for (const member of data) {
-      let lifetimeGexp = 0;
-      for (const i in member) {
-        if (/[0-9]{4}-[0-9]{2}-[0-9]{2}/.test(i)) {
-          lifetimeGexp += Number(member[i]);
-        }
-      }
-      member.lifetimeGexp = lifetimeGexp;
+      const gexpHistory = fetchGexpForMember(member.uuid);
+      member.lifetimeGexp = gexpHistory.lifetimeGexp;
     }
-
-    data.sort((a, b) => a.lifetimeGexp - b.lifetimeGexp);
-
-    for (const i in data) {
-      leaderboard.push(
-        `§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i].lifetimeGexp)}`
-      );
-    }
-  } else {
-    const data = db
-      .prepare(`SELECT uuid, nameColor, "${order}" FROM guildMembers ORDER BY "${order}" ASC`)
-      .all() as HypixelGuildMember[];
-
-    if (order === 'networth') {
-      for (const i in data) {
-        leaderboard.push(
-          `§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`
-        );
-      }
-    } else if (order === 'playtime') {
-      for (const i in data) {
-        leaderboard.push(
-          `§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${(data[i][order] / 3600).toFixed(1)}H`
-        );
-      }
-    } else if (
-      order === 'weeklyGexp' ||
-      order ===
-        (Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember)[
-          Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember).length - 1
-        ] as keyof HypixelGuildMember)
-    ) {
-      for (const i in data) {
-        leaderboard.push(
-          `§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${abbreviateNumber(data[i][order])}`
-        );
-      }
-    } else {
-      for (const i in data) {
-        leaderboard.push(`§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${formatNumber(data[i][order])}`);
-      }
-    }
+    return data;
   }
+  return db
+    .prepare(`SELECT uuid, nameColor, "${order}" FROM guildMembers ORDER BY "${order}" ASC`)
+    .all() as HypixelGuildMember[];
+}
+
+function generateEntries(data: HypixelGuildMember[], order: keyof HypixelGuildMember): string[] {
+  const leaderboard: string[] = [];
+
+  for (const i in data) {
+    const value = data[i][order];
+    let formattedValue: string | number;
+
+    switch (order) {
+      case 'networth':
+        formattedValue = formatNumber(value);
+        break;
+      case 'weeklyGexp':
+        formattedValue = abbreviateNumber(value);
+        break;
+      case 'playtime':
+        formattedValue = `${(value / 3600).toFixed(1)}H`;
+        break;
+      default:
+        formattedValue = formatNumber(value);
+    }
+
+    leaderboard.push(`§e${data.length - Number(i)}. ${data[i].nameColor} §7— §e${formattedValue}`);
+  }
+  return leaderboard;
+}
+
+async function generateLeaderboard(channel: GuildChannel, order: keyof HypixelGuildMember) {
+  const images = [];
+  const data = await fetchData(order);
+  const leaderboard = generateEntries(data, order);
 
   const sliceSize = 15;
   const totalItems = leaderboard.length;
