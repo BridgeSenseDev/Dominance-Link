@@ -297,8 +297,8 @@ export function fetchGexpForMember(uuid: string): GexpResult {
 
   updateTable('2022-10-17', formatDateForDb(today));
 
-  const sevenDaysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
-  const thirtyDaysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 30);
+  const sevenDaysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 6);
+  const thirtyDaysAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29);
 
   const dailyGexp = db
     .prepare(`SELECT "${formatDateForDb(today)}" FROM gexpHistory WHERE uuid = ?`)
@@ -314,14 +314,14 @@ export function fetchGexpForMember(uuid: string): GexpResult {
   let weeklyGexp = 0;
   const weeklyColumnsArray = weeklyColumns.split(', ');
   for (const column of weeklyColumnsArray) {
-    const query = `SELECT SUM(${column}) FROM gexpHistory WHERE uuid = ?`;
+    const query = `SELECT IFNULL(SUM(${column}), 0) FROM gexpHistory WHERE uuid = ?`;
     weeklyGexp += db.prepare(query).pluck().get(uuid) as number;
   }
 
   let monthlyGexp = 0;
   const monthlyColumnsArray = monthlyColumns.split(', ');
   for (const column of monthlyColumnsArray) {
-    const query = `SELECT SUM(${column}) FROM gexpHistory WHERE uuid = ?`;
+    const query = `SELECT IFNULL(SUM(${column}), 0) FROM gexpHistory WHERE uuid = ?`;
     monthlyGexp += db.prepare(query).pluck().get(uuid) as number;
   }
 
@@ -330,7 +330,7 @@ export function fetchGexpForMember(uuid: string): GexpResult {
       `SELECT ${tableInfo
         .map((column) => column.name)
         .filter((name) => name !== 'uuid')
-        .map((name) => `IFNULL(SUM(${name}), 0)`)
+        .map((name) => `IFNULL(SUM("${name}"), 0)`)
         .join(' + ')} FROM gexpHistory WHERE uuid = ?`
     )
     .pluck()
