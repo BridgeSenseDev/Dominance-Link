@@ -125,7 +125,13 @@ function renderText(
 }
 
 export async function renderSkin(ctx: CanvasRenderingContext2D, { x, y, width, height }: BoxProps, uuid: string) {
-  const skin = await loadImage(`https://visage.surgeplay.com/bust/${uuid}`);
+  const response = await fetch(`https://visage.surgeplay.com/bust/${uuid}`, {
+    headers: {
+      'User-Agent': 'Dominance-Link/1.0 (+https://github.com/BridgeSenseDev/Dominance-Link)'
+    }
+  });
+  const arrayBuffer = await response.arrayBuffer();
+  const skin = await loadImage(Buffer.from(arrayBuffer));
 
   const scale = 0.5;
 
