@@ -12,6 +12,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply({ fetchReply: true });
 
   const counts = db.prepare('SELECT * FROM counting').all() as Count[];
+  const currentCount = db.prepare('SELECT * FROM counting ORDER BY count DESC LIMIT 1').get() as Count;
 
   const userCountsArray = Object.entries(
     counts.reduce(
@@ -32,7 +33,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.discordGray)
       .setTitle('Counting Leaderboards')
-      .setFooter({ text: `Page ${i + 1} of ${pages.length}` });
+      .setFooter({ text: `Page ${i + 1} of ${pages.length} | Current count: ${currentCount.count + 1}` });
 
     for (const [j, { discord, count }] of page.entries()) {
       const place = i * 10 + j + 1;
