@@ -126,7 +126,10 @@ export function fetchGuildMember(identifier: string): HypixelGuildMember | null 
 }
 
 export async function createGuildMember(uuid: string): Promise<void> {
-  if (fetchGuildMember(uuid)) {
+  const member = fetchGuildMember(uuid);
+  const gexpHistory = db.prepare('SELECT * FROM gexpHistory WHERE uuid = ?').get(uuid);
+
+  if (member && gexpHistory) {
     return;
   }
 
@@ -135,85 +138,98 @@ export async function createGuildMember(uuid: string): Promise<void> {
     throw new Error(`Player with UUID ${uuid} not found`);
   }
 
-  let messages = 0;
-  let playtime = 0;
+  if (!member) {
+    let messages = 0;
+    let playtime = 0;
 
-  if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
-    const memberArchive = db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid) as NumberObject;
-    ({ messages, playtime } = memberArchive);
-    db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
-  }
+    if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
+      const memberArchive = db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid) as NumberObject;
+      ({ messages, playtime } = memberArchive);
+      db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
+    }
 
-  let discord = null;
-  if (fetchMember(uuid)?.discord) {
-    discord = fetchMember(uuid)!.discord;
-  }
+    let discord = null;
+    if (fetchMember(uuid)?.discord) {
+      discord = fetchMember(uuid)!.discord;
+    }
 
-  let networth = 0;
-  let sa = 0;
-  let sbLevel = 0;
-  const skyblockProfiles = (await hypixel.getSkyblockProfiles(uuid, { raw: true })) as any;
-  if (skyblockProfiles.success) {
-    const { profiles } = skyblockProfiles;
-    if (profiles) {
-      const profile = profiles.find((i: any) => i.selected);
-      if (profile) {
-        const profileData = profile.members[uuid];
-        const bankBalance = profile.banking?.balance;
-        ({ networth } = await getNetworth(profileData, bankBalance));
-        sa = await skillAverage(profileData);
-        sbLevel = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
+    let networth = 0;
+    let sa = 0;
+    let sbLevel = 0;
+    const skyblockProfiles = (await hypixel.getSkyblockProfiles(uuid, { raw: true })) as any;
+    if (skyblockProfiles.success) {
+      const { profiles } = skyblockProfiles;
+      if (profiles) {
+        const profile = profiles.find((i: any) => i.selected);
+        if (profile) {
+          const profileData = profile.members[uuid];
+          const bankBalance = profile.banking?.balance;
+          ({ networth } = await getNetworth(profileData, bankBalance));
+          sa = await skillAverage(profileData);
+          sbLevel = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
+        }
       }
     }
+
+    const guildMember: HypixelGuildMember = {
+      uuid: player.uuid,
+      discord,
+      messages,
+      tag: '',
+      weeklyGexp: 0,
+      joined: 0,
+      targetRank: null,
+      playtime,
+      nameColor: rankTagF(player) ?? '',
+      bwStars: player.stats?.bedwars?.level ?? 0,
+      bwFkdr: player.stats?.bedwars?.finalKDRatio ?? 0,
+      duelsWins: player.stats?.duels?.wins ?? 0,
+      duelsWlr: player.stats?.duels?.WLRatio ?? 0,
+      networth,
+      skillAverage: sa,
+      swLevel: player.stats?.skywars?.level ?? 0,
+      achievementPoints: player.achievementPoints ?? 0,
+      networkLevel: player.level ?? 0,
+      sbLevel: sbLevel ?? 0,
+      quests: (player.achievements.generalQuestMaster as number) ?? 0
+    };
+
+    db.prepare(
+      'INSERT INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, targetRank, playtime, nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).run([
+      guildMember.uuid,
+      guildMember.discord,
+      guildMember.messages,
+      guildMember.tag,
+      guildMember.weeklyGexp,
+      guildMember.joined,
+      guildMember.targetRank,
+      guildMember.playtime,
+      guildMember.nameColor,
+      guildMember.bwStars,
+      guildMember.bwFkdr,
+      guildMember.duelsWins,
+      guildMember.duelsWlr,
+      guildMember.networth,
+      guildMember.skillAverage,
+      guildMember.swLevel,
+      guildMember.achievementPoints,
+      guildMember.networkLevel,
+      guildMember.sbLevel,
+      guildMember.quests
+    ]);
   }
 
-  const guildMember: HypixelGuildMember = {
-    uuid: player.uuid,
-    discord,
-    messages,
-    tag: '',
-    weeklyGexp: 0,
-    joined: 0,
-    targetRank: null,
-    playtime,
-    nameColor: rankTagF(player) ?? '',
-    bwStars: player.stats?.bedwars?.level ?? 0,
-    bwFkdr: player.stats?.bedwars?.finalKDRatio ?? 0,
-    duelsWins: player.stats?.duels?.wins ?? 0,
-    duelsWlr: player.stats?.duels?.WLRatio ?? 0,
-    networth,
-    skillAverage: sa,
-    swLevel: player.stats?.skywars?.level ?? 0,
-    achievementPoints: player.achievementPoints ?? 0,
-    networkLevel: player.level ?? 0,
-    sbLevel: sbLevel ?? 0,
-    quests: (player.achievements.generalQuestMaster as number) ?? 0
-  };
-
-  db.prepare(
-    'INSERT INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, targetRank, playtime, nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-  ).run([
-    guildMember.uuid,
-    guildMember.discord,
-    guildMember.messages,
-    guildMember.tag,
-    guildMember.weeklyGexp,
-    guildMember.joined,
-    guildMember.targetRank,
-    guildMember.playtime,
-    guildMember.nameColor,
-    guildMember.bwStars,
-    guildMember.bwFkdr,
-    guildMember.duelsWins,
-    guildMember.duelsWlr,
-    guildMember.networth,
-    guildMember.skillAverage,
-    guildMember.swLevel,
-    guildMember.achievementPoints,
-    guildMember.networkLevel,
-    guildMember.sbLevel,
-    guildMember.quests
-  ]);
+  if (!gexpHistory) {
+    console.log(`no ${uuid}`);
+    const gexpArchive = db.prepare('SELECT * FROM gexpHistoryArchives WHERE uuid = ?').get(uuid);
+    if (gexpArchive) {
+      db.prepare('INSERT INTO gexpHistory SELECT * FROM gexpHistoryArchives WHERE uuid = ?').run(uuid);
+      db.prepare('DELETE FROM gexpHistoryArchives WHERE uuid = ?').run(uuid);
+    } else {
+      db.prepare('INSERT INTO gexpHistory (uuid) VALUES (?)').run(uuid);
+    }
+  }
 }
 
 export async function archiveGuildMember(member: GuildMember | null, uuid?: string): Promise<void> {
@@ -229,6 +245,14 @@ export async function archiveGuildMember(member: GuildMember | null, uuid?: stri
     );
 
     db.prepare('DELETE FROM guildMembers WHERE uuid = ?').run(guildMemberData.uuid);
+  }
+
+  const gexpHistoryData = db
+    .prepare('SELECT * FROM gexpHistory WHERE uuid = ?')
+    .get(guildMemberData ? guildMemberData.uuid : uuid) as GexpHistory;
+  if (gexpHistoryData) {
+    db.prepare('INSERT INTO gexpHistoryArchives SELECT * FROM gexpHistory WHERE uuid = ?').run(gexpHistoryData.uuid);
+    db.prepare('DELETE FROM gexpHistory WHERE uuid = ?').run(gexpHistoryData.uuid);
   }
 
   if (member) {

@@ -22,7 +22,7 @@ import { HypixelGuildMember, HypixelRoleKeys, StringObject } from '../types/glob
 import { textChannels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
 import { hypixel } from '../index.js';
-import { archiveMember, createGuildMember } from '../handlers/databaseHandler.js';
+import { archiveGuildMember, archiveMember, createGuildMember } from '../handlers/databaseHandler.js';
 
 const db = new Database('guild.db');
 
@@ -153,7 +153,7 @@ export async function database() {
 
     updateTable('2022-10-17', formatDateForDb(today));
 
-    const members = guild.members.map((member) => {
+    for (const member of guild.members) {
       const { uuid, rank, expHistory, joinedAtTimestamp } = member;
       const weeklyGexp = member.expHistory.reduce((acc, cur) => acc + cur.exp, 0);
       const currentDay = expHistory[0].day;
@@ -169,17 +169,20 @@ export async function database() {
       );
 
       db.prepare(`UPDATE gexpHistory SET ("${currentDay}") = (?) WHERE uuid = ?`).run(currentDailyExp, uuid);
+    }
 
-      return uuid;
-    });
+    const hypixelMemberUuids = guild.members.map((member) => member.uuid);
 
-    const placeholders = members.map(() => '?').join(', ');
-    db.prepare(
-      `INSERT INTO guildMemberArchives SELECT uuid, discord, messages, joined, playtime FROM guildMembers WHERE uuid NOT IN (${placeholders})`
-    ).run(members);
+    const uuidsToCheck = [
+      ...(db.prepare('SELECT uuid FROM guildMembers').all() as { uuid: string }[]),
+      ...(db.prepare('SELECT uuid FROM gexpHistory').all() as { uuid: string }[])
+    ];
 
-    db.prepare(`DELETE FROM guildMembers WHERE uuid NOT IN (${placeholders})`).run(members);
-    db.prepare('DELETE FROM guildMembers WHERE uuid IS NULL').run();
+    for (const uuid of uuidsToCheck) {
+      if (!hypixelMemberUuids.includes(uuid.uuid)) {
+        await archiveGuildMember(null, uuid.uuid);
+      }
+    }
   }, 60 * 1000);
 }
 
