@@ -69,8 +69,8 @@ export const hypixelRoles = {
   goat: { name: 'Goat', gexp: 600000, days: 1000 },
   dominator: { name: 'Dominator', gexp: 400000, days: 600 },
   supreme: { name: 'Supreme', gexp: 250000, days: 300 },
-  hero: { name: 'Hero', gexp: 150000, days: 100 },
-  elite: { name: 'Elite', gexp: 750000, days: 50 }
+  hero: { name: 'Hero', gexp: 175000, days: 100 },
+  elite: { name: 'Elite', gexp: 125000, days: 50 }
 } as const;
 
 export const discordRoles = {
