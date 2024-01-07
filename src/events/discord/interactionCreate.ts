@@ -27,7 +27,7 @@ import {
   removeSectionSymbols,
   uuidToName
 } from '../../helper/utils.js';
-import requirements from '../../helper/requirements.js';
+import requirementsEmbed from '../../helper/requirements.js';
 import config from '../../config.json' assert { type: 'json' };
 import { textChannels } from './ready.js';
 import { bullet, dividers, discordRoles } from '../../helper/constants.js';
@@ -96,7 +96,7 @@ export default async function execute(client: Client, interaction: Interaction) 
 
       if (!playerResponse) return;
 
-      const requirementData = await requirements(uuid, playerResponse);
+      const requirementData = await requirementsEmbed(uuid, playerResponse);
       const embed = new EmbedBuilder()
         .setColor(requirementData.color)
         .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
@@ -600,7 +600,7 @@ export default async function execute(client: Client, interaction: Interaction) 
 
       if (!playerResponse) return;
 
-      const requirementData = await requirements(uuid, playerResponse);
+      const requirementData = await requirementsEmbed(uuid, playerResponse);
       const name = (await uuidToName(uuid))!;
 
       const applicationEmbed = new EmbedBuilder()
@@ -621,7 +621,7 @@ export default async function execute(client: Client, interaction: Interaction) 
             value: requirementData.reqs,
             inline: true
           },
-          { name: ':shield: Guild: ', value: requirementData.guild[0], inline: true },
+          { name: ':shield: Guild: ', value: playerResponse.guild?.name ?? 'None', inline: true },
           { name: '<:mention:913408059425058817> Discord: ', value: `<@${interaction.user.id}>`, inline: true },
           {
             name: '<:calendar_3d:1029713106550657055> Discord Member Since: ',

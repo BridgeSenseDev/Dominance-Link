@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
-import requirements from '../helper/requirements.js';
+import requirementsEmbed from '../helper/requirements.js';
 import { hypixel } from '../index.js';
 
 export const data = new SlashCommandBuilder()
@@ -23,7 +23,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  const requirementData = await requirements(player.uuid, player);
+  const requirementData = await requirementsEmbed(player.uuid, player);
 
   const embed = new EmbedBuilder()
     .setColor(requirementData.color)

@@ -1,17 +1,13 @@
 import { getNetworth } from 'skyhelper-networth';
-import { Guild, Player } from 'hypixel-api-reborn';
+import { Player } from 'hypixel-api-reborn';
 import { abbreviateNumber, formatNumber, uuidToName, skillAverage } from './utils.js';
 import config from '../config.json' assert { type: 'json' };
 import { hypixel } from '../index.js';
 
-export default async function requirements(uuid: string, playerData: Player) {
-  let guild: [string, number] = ['None', 0];
+export default async function requirementsEmbed(uuid: string, playerData: Player) {
   let skyblock = [0, 0];
   const name = await uuidToName(uuid);
 
-  const guildData = (await hypixel.getGuild('player', uuid, {}).catch(() => {
-    /* empty */
-  })) as Guild;
   const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(uuid, { raw: true })) as any;
 
   if (skyblockProfilesResponse.success && skyblockProfilesResponse.profiles) {
@@ -34,33 +30,12 @@ export default async function requirements(uuid: string, playerData: Player) {
   const skywarsData = playerData.stats?.skywars;
   const skywars: [string, number] = [skywarsData?.levelFormatted ?? '1⋆', skywarsData?.KDRatio ?? 0];
 
-  if (guildData) {
-    const member = guildData.members.find((i) => i.uuid === uuid);
-    if (member) {
-      const weeklyGexp = member.expHistory.reduce((acc, cur) => acc + cur.exp, 0);
-      guild = [guildData.name, weeklyGexp];
-    }
-  }
-
   // Check requirements
   let requirementEmbed = '';
   let meetingReqs = false;
   let author;
   let color;
   let reqs;
-
-  if (guild[1] >= config.guild.gexpReqNum) {
-    meetingReqs = true;
-    requirementEmbed += `:green_circle: **GEXP**\n<a:atick:986173414723162113> **Guild:** \`${
-      guild[0]
-    }\`\n<a:atick:986173414723162113> **Weekly GEXP:** \`${formatNumber(guild[1])}\`\n\n`;
-  } else {
-    requirementEmbed += `:red_circle: **GEXP**\n<a:atick:986173414723162113> **Guild:** \`${
-      guild[0]
-    }\`\n<a:across:986170696512204820> **Weekly GEXP:** \`${formatNumber(guild[1])} / ${formatNumber(
-      config.guild.gexpReqNum
-    )}\`\n\n`;
-  }
 
   if (!playerData.achievementPoints) {
     requirementEmbed +=
@@ -218,9 +193,46 @@ export default async function requirements(uuid: string, playerData: Player) {
   }
   return {
     requirementEmbed,
-    guild,
     author,
     color,
     reqs
   };
+}
+
+export async function checkRequirements(uuid: string, playerData: Player) {
+  let skyblock = [0, 0];
+  const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(uuid, { raw: true })) as any;
+
+  if (skyblockProfilesResponse.success && skyblockProfilesResponse.profiles) {
+    const { profiles } = skyblockProfilesResponse;
+    const profile = profiles.find((i: any) => i.selected);
+    if (profile) {
+      const profileData = profile.members[uuid];
+      const bankBalance = profile.banking?.balance;
+      const { networth } = await getNetworth(profileData, bankBalance);
+      skyblock = [networth, await skillAverage(profileData)];
+    }
+  }
+
+  const bedwarsData = playerData.stats?.bedwars;
+  const bedwars = [bedwarsData?.level ?? 0, +(bedwarsData?.finalKDRatio.toFixed(1) ?? 0), bedwarsData?.wins ?? 0];
+
+  const duelsData = playerData.stats?.duels;
+  const duels = [duelsData?.wins ?? 0, +(duelsData?.WLRatio.toFixed(1) ?? 0)];
+
+  const skywarsData = playerData.stats?.skywars;
+  const skywars: [string, number] = [skywarsData?.levelFormatted ?? '1⋆', skywarsData?.KDRatio ?? 0];
+
+  const stars = parseInt(skywars[0].slice(0, -1), 10);
+
+  return (
+    playerData.achievementPoints >= 9000 ||
+    (bedwars[0] >= 300 && bedwars[1] >= 3) ||
+    (bedwars[0] >= 150 && bedwars[1] >= 5) ||
+    (duels[0] >= 6500 && duels[1] >= 2) ||
+    (duels[0] >= 3000 && duels[1] >= 4) ||
+    (stars >= 12 && skywars[1] >= 1) ||
+    (stars >= 10 && skywars[1] >= 1.5) ||
+    (skyblock[0] >= 3000000000 && skyblock[1] >= 40)
+  );
 }

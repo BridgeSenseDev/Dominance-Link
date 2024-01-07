@@ -23,6 +23,7 @@ import { textChannels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
 import { hypixel } from '../index.js';
 import { archiveGuildMember, archiveMember, createGuildMember } from '../handlers/databaseHandler.js';
+import { checkRequirements } from './requirements.js';
 
 const db = new Database('guild.db');
 
@@ -154,17 +155,16 @@ export async function database() {
     updateTable('2022-10-17', formatDateForDb(today));
 
     for (const member of guild.members) {
-      const { uuid, rank, expHistory, joinedAtTimestamp } = member;
+      const { uuid, rank, expHistory } = member;
       const weeklyGexp = member.expHistory.reduce((acc, cur) => acc + cur.exp, 0);
       const currentDay = expHistory[0].day;
       const currentDailyExp = expHistory[0].exp;
 
       createGuildMember(uuid);
 
-      db.prepare(`UPDATE guildMembers SET (tag, weeklyGexp, joined) = (?, ?, ?) WHERE uuid = ?`).run(
+      db.prepare(`UPDATE guildMembers SET (tag, weeklyGexp) = (?, ?) WHERE uuid = ?`).run(
         `[${rank}]`,
         weeklyGexp,
-        joinedAtTimestamp,
         uuid
       );
 
@@ -441,9 +441,10 @@ export async function players() {
     const quests = player.achievements.generalQuestMaster;
 
     db.prepare(
-      'UPDATE guildMembers SET (nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
+      'UPDATE guildMembers SET (nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?'
     ).run(
       rankTagF(player),
+      (await checkRequirements(data.uuid, player)) ? 1 : 0,
       bwStars,
       bwFkdr,
       duelsWins,

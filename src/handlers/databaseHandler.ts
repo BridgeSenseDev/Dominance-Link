@@ -5,6 +5,7 @@ import { hypixel } from '../index.js';
 import { formatDateForDb, getESTDate, rankTagF, skillAverage, updateTable } from '../helper/utils.js';
 import { NumberObject, StringObject } from '../types/global.js';
 import { discordRoles } from '../helper/constants.js';
+import { checkRequirements } from '../helper/requirements.js';
 
 const db = new Database('guild.db');
 
@@ -25,6 +26,7 @@ interface HypixelGuildMember {
   targetRank: string | null;
   playtime: number;
   nameColor: string;
+  reqs: 0 | 1;
   bwStars: number;
   bwFkdr: number;
   duelsWins: number;
@@ -181,6 +183,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
       targetRank: null,
       playtime,
       nameColor: rankTagF(player) ?? '',
+      reqs: (await checkRequirements(uuid, player)) ? 1 : 0,
       bwStars: player.stats?.bedwars?.level ?? 0,
       bwFkdr: player.stats?.bedwars?.finalKDRatio ?? 0,
       duelsWins: player.stats?.duels?.wins ?? 0,
@@ -195,7 +198,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
     };
 
     db.prepare(
-      'INSERT INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, targetRank, playtime, nameColor, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, targetRank, playtime, nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).run([
       guildMember.uuid,
       guildMember.discord,
@@ -206,6 +209,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
       guildMember.targetRank,
       guildMember.playtime,
       guildMember.nameColor,
+      guildMember.reqs,
       guildMember.bwStars,
       guildMember.bwFkdr,
       guildMember.duelsWins,

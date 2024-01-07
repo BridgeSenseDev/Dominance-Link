@@ -11,17 +11,48 @@ const db = new Database('guild.db');
 export async function unverifiedUpdate() {
   setInterval(async () => {
     const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
-    let description = 'List of guild members who are unverified / not in the discord\n';
+    const names = [];
+
     for (let i = data.length - 1; i >= 0; i--) {
       if (!data[i].discord) {
-        description += `\n${await uuidToName(data[i].uuid)}`;
+        names.push(await uuidToName(data[i].uuid));
       }
     }
+    names.sort();
+
+    let description = 'List of guild members who are unverified / not in the discord\n';
+    for (const name of names) {
+      description += `\n${name}`;
+    }
+
     const embed = new EmbedBuilder()
       .setColor(config.colors.discordGray)
       .setTitle('Unlinked Members')
       .setDescription(escapeMarkdown(description));
-    await messages.unverified.edit({ embeds: [embed] });
+    await messages.unverified.edit({ content: '', embeds: [embed] });
+  }, 60 * 1000);
+}
+
+export async function reqsUpdate() {
+  setInterval(async () => {
+    const data = db.prepare('SELECT * FROM guildMembers WHERE reqs = 0').all() as HypixelGuildMember[];
+    const names = [];
+
+    for (let i = data.length - 1; i >= 0; i--) {
+      names.push(await uuidToName(data[i].uuid));
+    }
+    names.sort();
+
+    let description = "List of guild members who don't meet guild requirements\n";
+    for (const name of names) {
+      description += `\n${name}`;
+    }
+
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.discordGray)
+      .setTitle('Guild Requirements')
+      .setDescription(escapeMarkdown(description));
+    await messages.requirements.edit({ content: '', embeds: [embed] });
   }, 60 * 1000);
 }
 

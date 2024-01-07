@@ -7,7 +7,7 @@ import channelUpdate from '../../helper/channelUpdate.js';
 import { autoRejoin, startBot } from '../../handlers/workerHandler.js';
 import config from '../../config.json' assert { type: 'json' };
 import leaderboards from '../../helper/leaderboards.js';
-import { breakUpdate, unverifiedUpdate } from '../../helper/messageUpdate.js';
+import { breakUpdate, reqsUpdate, unverifiedUpdate } from '../../helper/messageUpdate.js';
 import { logInterval } from '../minecraft/message.js';
 import discordCommands from '../../handlers/discordCommands.js';
 import discordEvents from '../../handlers/discordEvents.js';
@@ -83,6 +83,7 @@ export default async function execute(client: Client) {
   leaderboards();
   logInterval();
   weekly(client);
+  reqsUpdate();
 
   console.log(`[DISCORD] Logged in as ${client.user!.tag}`);
 }
