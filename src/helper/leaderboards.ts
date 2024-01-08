@@ -59,6 +59,17 @@ function fetchData(order: keyof HypixelGuildMember): HypixelGuildMember[] {
     data.sort((a, b) => a.lifetimeGexp - b.lifetimeGexp);
     return data;
   }
+
+  if (order === 'dailyGexp') {
+    const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
+    for (const member of data) {
+      const gexpHistory = fetchGexpForMember(member.uuid);
+      member.dailyGexp = gexpHistory.dailyGexp;
+    }
+    data.sort((a, b) => a.dailyGexp - b.dailyGexp);
+    return data;
+  }
+
   return db
     .prepare(`SELECT uuid, nameColor, "${order}" FROM guildMembers ORDER BY "${order}" ASC`)
     .all() as HypixelGuildMember[];
@@ -150,12 +161,7 @@ export default async function leaderboards() {
   setInterval(async () => {
     generateLeaderboard(textChannels.weeklyGexp, 'weeklyGexp');
     await sleep(3000);
-    generateLeaderboard(
-      textChannels.dailyGexp,
-      Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember[])[
-        Object.keys(db.prepare('SELECT * FROM guildMembers').get() as HypixelGuildMember[]).length - 1
-      ]
-    );
+    generateLeaderboard(textChannels.dailyGexp, 'dailyGexp');
     await sleep(3000);
     generateLeaderboard(textChannels.playtime, 'playtime');
     await sleep(3000);

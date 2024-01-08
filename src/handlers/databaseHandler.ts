@@ -198,7 +198,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
     };
 
     db.prepare(
-      'INSERT INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, targetRank, playtime, nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, targetRank, playtime, nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).run([
       guildMember.uuid,
       guildMember.discord,
