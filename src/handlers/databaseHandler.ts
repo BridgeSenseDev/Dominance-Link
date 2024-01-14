@@ -22,7 +22,7 @@ interface HypixelGuildMember {
   messages: number;
   tag: string;
   weeklyGexp: number;
-  joined: number;
+  joined: string;
   targetRank: string | null;
   playtime: number;
   nameColor: string;
@@ -179,7 +179,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
       messages,
       tag: '',
       weeklyGexp: 0,
-      joined: 0,
+      joined: '0',
       targetRank: null,
       playtime,
       nameColor: rankTagF(player) ?? '',
@@ -225,7 +225,6 @@ export async function createGuildMember(uuid: string): Promise<void> {
   }
 
   if (!gexpHistory) {
-    console.log(`no ${uuid}`);
     const gexpArchive = db.prepare('SELECT * FROM gexpHistoryArchives WHERE uuid = ?').get(uuid);
     if (gexpArchive) {
       db.prepare('INSERT INTO gexpHistory SELECT * FROM gexpHistoryArchives WHERE uuid = ?').run(uuid);

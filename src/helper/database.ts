@@ -155,14 +155,15 @@ export async function database() {
     updateTable('2022-10-17', formatDateForDb(today));
 
     for (const member of guild.members) {
-      const { uuid, rank, expHistory } = member;
+      const { joinedAtTimestamp, uuid, rank, expHistory } = member;
       const weeklyGexp = member.expHistory.reduce((acc, cur) => acc + cur.exp, 0);
       const currentDay = expHistory[0].day;
       const currentDailyExp = expHistory[0].exp;
 
       createGuildMember(uuid);
 
-      db.prepare(`UPDATE guildMembers SET (tag, weeklyGexp) = (?, ?) WHERE uuid = ?`).run(
+      db.prepare(`UPDATE guildMembers SET (joined, tag, weeklyGexp) = (?, ?, ?) WHERE uuid = ?`).run(
+        joinedAtTimestamp,
         `[${rank}]`,
         weeklyGexp,
         uuid

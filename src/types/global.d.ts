@@ -16,7 +16,7 @@ export interface HypixelGuildMember {
   messages: number;
   tag: string;
   weeklyGexp: number;
-  joined: number;
+  joined: string;
   targetRank: string;
   playtime: number;
   nameColor: string;

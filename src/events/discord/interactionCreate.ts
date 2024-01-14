@@ -716,7 +716,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         .addFields(
           {
             name: '<:calendar_3d:1029713106550657055> Days in Guild: ',
-            value: `<t:${Math.floor(joined / 1000)}:R>`,
+            value: `<t:${Math.floor(Number(joined) / 1000)}:R>`,
             inline: true
           },
           { name: '<:mention:913408059425058817> Discord: ', value: `<@${interaction.user.id}>`, inline: true },
