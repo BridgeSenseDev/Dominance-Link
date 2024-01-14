@@ -187,50 +187,53 @@ export async function database() {
 }
 
 export async function gsrun(sheets: JWT, client: Client) {
-  setInterval(async () => {
-    const gsapi = google.sheets({ version: 'v4', auth: sheets });
-    const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
-    const guild = await hypixel.getGuild('name', 'Dominance', {});
+  setInterval(
+    async () => {
+      const gsapi = google.sheets({ version: 'v4', auth: sheets });
+      const data = db.prepare('SELECT * FROM guildMembers').all() as HypixelGuildMember[];
+      const guild = await hypixel.getGuild('name', 'Dominance', {});
 
-    const array = await Promise.all(
-      data.map(async (member) => {
-        member.name = await uuidToName(member.uuid);
-        guild.members
-          .find((m) => m.uuid === member.uuid)
-          ?.expHistory.forEach((day) => {
-            member[day.day] = day.exp;
-          });
+      const array = await Promise.all(
+        data.map(async (member) => {
+          member.name = await uuidToName(member.uuid);
+          guild.members
+            .find((m) => m.uuid === member.uuid)
+            ?.expHistory.forEach((day) => {
+              member[day.day] = day.exp;
+            });
 
-        const discordTag = member.discord ? (await client.users.fetch(member.discord))?.tag ?? null : null;
+          const discordTag = member.discord ? (await client.users.fetch(member.discord))?.tag ?? null : null;
 
-        const { name, discord, nameColor, targetRank, ...rest } = member;
+          const { name, discord, nameColor, targetRank, ...rest } = member;
 
-        const expHistory = Object.keys(rest).reduce((acc: { [key: string]: any }, key) => {
-          if (key.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            acc[key] = rest[key];
-            delete rest[key];
-          }
-          return acc;
-        }, {});
+          const expHistory = Object.keys(rest).reduce((acc: { [key: string]: any }, key) => {
+            if (key.match(/^\d{4}-\d{2}-\d{2}$/)) {
+              acc[key] = rest[key];
+              delete rest[key];
+            }
+            return acc;
+          }, {});
 
-        return [name, discordTag, ...Object.values(expHistory), ...Object.values(rest)];
-      })
-    );
+          return [name, discordTag, ...Object.values(expHistory), ...Object.values(rest)];
+        })
+      );
 
-    array.sort((a: any, b: any) => b[4] - a[4]);
-    const options = {
-      spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
-      range: 'Guild API!A2',
-      valueInputOption: 'USER_ENTERED',
-      resource: { values: array }
-    };
+      array.sort((a: any, b: any) => b[4] - a[4]);
+      const options = {
+        spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
+        range: 'Guild API!A2',
+        valueInputOption: 'USER_ENTERED',
+        resource: { values: array }
+      };
 
-    await gsapi.spreadsheets.values.clear({
-      spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
-      range: 'Guild API!A2:Z126'
-    });
-    await gsapi.spreadsheets.values.update(options);
-  }, 60 * 1000);
+      await gsapi.spreadsheets.values.clear({
+        spreadsheetId: '1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE',
+        range: 'Guild API!A2:Z126'
+      });
+      await gsapi.spreadsheets.values.update(options);
+    },
+    6 * 60 * 1000
+  );
 }
 
 export async function players() {
