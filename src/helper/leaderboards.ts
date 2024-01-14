@@ -158,37 +158,40 @@ async function generateLeaderboard(channel: GuildChannel, order: keyof HypixelGu
 }
 
 export default async function leaderboards() {
-  setInterval(async () => {
-    generateLeaderboard(textChannels.weeklyGexp, 'weeklyGexp');
-    await sleep(3000);
-    generateLeaderboard(textChannels.dailyGexp, 'dailyGexp');
-    await sleep(3000);
-    generateLeaderboard(textChannels.playtime, 'playtime');
-    await sleep(3000);
-    generateLeaderboard(textChannels.guildMessages, 'messages');
-    await sleep(3000);
-    generateLeaderboard(textChannels.bwStars, 'bwStars');
-    await sleep(3000);
-    generateLeaderboard(textChannels.bwFkdr, 'bwFkdr');
-    await sleep(3000);
-    generateLeaderboard(textChannels.duelsWins, 'duelsWins');
-    await sleep(3000);
-    generateLeaderboard(textChannels.duelsWlr, 'duelsWlr');
-    await sleep(3000);
-    generateLeaderboard(textChannels.networth, 'networth');
-    await sleep(3000);
-    generateLeaderboard(textChannels.skillAverage, 'skillAverage');
-    await sleep(3000);
-    generateLeaderboard(textChannels.lifetimeGexp, 'lifetimeGexp');
-    await sleep(3000);
-    generateLeaderboard(textChannels.achievementPoints, 'achievementPoints');
-    await sleep(3000);
-    generateLeaderboard(textChannels.networkLevel, 'networkLevel');
-    await sleep(3000);
-    generateLeaderboard(textChannels.swLevel, 'swLevel');
-    await sleep(3000);
-    generateLeaderboard(textChannels.sbLevel, 'sbLevel');
-    await sleep(3000);
-    generateLeaderboard(textChannels.quests, 'quests');
-  }, 60 * 1000);
+  setInterval(
+    async () => {
+      generateLeaderboard(textChannels.weeklyGexp, 'weeklyGexp');
+      await sleep(3000);
+      generateLeaderboard(textChannels.dailyGexp, 'dailyGexp');
+      await sleep(3000);
+      generateLeaderboard(textChannels.playtime, 'playtime');
+      await sleep(3000);
+      generateLeaderboard(textChannels.guildMessages, 'messages');
+      await sleep(3000);
+      generateLeaderboard(textChannels.bwStars, 'bwStars');
+      await sleep(3000);
+      generateLeaderboard(textChannels.bwFkdr, 'bwFkdr');
+      await sleep(3000);
+      generateLeaderboard(textChannels.duelsWins, 'duelsWins');
+      await sleep(3000);
+      generateLeaderboard(textChannels.duelsWlr, 'duelsWlr');
+      await sleep(3000);
+      generateLeaderboard(textChannels.networth, 'networth');
+      await sleep(3000);
+      generateLeaderboard(textChannels.skillAverage, 'skillAverage');
+      await sleep(3000);
+      generateLeaderboard(textChannels.lifetimeGexp, 'lifetimeGexp');
+      await sleep(3000);
+      generateLeaderboard(textChannels.achievementPoints, 'achievementPoints');
+      await sleep(3000);
+      generateLeaderboard(textChannels.networkLevel, 'networkLevel');
+      await sleep(3000);
+      generateLeaderboard(textChannels.swLevel, 'swLevel');
+      await sleep(3000);
+      generateLeaderboard(textChannels.sbLevel, 'sbLevel');
+      await sleep(3000);
+      generateLeaderboard(textChannels.quests, 'quests');
+    },
+    10 * 60 * 1000
+  );
 }
