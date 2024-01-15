@@ -54,16 +54,57 @@ export async function logInterval() {
   }, 5 * 1000);
 }
 
+function getBedwarsStats(player: Player) {
+  const bedwars = player.stats?.bedwars;
+  const star = bedwars?.level ?? 0;
+  const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
+  const fk = formatNumber(bedwars?.finalKills ?? 0);
+  const fkdr = formatNumber(bedwars?.finalKDRatio ?? 0);
+  const wins = formatNumber(bedwars?.wins ?? 0);
+  const wlr = formatNumber(bedwars?.WLRatio ?? 0);
+  const ws = formatNumber(bedwars?.winstreak ?? 0);
+
+  return `/gc [${star}✫] ${rankTag}${player.nickname} FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`;
+}
+
+function getDuelsStats(player: Player) {
+  const duels = player.stats?.duels;
+  const division = duels?.division ? '' : `[${duels?.division}] `;
+  const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
+  const wins = formatNumber(duels?.wins ?? 0);
+  const wlr = formatNumber(duels?.WLRatio ?? 0);
+  const cws = formatNumber(duels?.winstreak ?? 0);
+  const bws = formatNumber(duels?.bestWinstreak ?? 0);
+
+  return `/gc ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`;
+}
+
+async function getSkyblockStats(player: Player) {
+  const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(player.uuid, { raw: true })) as any;
+
+  if (skyblockProfilesResponse.success && skyblockProfilesResponse.profiles) {
+    const { profiles } = skyblockProfilesResponse;
+    const profile = profiles.find((i: any) => i.selected);
+    if (profile) {
+      const profileData = profile.members[player.uuid];
+      const bankBalance = profile.banking?.balance;
+      const networth = abbreviateNumber((await getNetworth(profileData, bankBalance)).networth);
+      const sa = formatNumber(await skillAverage(profileData));
+      const level = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
+
+      const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
+
+      return `/gc [${level}] ${rankTag}${player.nickname} NW: ${networth} SA: ${sa}`;
+    }
+    return `/gc Error: No profiles found for ${player.nickname}`;
+  }
+  return `/gc Error: No profiles found for ${player.nickname}`;
+}
+
 export default async function execute(client: Client, msg: string, rawMsg: string, messagePosition: string) {
   if (messagePosition !== 'chat') return;
   if (msg.trim() === '') return;
-  // Limbo Check
-  if (msg.includes('"server"')) {
-    const parsedMessage = JSON.parse(msg);
-    if (parsedMessage.server !== 'limbo') {
-      await chat('\u00a7');
-    } else return;
-  }
+
   if (msg.includes('@everyone') || msg.includes('@here')) {
     logMessages += `${msg.replace('@', '')}\n`;
   } else {
@@ -72,25 +113,24 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
   if (messageCache.length >= 20) messageCache.shift();
   messageCache.push(msg);
 
-  // Guild Chat
-  if (msg.includes('Guild >')) {
-    if (msg.includes('joined.')) {
-      let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-      let uuid = await nameToUuid(name);
-      if (!uuid) {
-        [name] = msg.replace(/Guild > |:/g, '').split(' ');
-        uuid = await nameToUuid(name);
-      }
+  if (msg.startsWith('{"server":')) {
+    // Limbo check
+    const parsedMessage = JSON.parse(msg);
+    if (parsedMessage.server !== 'limbo') {
+      await chat('\u00a7');
+      return;
+    }
+  } else if (msg.startsWith('Guild >')) {
+    if (msg.endsWith('joined.') && !msg.includes(':')) {
+      const [name] = msg.replace(/Guild > |:/g, '').split(' ');
       global.playtime[name] = Math.floor(Date.now() / 1000);
       return;
     }
-    if (msg.includes('left.')) {
-      let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-      let uuid = await nameToUuid(name);
-      if (!uuid) {
-        [name] = msg.replace(/Guild > |:/g, '').split(' ');
-        uuid = await nameToUuid(name);
-      }
+
+    if (msg.endsWith('left.') && !msg.includes(':')) {
+      const [name] = msg.replace(/Guild > |:/g, '').split(' ');
+      const uuid = await nameToUuid(name);
+
       const time = Math.floor(Date.now() / 1000) - global.playtime[name];
       if (!Number.isNaN(time)) {
         delete global.playtime[name];
@@ -103,127 +143,83 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       }
       return;
     }
-    await gcWebhook.send({
-      username: 'Dominance',
-      avatarURL: config.guild.icon,
-      files: [await messageToImage(rawMsg)]
-    });
-    let [, name] = msg.replace(/Guild > |:/g, '').split(' ');
-    let uuid = await nameToUuid(name);
-    if (!uuid) {
-      [name] = msg.replace(/Guild > |:/g, '').split(' ');
-      uuid = await nameToUuid(name);
-    }
 
-    if (uuid) {
-      createGuildMember(uuid);
-      addXp('', uuid);
-    }
+    const author = msg.match(/Guild\s*>\s*(?:\[[^\]]+\]\s*)?(\w+)/)?.[1];
+    if (msg.includes(':') && author) {
+      // Guild message
+      await gcWebhook.send({
+        username: 'Dominance',
+        avatarURL: config.guild.icon,
+        files: [await messageToImage(rawMsg)]
+      });
 
-    db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-
-    if (msg.includes('!bw') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
-      if (!msg.endsWith('!bw')) {
-        name = msg.split('!bw ')[1]?.split(' ')[0];
+      const authorUuid = await nameToUuid(author);
+      if (authorUuid) {
+        createGuildMember(authorUuid);
+        addXp('', authorUuid);
+        db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(authorUuid);
       }
 
-      const player = (await hypixel.getPlayer(name).catch(async (e) => {
-        await chat(`/gc Error: ${e}`);
-      })) as Player;
-      if (!player) return;
-
-      const bedwars = player.stats?.bedwars;
-      const star = bedwars?.level ?? 0;
-      const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
-      const fk = formatNumber(bedwars?.finalKills ?? 0);
-      const fkdr = formatNumber(bedwars?.finalKDRatio ?? 0);
-      const wins = formatNumber(bedwars?.wins ?? 0);
-      const wlr = formatNumber(bedwars?.WLRatio ?? 0);
-      const ws = formatNumber(bedwars?.winstreak ?? 0);
-
-      await chat(
-        `/gc [${star}✫] ${rankTag}${player.nickname} FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`
-      );
-    } else if (msg.includes('!d') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
-      if (!msg.endsWith('!d')) {
-        name = msg.split('!d ')[1]?.split(' ')[0];
-      }
-
-      const player = (await hypixel.getPlayer(name).catch(async (e) => {
-        await chat(`/gc Error: ${e}`);
-      })) as Player;
-      if (!player) return;
-
-      const duels = player.stats?.duels;
-      const division = duels?.division ? '' : `[${duels?.division}] `;
-      const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
-      const wins = formatNumber(duels?.wins ?? 0);
-      const wlr = formatNumber(duels?.WLRatio ?? 0);
-      const cws = formatNumber(duels?.winstreak ?? 0);
-      const bws = formatNumber(duels?.bestWinstreak ?? 0);
-
-      await chat(`/gc ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`);
-    } else if (msg.includes('!sb') && msg.replace(/Guild > |:/g, '').split(' ').length <= 7) {
-      if (!msg.endsWith('!sb')) {
-        name = msg.split('!sb ')[1]?.split(' ')[0];
-      }
-
-      const player = (await hypixel.getPlayer(name).catch(async (e) => {
-        await chat(`/gc Error: ${e}`);
-      })) as Player;
-      if (!player) return;
-
-      const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(player.uuid, { raw: true })) as any;
-
-      if (skyblockProfilesResponse.success && skyblockProfilesResponse.profiles) {
-        const { profiles } = skyblockProfilesResponse;
-        const profile = profiles.find((i: any) => i.selected);
-        if (profile) {
-          const profileData = profile.members[player.uuid];
-          const bankBalance = profile.banking?.balance;
-          const networth = abbreviateNumber((await getNetworth(profileData, bankBalance)).networth);
-          const sa = formatNumber(await skillAverage(profileData));
-          const level = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
-
-          const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
-
-          await chat(`/gc [${level}] ${rankTag}${player.nickname} NW: ${networth} SA: ${sa}`);
-        } else {
-          await chat(`/gc Error: No profiles found for ${name}`);
+      // In-game commands
+      const command = /!(\w+)/.exec(msg)?.[1];
+      if (command) {
+        let ign = /!\w+\s+(\S+)/.exec(msg)?.[1];
+        if (!ign) {
+          ign = author;
         }
-      } else {
-        await chat(`/gc Error: No profiles found for ${name}`);
+
+        const player = await hypixel.getPlayer(ign).catch(async (e) => {
+          await chat(`/gc Error: ${e}`);
+        });
+        if (!player) return;
+
+        switch (command) {
+          case 'bw':
+          case 'bedwars': {
+            await chat(getBedwarsStats(player));
+            break;
+          }
+          case 'd':
+          case 'duels': {
+            await chat(getDuelsStats(player));
+            break;
+          }
+          case 'sb':
+          case 'skyblock': {
+            await chat(await getSkyblockStats(player));
+          }
+        }
       }
     }
-  } else if (msg.includes('Officer >')) {
-    await ocWebhook.send({
-      username: 'Dominance',
-      avatarURL: config.guild.icon,
-      files: [await messageToImage(rawMsg)]
-    });
-    let [, name] = msg.replace(/Officer > |:/g, '').split(' ');
-    let uuid = await nameToUuid(name);
-    if (!uuid) {
-      [name] = msg.replace(/Officer > |:/g, '').split(' ');
-      uuid = await nameToUuid(name);
+  } else if (msg.startsWith('Officer >')) {
+    const author = msg.match(/Officer\s*>\s*(?:\[[^\]]+\]\s*)?(\w+)/)?.[1];
+    if (msg.includes(':') && author) {
+      // Officer message
+      await ocWebhook.send({
+        username: 'Dominance',
+        avatarURL: config.guild.icon,
+        files: [await messageToImage(rawMsg)]
+      });
+
+      const authorUuid = await nameToUuid(author);
+      if (authorUuid) {
+        createGuildMember(authorUuid);
+        addXp('', authorUuid);
+        db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(authorUuid);
+      }
     }
-    db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
-    if (uuid) {
-      addXp('', uuid);
-    }
-  } else if (msg.includes('From')) {
-    let [, , name] = msg.split(' ');
-    name = name.slice(0, -1);
-    let uuid = await nameToUuid(name);
-    if (!uuid) {
-      [, name] = msg.split(' ');
-      name = name.slice(0, -1);
-      uuid = await nameToUuid(name);
-    }
-    const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid);
-    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(uuid);
+  } else if (msg.startsWith('From')) {
+    const author = msg.match(/From (\[.*\])? *(.+):/)?.[2];
+    if (!author) return;
+
+    const authorUuid = await nameToUuid(author);
+    if (!authorUuid) return;
+
+    const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(authorUuid);
+    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(authorUuid);
+
     if (waitlist || breaks) {
-      await chat(`/g invite ${name}`);
+      await chat(`/g invite ${author}`);
     }
   } else if (msg.includes('The Guild has reached Level')) {
     const level = msg.split(' ')[msg.split(' ').indexOf('Level') + 1];
