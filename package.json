@@ -20,7 +20,7 @@
     "discord-emoji-converter": "^1.2.8",
     "discord.js": "^14.14.1",
     "ffmpeg-static": "^5.2.0",
-    "google-auth-library": "^9.6.1",
+    "google-auth-library": "^9.6.2",
     "googleapis": "^128.0.0",
     "hypixel-api-reborn": "github:BridgeSenseDev/hypixel-api-reborn",
     "math-expression-evaluator": "^2.0.4",
