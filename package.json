@@ -26,7 +26,7 @@
     "math-expression-evaluator": "^2.0.4",
     "mineflayer": "^4.18.0",
     "node-cron": "^3.0.3",
-    "skyhelper-networth": "^1.18.2"
+    "skyhelper-networth": "^1.18.4"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.23.10",
