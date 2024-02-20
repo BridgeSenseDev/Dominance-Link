@@ -104,6 +104,11 @@ function generateEntries(data: HypixelGuildMember[], order: keyof HypixelGuildMe
 }
 
 async function generateLeaderboard(channel: GuildChannel, order: keyof HypixelGuildMember) {
+  if (channel.isThread() && channel.archived) {
+    channel.setArchived(false);
+    return;
+  }
+
   const images = [];
   const data = fetchData(order);
   const leaderboard = generateEntries(data, order);
