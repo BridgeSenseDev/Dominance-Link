@@ -1,10 +1,10 @@
-import { Canvas, FontLibrary } from '@julusian/skia-canvas';
+import { createCanvas, GlobalFonts } from '@napi-rs/canvas';
 import { rgbaColor } from './constants.js';
 
-FontLibrary.use('Uni Sans Heavy', './fonts/Uni Sans Heavy Regular.ttf');
+GlobalFonts.registerFromPath('./fonts/Uni Sans Heavy Regular.ttf', 'Uni Sans Heavy');
 
 function getHeight(message: string) {
-  const canvas = new Canvas(1, 1);
+  const canvas = createCanvas(1, 1);
   const ctx = canvas.getContext('2d');
   const splitMessageSpace = message.split(' ');
   for (const msg in splitMessageSpace) {
@@ -33,7 +33,7 @@ function getHeight(message: string) {
 
 export default async function generateMessageImage(message: string) {
   const canvasHeight = getHeight(message);
-  const canvas = new Canvas(1000, canvasHeight);
+  const canvas = createCanvas(1000, canvasHeight);
   const ctx = canvas.getContext('2d');
   const splitMessageSpace = message.split(' ');
   for (const msg in splitMessageSpace) {
@@ -44,6 +44,7 @@ export default async function generateMessageImage(message: string) {
   ctx.shadowOffsetX = 4;
   ctx.shadowOffsetY = 4;
   ctx.shadowColor = '#131313';
+  ctx.shadowBlur = 0.001;
   ctx.font = '40px Uni Sans Heavy';
 
   let width = 5;
@@ -62,6 +63,6 @@ export default async function generateMessageImage(message: string) {
     ctx.fillText(currentMessage, width, height);
     width += ctx.measureText(currentMessage).width;
   }
-  const buffer = await canvas.toBuffer('png');
+  const buffer = canvas.toBuffer('image/png');
   return buffer;
 }

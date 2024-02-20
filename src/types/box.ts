@@ -1,7 +1,6 @@
-/* eslint-disable no-unused-vars */
-import { CanvasRenderingContext2D, CanvasGradient, CanvasPattern, CanvasTexture } from '@julusian/skia-canvas';
+import { SKRSContext2D } from '@napi-rs/canvas';
 
-export type Fill = string | CanvasGradient | CanvasPattern | CanvasTexture;
+export type Fill = string | CanvasGradient | CanvasPattern;
 
 export interface CompleteSpacing {
   left: number;
@@ -11,7 +10,7 @@ export interface CompleteSpacing {
 }
 
 export type DeferredGradient = (
-  ctx: CanvasRenderingContext2D,
+  ctx: SKRSContext2D,
   x: number,
   y: number,
   width: number,

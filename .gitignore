@@ -5,3 +5,4 @@ Dominance Link.code-workspace
 dist
 .history
 src/embeds/guildInfo.ts
+test/

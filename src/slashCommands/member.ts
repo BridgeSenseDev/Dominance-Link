@@ -1,5 +1,6 @@
+import { readFileSync } from 'fs';
 import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
-import { Canvas, Image } from '@julusian/skia-canvas';
+import { createCanvas, Image } from '@napi-rs/canvas';
 import renderBox, { renderSkin } from '../helper/render.js';
 import { abbreviateNumber, nameToUuid, uuidToName } from '../helper/utils.js';
 import { StringObject } from '../types/global.d.js';
@@ -67,10 +68,10 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   const gexpHistory = fetchGexpForMember(uuid);
 
-  const canvas = new Canvas(591, 568);
+  const canvas = createCanvas(591, 568);
   const ctx = canvas.getContext('2d');
   const image = new Image();
-  image.src = './images/member_bg.png';
+  image.src = readFileSync('./images/member_bg.png');
   ctx.filter = 'blur(6px)';
   ctx.drawImage(image, 0, 0);
   ctx.filter = 'none';
@@ -255,5 +256,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   await renderSkin(ctx, { x: 15, y: 14, width: 126, height: 132 }, uuid);
 
-  await interaction.editReply({ files: [await canvas.toBuffer('png')] });
+  await interaction.editReply({ files: [canvas.toBuffer('image/png')] });
 }

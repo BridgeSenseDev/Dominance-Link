@@ -1,12 +1,12 @@
-import { Canvas, FontLibrary, loadImage } from '@julusian/skia-canvas';
+import { GlobalFonts, createCanvas, loadImage } from '@napi-rs/canvas';
 import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder } from 'discord.js';
 import Database from 'better-sqlite3';
 import { getLevelDetails } from '../helper/utils.js';
 import config from '../config.json' assert { type: 'json' };
 import { fetchMember } from '../handlers/databaseHandler.js';
 
-FontLibrary.use('Nunito-Semibold', './fonts/Nunito-Semibold.ttf');
-FontLibrary.use('Nunito-ExtraBold', './fonts/Nunito-ExtraBold.ttf');
+GlobalFonts.registerFromPath('./fonts/Nunito-Semibold.ttf', 'Nunito-Semibold');
+GlobalFonts.registerFromPath('./fonts/Nunito-ExtraBold.ttf', 'Nunito-ExtraBold');
 const db = new Database('guild.db');
 
 interface RankCardOptions {
@@ -34,7 +34,7 @@ async function createRankCard({
   currentXPColor = '#FFFFFF',
   requiredXPColor = '#7F8384'
 }: RankCardOptions) {
-  const canvas = new Canvas(1000, 250);
+  const canvas = createCanvas(1000, 250);
   const ctx = canvas.getContext('2d');
 
   // Border radius
@@ -213,5 +213,5 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     avatar: displayAvatarURL
   });
 
-  await interaction.editReply({ files: [await rankCard.toBuffer('png')] });
+  await interaction.editReply({ files: [rankCard.toBuffer('image/png')] });
 }

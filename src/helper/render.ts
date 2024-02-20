@@ -1,14 +1,14 @@
-import { CanvasRenderingContext2D, FontLibrary, loadImage } from '@julusian/skia-canvas';
+import { GlobalFonts, SKRSContext2D, loadImage } from '@napi-rs/canvas';
 import { BoxProps, DeferredGradient, Fill, TextProps } from '../types/box.js';
 import { rgbaColor } from './constants.js';
 import { removeSectionSymbols } from './utils.js';
 
-FontLibrary.use('Minecraft', './fonts/Minecraft Regular.ttf');
-FontLibrary.use('Minecraft Bold', './fonts/Minecraft Bold.otf');
+GlobalFonts.registerFromPath('./fonts/Minecraft Regular.ttf', 'Minecraft');
+GlobalFonts.registerFromPath('./fonts/Minecraft Bold.otf', 'Minecraft Bold');
 
 function resolveFill(
   fill: Fill | DeferredGradient,
-  ctx: CanvasRenderingContext2D,
+  ctx: SKRSContext2D,
   x: number,
   y: number,
   width: number,
@@ -19,7 +19,7 @@ function resolveFill(
 }
 
 function renderText(
-  ctx: CanvasRenderingContext2D,
+  ctx: SKRSContext2D,
   { x, y, width, height }: BoxProps,
   { header = '', text, font, textY = [0, 0] }: TextProps
 ) {
@@ -124,7 +124,7 @@ function renderText(
   ctx.shadowOffsetY = 0;
 }
 
-export async function renderSkin(ctx: CanvasRenderingContext2D, { x, y, width, height }: BoxProps, uuid: string) {
+export async function renderSkin(ctx: SKRSContext2D, { x, y, width, height }: BoxProps, uuid: string) {
   const response = await fetch(`https://visage.surgeplay.com/bust/${uuid}`, {
     headers: {
       'User-Agent': 'Dominance-Link/1.0 (+https://github.com/BridgeSenseDev/Dominance-Link)'
@@ -145,7 +145,7 @@ export async function renderSkin(ctx: CanvasRenderingContext2D, { x, y, width, h
 }
 
 export default function renderBox(
-  ctx: CanvasRenderingContext2D,
+  ctx: SKRSContext2D,
   { x, y, width, height }: BoxProps,
   { header = '', text, font, textY = [0, 0] }: TextProps
 ) {

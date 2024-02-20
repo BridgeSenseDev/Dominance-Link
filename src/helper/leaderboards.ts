@@ -1,4 +1,4 @@
-import { Canvas, FontLibrary } from '@julusian/skia-canvas';
+import { createCanvas, GlobalFonts } from '@napi-rs/canvas';
 import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import Database from 'better-sqlite3';
 import { ButtonStyle, GuildChannel, Message } from 'discord.js';
@@ -9,10 +9,10 @@ import { HypixelGuildMember } from '../types/global.d.js';
 import { fetchGexpForMember } from '../handlers/databaseHandler.js';
 
 const db = new Database('guild.db');
-FontLibrary.use('Minecraft', './fonts/Minecraft Regular.ttf');
+GlobalFonts.registerFromPath('./fonts/Minecraft Regular.ttf', 'Minecraft');
 
 async function generateLeaderboardImage(message: string[]) {
-  const canvas = new Canvas(750, message.length * 39 + 10);
+  const canvas = createCanvas(750, message.length * 39 + 10);
   const ctx = canvas.getContext('2d');
   let width = 5;
   let height = 29;
@@ -31,6 +31,7 @@ async function generateLeaderboardImage(message: string[]) {
     ctx.shadowOffsetX = 4;
     ctx.shadowOffsetY = 4;
     ctx.shadowColor = '#131313';
+    ctx.shadowBlur = 0.001;
     ctx.font = '40px Minecraft';
 
     for (const msg of splitMessage) {
@@ -45,7 +46,7 @@ async function generateLeaderboardImage(message: string[]) {
     width = 5;
     height += 40;
   }
-  const buffer = await canvas.toBuffer('png');
+  const buffer = canvas.toBuffer('image/png');
   return buffer;
 }
 
