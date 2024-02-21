@@ -13,7 +13,7 @@ import {
 } from '../../helper/utils.js';
 import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
-import { chat } from '../../handlers/workerHandler.js';
+import { chat, waitForMessage } from '../../handlers/workerHandler.js';
 import { textChannels } from '../discord/ready.js';
 import { discordRoles } from '../../helper/constants.js';
 import { BreakMember, WaitlistMember } from '../../types/global.d.js';
@@ -215,11 +215,60 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     const authorUuid = await nameToUuid(author);
     if (!authorUuid) return;
 
-    const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(authorUuid);
-    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(authorUuid);
+    const waitlist = db
+      .prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?')
+      .get(authorUuid) as WaitlistMember;
+    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(authorUuid) as BreakMember;
 
     if (waitlist || breaks) {
       await chat(`/g invite ${author}`);
+
+      const receivedMessage = await waitForMessage(
+        [
+          'to your guild. They have 5 minutes to accept.',
+          'You cannot invite this player to your guild!',
+          'They will have 5 minutes to accept once they come online!',
+          'is already in another guild!',
+          'is already in your guild!',
+          'to your guild! Wait for them to accept!'
+        ],
+        5000
+      );
+
+      let channel;
+      let content;
+      if (waitlist) {
+        channel = client.channels.cache.get(waitlist.channel) as TextChannel;
+        content = `<@${waitlist.discord}>`;
+      } else if (breaks) {
+        channel = client.channels.cache.get(breaks.thread) as ThreadChannel;
+        content = `<@${breaks.discord}>`;
+      }
+
+      if (!receivedMessage) {
+        await chat(`/msg ${author} Guild invite failed.`);
+
+        if (channel) {
+          const embed = new EmbedBuilder()
+            .setColor(config.colors.red)
+            .setTitle('Caution')
+            .setDescription(`<a:across:986170696512204820> Guild invite timed out.`);
+          await channel.send({ content, embeds: [embed] });
+        }
+        return;
+      }
+
+      await chat(`/msg ${author} ${receivedMessage}`);
+
+      if (channel) {
+        await channel.send({
+          files: [
+            await messageToImage(
+              `§b-------------------------------------------------------------§r ${receivedMessage.motd} §b-------------------------------------------------------------`
+            )
+          ]
+        });
+      }
     }
   } else if (msg.includes('The Guild has reached Level')) {
     const level = msg.split(' ')[msg.split(' ').indexOf('Level') + 1];
@@ -411,42 +460,6 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       await textChannels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! ${funFacts[2].fact}`
       );
-    }
-  } else if (msg.includes('have 5 minutes to accept') && msg.includes('invite')) {
-    let name;
-    if (msg.includes('offline invite')) {
-      name = msg.split(' ')[msg.split(' ').indexOf('They') - 1].slice(0, -1);
-    } else {
-      name = msg.split(' ')[msg.split(' ').indexOf('to') - 1];
-    }
-    const uuid = await nameToUuid(name);
-    const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid) as WaitlistMember;
-    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(uuid) as BreakMember;
-    const embed = new EmbedBuilder()
-      .setColor(config.colors.discordGray)
-      .setDescription(`${name} has been invited to the guild`);
-    if (waitlist) {
-      const channel = client.channels.cache.get(waitlist.channel) as TextChannel;
-      await channel.send({ content: `<@${waitlist.discord}>`, embeds: [embed] });
-    } else if (breaks) {
-      const channel = client.channels.cache.get(breaks.thread) as ThreadChannel;
-      await channel.send({ content: `<@${breaks.discord}>`, embeds: [embed] });
-    }
-  } else if (msg.includes('is already in another guild!')) {
-    const name = msg.split(' ')[msg.split(' ').indexOf('is') - 1];
-    const uuid = await nameToUuid(name);
-    const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(uuid) as WaitlistMember;
-    const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(uuid) as BreakMember;
-    const embed = new EmbedBuilder()
-      .setColor(config.colors.discordGray)
-      .setTitle(`${name} is in another guild`)
-      .setDescription(`Please leave your current guild`);
-    if (waitlist) {
-      const channel = client.channels.cache.get(waitlist.channel) as TextChannel;
-      await channel.send({ content: `<@${waitlist.discord}>`, embeds: [embed] });
-    } else if (breaks) {
-      const channel = client.channels.cache.get(breaks.thread) as ThreadChannel;
-      await channel.send({ content: `<@${breaks.discord}>`, embeds: [embed] });
     }
   }
   if (msg.includes('left the guild!') || msg.includes('was kicked')) {
