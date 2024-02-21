@@ -1,7 +1,6 @@
 import { createCanvas, GlobalFonts } from '@napi-rs/canvas';
-import { ActionRowBuilder, ButtonBuilder } from '@discordjs/builders';
 import Database from 'better-sqlite3';
-import { ButtonStyle, GuildChannel, Message } from 'discord.js';
+import { ButtonStyle, GuildChannel, Message, ActionRowBuilder, ButtonBuilder } from 'discord.js';
 import { rgbaColor } from './constants.js';
 import { abbreviateNumber, formatNumber, sleep } from './utils.js';
 import { textChannels } from '../events/discord/ready.js';
