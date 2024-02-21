@@ -4,7 +4,7 @@ import { Player } from 'hypixel-api-reborn';
 import { demojify } from 'discord-emoji-converter';
 import { rankColor, levelingXp } from './constants.js';
 import config from '../config.json' assert { type: 'json' };
-import { fetchMember } from '../handlers/databaseHandler.js';
+import { fetchGuildMember, fetchMember } from '../handlers/databaseHandler.js';
 import { StringObject } from '../types/global.js';
 
 const db = new Database('guild.db');
@@ -483,4 +483,10 @@ export function updateTable(startDate: string, endDate: string) {
       db.exec(`ALTER TABLE gexpHistoryArchives ADD COLUMN ${date} INTEGER`);
     }
   }
+}
+
+export async function isStaff(identifier: string) {
+  const guildMember = fetchGuildMember(identifier);
+  if (!guildMember) return false;
+  return ['[GUILDMASTER]', '[Owner]', '[Staff]'].includes(guildMember.tag);
 }
