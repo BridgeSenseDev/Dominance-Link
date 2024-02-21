@@ -485,8 +485,15 @@ export function updateTable(startDate: string, endDate: string) {
   }
 }
 
+function isValidUUID(uuid: string) {
+  const uuidRegex = /([0-9a-f]{8})(?:-|)([0-9a-f]{4})(?:-|)(4[0-9a-f]{3})(?:-|)([89ab][0-9a-f]{3})(?:-|)([0-9a-f]{12})/;
+  return uuidRegex.test(uuid);
+}
+
 export async function isStaff(identifier: string) {
-  const guildMember = fetchGuildMember(identifier);
+  const uuid = isValidUUID(identifier) ? identifier : await nameToUuid(identifier);
+  if (!uuid) return false;
+  const guildMember = fetchGuildMember(uuid);
   if (!guildMember) return false;
   return ['[GUILDMASTER]', '[Owner]', '[Staff]'].includes(guildMember.tag);
 }
