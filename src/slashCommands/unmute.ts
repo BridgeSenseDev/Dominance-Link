@@ -24,6 +24,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   const name = interaction.options.getString('name');
+
+  if (await isStaff(name!)) {
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.red)
+      .setTitle('Error')
+      .setDescription(`<a:across:986170696512204820> Guild staff cannot be unmuted through this command.`);
+    interaction.editReply({ embeds: [embed] });
+    return;
+  }
+
   await chat(`/g unmute ${name}`);
 
   const receivedMessage = await waitForMessage(

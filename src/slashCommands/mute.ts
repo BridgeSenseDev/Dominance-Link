@@ -26,6 +26,16 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   const name = interaction.options.getString('name');
   const time = interaction.options.getString('time');
+
+  if (await isStaff(name!)) {
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.red)
+      .setTitle('Error')
+      .setDescription(`<a:across:986170696512204820> Guild staff cannot be muted through this command.`);
+    interaction.editReply({ embeds: [embed] });
+    return;
+  }
+
   await chat(`/g mute ${name} ${time}`);
 
   const receivedMessage = await waitForMessage(
