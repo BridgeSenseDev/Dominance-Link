@@ -3,14 +3,13 @@ import { schedule } from 'node-cron';
 import Database from 'better-sqlite3';
 import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
-import { Client, EmbedBuilder, Guild, Role } from 'discord.js';
+import { Client, EmbedBuilder, Guild, GuildMember, Role } from 'discord.js';
 import config from '../config.json' assert { type: 'json' };
 import {
   uuidToName,
   skillAverage,
   doubleDigits,
   abbreviateNumber,
-  toCamelCase,
   rankTagF,
   formatDateForDb,
   getESTDate,
@@ -31,6 +30,18 @@ export const sheet = new google.auth.JWT(config.sheets.clientEmail, undefined, c
 ]);
 
 sheet.authorize();
+
+const roleOrder = ['slayer', 'elite', 'hero', 'supreme', 'dominator', 'goat', 'staff'];
+
+async function removeHigherRoles(member: GuildMember, currentRole: string, roles: { [key: string]: Role }) {
+  const currentRoleIndex = roleOrder.indexOf(currentRole);
+  for (let i = currentRoleIndex + 1; i < roleOrder.length; i++) {
+    const roleKey = roleOrder[i];
+    if (member.roles.cache.has(roles[roleKey].id)) {
+      await member.roles.remove(roles[roleKey]);
+    }
+  }
+}
 
 export async function weekly(client: Client) {
   schedule(
@@ -239,11 +250,25 @@ export async function gsrun(sheets: JWT, client: Client) {
 export async function players() {
   const client = (await import('../index.js')).default;
   const guild = client.guilds.cache.get('242357942664429568') as Guild;
+  const unverifiedRole = guild.roles.cache.get(discordRoles.unverified) as Role;
   const breakRole = guild.roles.cache.get(discordRoles.Break) as Role;
   const slayerRole = guild.roles.cache.get(discordRoles.slayer) as Role;
   const eliteRole = guild.roles.cache.get(discordRoles.elite) as Role;
   const heroRole = guild.roles.cache.get(discordRoles.hero) as Role;
+  const supremeRole = guild.roles.cache.get(discordRoles.supreme) as Role;
+  const dominatorRole = guild.roles.cache.get(discordRoles.dominator) as Role;
+  const goatRole = guild.roles.cache.get(discordRoles.goat) as Role;
   const staffRole = guild.roles.cache.get(discordRoles.staff) as Role;
+
+  const roles = {
+    slayer: slayerRole,
+    elite: eliteRole,
+    hero: heroRole,
+    supreme: supremeRole,
+    dominator: dominatorRole,
+    goat: goatRole,
+    staff: staffRole
+  };
   let count = 0;
 
   setInterval(
@@ -255,11 +280,22 @@ export async function players() {
       const members = Array.from(slayerRole.members).concat(
         Array.from(eliteRole.members),
         Array.from(heroRole.members),
+        Array.from(supremeRole.members),
+        Array.from(dominatorRole.members),
+        Array.from(goatRole.members),
         Array.from(staffRole.members)
       );
       for (const member of members) {
         if (!discordId.includes(member[0])) {
-          await member[1].roles.remove([slayerRole, eliteRole, heroRole]);
+          await member[1].roles.remove([
+            slayerRole,
+            eliteRole,
+            heroRole,
+            supremeRole,
+            dominatorRole,
+            goatRole,
+            staffRole
+          ]);
         }
       }
     },
@@ -328,6 +364,9 @@ export async function players() {
       } else if (['[Slayer]', '[Elite]'].includes(data.tag)) {
         await chat(`/g promote ${ign}`);
       }
+    } else if (!data.targetRank && ['Elite', 'Hero'].includes(ingameRole)) {
+      const ign = await uuidToName(data.uuid);
+      await chat(`/g demote ${ign}`);
     }
 
     if (data.discord) {
@@ -339,6 +378,7 @@ export async function players() {
         return;
       }
 
+      // Bedwars roles
       const bwRole = bwPrestiges[Math.floor(bwStars / 100) * 100];
       for (const roleId of Object.values(bwPrestiges)) {
         if (member.roles.cache.has(roleId) && roleId !== bwRole) {
@@ -349,6 +389,7 @@ export async function players() {
         await member.roles.add(bwRole);
       }
 
+      // Duels roles
       let highestRole = null;
       for (const wins in duelsDivisionRoles) {
         if (duelsWins >= parseInt(wins, 10)) {
@@ -366,8 +407,8 @@ export async function players() {
       }
 
       if (!['[Owner]', '[GUILDMASTER]'].includes(data.tag)) {
+        // Set member discord nicknames
         const ign = player.nickname;
-        await member.roles.add(slayerRole);
         const { displayName } = member;
         if (!displayName.toUpperCase().includes(ign.toUpperCase())) {
           if (/\(.*?\)/.test(displayName.split(' ')[1])) {
@@ -379,50 +420,37 @@ export async function players() {
           await member.setNickname(displayName.replace(new RegExp(ign, 'gi'), ign));
         }
 
+        // Manage member roles
         const memberRoles = member.roles.cache.map((role) => role.id);
 
+        // Add default member role
+        if (!memberRoles.includes(discordRoles.slayer)) {
+          await member.roles.add(slayerRole);
+        }
+
+        // Remove unverified role
+        if (!memberRoles.includes(discordRoles.unverified)) {
+          await member.roles.remove(unverifiedRole);
+        }
+
+        // Add in-game role
         const role = guild.roles.cache.get(discordRoles[ingameRole.toLowerCase() as HypixelRoleKeys]) as Role;
         if (!memberRoles.includes(role.id) && ingameRole !== 'Staff') {
           await member.roles.add(role);
         }
 
-        if (data.targetRank) {
-          const targetRole = guild.roles.cache.get(
-            discordRoles[toCamelCase(data.targetRank.replace(/\[|\]/g, '')) as HypixelRoleKeys]
-          ) as Role;
-          if (!memberRoles.includes(targetRole.id)) {
-            await member.roles.add(targetRole);
+        // Add hero role if rank above hero
+        if (ingameRole === 'Hero' && ['[Supreme]', '[Dominator]', '[Goat]'].includes(data.targetRank)) {
+          if (!memberRoles.includes(discordRoles.hero)) {
+            await member.roles.add(heroRole);
           }
         }
 
-        if (data.tag === '[Slayer]') {
-          if (memberRoles.includes(eliteRole.id)) {
-            await member.roles.remove(eliteRole);
-          }
-          if (memberRoles.includes(heroRole.id)) {
-            await member.roles.remove(heroRole);
-          }
-          if (memberRoles.includes(staffRole.id)) {
-            await member.roles.remove(staffRole);
-          }
-        }
-
-        if (data.tag === '[Elite]') {
-          if (memberRoles.includes(heroRole.id)) {
-            await member.roles.remove(heroRole);
-          }
-          if (memberRoles.includes(staffRole.id)) {
-            await member.roles.remove(staffRole);
-          }
-        }
-
-        if (data.tag === '[Hero]') {
-          if (memberRoles.includes(eliteRole.id)) {
-            await member.roles.remove(eliteRole);
-          }
-          if (memberRoles.includes(staffRole.id)) {
-            await member.roles.remove(staffRole);
-          }
+        // Remove higher roles
+        if (['Slayer', 'Elite'].includes(ingameRole)) {
+          await removeHigherRoles(member, ingameRole.toLowerCase(), roles);
+        } else if (ingameRole === 'Hero' && data.targetRank) {
+          await removeHigherRoles(member, data.targetRank.slice(1, -1).toLowerCase(), roles);
         }
       }
     }
