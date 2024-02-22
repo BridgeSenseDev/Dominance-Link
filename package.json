@@ -14,7 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.47",
+    "@napi-rs/canvas": "^0.1.48",
     "better-sqlite3": "^9.4.1",
     "discord-emoji-converter": "^1.2.10",
     "discord.js": "^14.14.1",
