@@ -319,10 +319,10 @@ export default async function execute(client: Client, interaction: Interaction) 
       const name = await uuidToName(breakData.uuid);
       if (interaction.user.id !== breakData.discord) {
         const breakMember = interaction.guild?.members.cache.get(breakData.discord) as GuildMember;
-        if (!(interaction.member as GuildMember).roles.cache.has(discordRoles.staff)) {
+        if (!config.admins.includes(interaction.member!.user.id)) {
           const embed = new EmbedBuilder()
             .setColor(config.colors.discordGray)
-            .setDescription(`Only staff can close this application`);
+            .setDescription(`Only admins can close this application`);
           await interaction.editReply({ embeds: [embed] });
           return;
         }
@@ -382,10 +382,10 @@ export default async function execute(client: Client, interaction: Interaction) 
       await (interaction.channel as ThreadChannel).setLocked();
       await (interaction.channel as ThreadChannel).setArchived();
     } else if (interaction.customId === 'closeApplication') {
-      if (!(interaction.member as GuildMember).roles.cache.has(discordRoles.staff)) {
+      if (!config.admins.includes(interaction.member!.user.id)) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
-          .setDescription(`Only staff can close this application`);
+          .setDescription(`Only admins can close this application`);
         await interaction.reply({ embeds: [embed], ephemeral: true });
         return;
       }
