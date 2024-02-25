@@ -45,7 +45,7 @@ async function removeHigherRoles(member: GuildMember, currentRole: string, roles
 
 export async function weekly(client: Client) {
   schedule(
-    '55 11 * * 0',
+    '55 12 * * 0',
     async () => {
       const roleDesc: StringObject = {};
       const assignedMembers = new Set();

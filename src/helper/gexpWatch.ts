@@ -52,7 +52,7 @@ function ensureDataForDate(date: string, guild: string) {
 
 export default async function gexpWatch() {
   schedule(
-    '00 50 11 * * 0-6',
+    '00 55 12 * * 0-6',
     async () => {
       const guildThumbnails: StringObject = {
         rebel: `https://cdn.discordapp.com/attachments/986281342457237624/1001705614264778803/a_96a019775f60ebe70d0e5ea3d762ff57.webp`,
