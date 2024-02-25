@@ -13,13 +13,13 @@ export default async function execute() {
 
     // LIMBO CHECK
     setTimeout(async () => {
-      await chat('/locraw');
+      chat('/locraw');
     }, 3000);
     setTimeout(async () => {
-      await chat('/g online');
+      chat('/g online');
     }, 10000);
     setInterval(async () => {
-      await chat('/locraw');
+      chat('/locraw');
     }, 1000 * 60);
   }
 }

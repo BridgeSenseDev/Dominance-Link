@@ -22,7 +22,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   const name = interaction.options.getString('name');
-  await chat(`/g invite ${name}`);
+  chat(`/g invite ${name}`);
 
   const receivedMessage = await waitForMessage(
     [

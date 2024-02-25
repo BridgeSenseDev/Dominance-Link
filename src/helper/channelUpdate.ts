@@ -7,7 +7,7 @@ import { hypixel } from '../index.js';
 async function channelUpdate(client: Client) {
   setInterval(
     async () => {
-      await chat('/g online');
+      chat('/g online');
       // Presence
       let members = 0;
       for (let i = 0; i < client.guilds.cache.size; i++) {

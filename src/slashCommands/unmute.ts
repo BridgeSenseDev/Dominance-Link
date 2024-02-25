@@ -34,7 +34,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  await chat(`/g unmute ${name}`);
+  chat(`/g unmute ${name}`);
 
   const receivedMessage = await waitForMessage(
     [

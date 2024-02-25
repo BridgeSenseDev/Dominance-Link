@@ -352,21 +352,21 @@ export async function players() {
     if (data.targetRank && !['[Staff]', '[Owner]', '[GM]'].includes(data.tag) && data.targetRank !== data.tag) {
       const ign = await uuidToName(data.uuid);
       if (data.targetRank === '[Hero]') {
-        await chat(`/g promote ${ign}`);
+        chat(`/g promote ${ign}`);
       } else if (data.targetRank === '[Elite]') {
         if (data.tag === '[Slayer]') {
-          await chat(`/g promote ${ign}`);
+          chat(`/g promote ${ign}`);
         } else if (data.tag === '[Hero]') {
-          await chat(`/g demote ${ign}`);
+          chat(`/g demote ${ign}`);
         }
       } else if (data.targetRank === '[Slayer]') {
-        await chat(`/g demote ${ign}`);
+        chat(`/g demote ${ign}`);
       } else if (['[Slayer]', '[Elite]'].includes(data.tag)) {
-        await chat(`/g promote ${ign}`);
+        chat(`/g promote ${ign}`);
       }
     } else if (!data.targetRank && ['Elite', 'Hero'].includes(ingameRole)) {
       const ign = await uuidToName(data.uuid);
-      await chat(`/g demote ${ign}`);
+      chat(`/g demote ${ign}`);
     }
 
     if (data.discord) {

@@ -27,15 +27,15 @@ export async function startBot() {
   });
 }
 
-export async function chat(message: string) {
+export function chat(message: string) {
   worker.postMessage({ type: 'send', content: message });
 }
 
-export async function quit() {
+export function quit() {
   worker.postMessage({ type: 'quit' });
 }
 
-export async function autoRejoin() {
+export function autoRejoin() {
   setInterval(async () => {
     const status = await hypixel.getStatus(config.minecraft.ign);
     if (!status.online) {

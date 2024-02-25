@@ -109,7 +109,7 @@ export default async function execute(client: Client, message: Message) {
   }
 
   if (channel.id === textChannels.chatLogs.id) {
-    await chat(message.content);
+    chat(message.content);
   }
 
   if (channel.id === textChannels.counting.id) {
@@ -205,9 +205,9 @@ export default async function execute(client: Client, message: Message) {
   }
 
   if (channel.id === textChannels.minecraftLink.id) {
-    await chat(`/gc ${name} ${tag}: ${messageContent}`);
+    chat(`/gc ${name} ${tag}: ${messageContent}`);
   } else if (channel.id === textChannels.officerChat.id) {
-    await chat(`/oc ${name} ${tag}: ${messageContent}`);
+    chat(`/oc ${name} ${tag}: ${messageContent}`);
   }
 
   await message.delete();

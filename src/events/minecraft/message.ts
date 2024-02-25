@@ -117,7 +117,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     // Limbo check
     const parsedMessage = JSON.parse(msg);
     if (parsedMessage.server !== 'limbo') {
-      await chat('\u00a7');
+      chat('\u00a7');
       return;
     }
   } else if (msg.startsWith('Guild >')) {
@@ -169,24 +169,24 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         }
 
         const player = await hypixel.getPlayer(ign).catch(async (e) => {
-          await chat(`/gc Error: ${e}`);
+          chat(`/gc Error: ${e}`);
         });
         if (!player) return;
 
         switch (command) {
           case 'bw':
           case 'bedwars': {
-            await chat(getBedwarsStats(player));
+            chat(getBedwarsStats(player));
             break;
           }
           case 'd':
           case 'duels': {
-            await chat(getDuelsStats(player));
+            chat(getDuelsStats(player));
             break;
           }
           case 'sb':
           case 'skyblock': {
-            await chat(await getSkyblockStats(player));
+            chat(await getSkyblockStats(player));
           }
         }
       }
@@ -221,7 +221,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(authorUuid) as BreakMember;
 
     if (waitlist || breaks) {
-      await chat(`/g invite ${author}`);
+      chat(`/g invite ${author}`);
 
       const receivedMessage = await waitForMessage(
         [
@@ -246,7 +246,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       }
 
       if (!receivedMessage) {
-        await chat(`/msg ${author} Guild invite failed.`);
+        chat(`/msg ${author} Guild invite failed.`);
 
         if (channel) {
           const embed = new EmbedBuilder()
@@ -258,7 +258,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         return;
       }
 
-      await chat(`/msg ${author} ${receivedMessage}`);
+      chat(`/msg ${author} ${receivedMessage}`);
 
       if (channel) {
         await channel.send({
@@ -439,7 +439,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       await thread.setArchived();
       await thread.setLocked();
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(breakData.discord, uuid);
-      await chat(`/gc Welcome back from your break, ${name}! ${funFact}`);
+      chat(`/gc Welcome back from your break, ${name}! ${funFact}`);
       await textChannels.guildChat.send(
         `<a:wave_animated:1036265311390928897> Welcome back from your break, <@${breakData.discord}>! ${funFacts[2].fact}`
       );
@@ -447,7 +447,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     } catch (e) {
       /* empty */
     }
-    await chat(`/gc Welcome to Dominance, ${name}! ${funFact}`);
+    chat(`/gc Welcome to Dominance, ${name}! ${funFact}`);
     const discordId = uuidToDiscord(uuid);
     if (discordId) {
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId, uuid);

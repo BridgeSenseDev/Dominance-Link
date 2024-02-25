@@ -36,7 +36,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  await chat(`/g mute ${name} ${time}`);
+  chat(`/g mute ${name} ${time}`);
 
   const receivedMessage = await waitForMessage(
     [
