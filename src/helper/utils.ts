@@ -2,7 +2,7 @@ import { Client, EmbedBuilder, Message } from 'discord.js';
 import Database from 'better-sqlite3';
 import { Player } from 'hypixel-api-reborn';
 import { demojify } from 'discord-emoji-converter';
-import { rankColor, levelingXp } from './constants.js';
+import { rankColor } from './constants.js';
 import config from '../config.json' assert { type: 'json' };
 import { fetchGuildMember, fetchMember } from '../handlers/databaseHandler.js';
 import { StringObject } from '../types/global.js';
@@ -226,33 +226,6 @@ export function doubleDigits(number: number) {
     return `0${number}`;
   }
   return number;
-}
-
-async function xpToLevel(exp: number, cap: number) {
-  for (let i = 0; i < cap; i++) {
-    if (exp - levelingXp[i] > 0) {
-      exp -= levelingXp[i];
-    } else {
-      return i + exp / levelingXp[i];
-    }
-  }
-  return cap;
-}
-
-export async function skillAverage(player: any) {
-  let levels = 0;
-  levels += await xpToLevel(player.experience_skill_farming, 60);
-  levels += await xpToLevel(player.experience_skill_mining, 60);
-  levels += await xpToLevel(player.experience_skill_combat, 60);
-  levels += await xpToLevel(player.experience_skill_foraging, 50);
-  levels += await xpToLevel(player.experience_skill_fishing, 50);
-  levels += await xpToLevel(player.experience_skill_enchanting, 60);
-  levels += await xpToLevel(player.experience_skill_alchemy, 50);
-  levels += await xpToLevel(player.experience_skill_taming, 50);
-  if (Number.isNaN(levels)) {
-    return 0;
-  }
-  return levels / 8;
 }
 
 export async function addXp(discordId: string = '', ign: string = '') {

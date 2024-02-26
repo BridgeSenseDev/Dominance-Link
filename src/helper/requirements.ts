@@ -1,6 +1,5 @@
-import { getNetworth } from 'skyhelper-networth';
-import { Player } from 'hypixel-api-reborn';
-import { abbreviateNumber, formatNumber, uuidToName, skillAverage } from './utils.js';
+import { Player, SkyblockMember } from 'hypixel-api-reborn';
+import { abbreviateNumber, formatNumber, uuidToName } from './utils.js';
 import config from '../config.json' assert { type: 'json' };
 import { hypixel } from '../index.js';
 
@@ -8,17 +7,10 @@ export default async function requirementsEmbed(uuid: string, playerData: Player
   let skyblock = [0, 0];
   const name = await uuidToName(uuid);
 
-  const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(uuid, { raw: true })) as any;
-
-  if (skyblockProfilesResponse.success && skyblockProfilesResponse.profiles) {
-    const { profiles } = skyblockProfilesResponse;
-    const profile = profiles.find((i: any) => i.selected);
-    if (profile) {
-      const profileData = profile.members[uuid];
-      const bankBalance = profile.banking?.balance;
-      const { networth } = await getNetworth(profileData, bankBalance);
-      skyblock = [networth, await skillAverage(profileData)];
-    }
+  const sbMember = await hypixel.getSkyblockMember(uuid).catch(() => null);
+  if (sbMember) {
+    const profile = sbMember.values().next().value as SkyblockMember;
+    skyblock = [(await profile.getNetworth()).networth, profile.skills.average];
   }
 
   const bedwarsData = playerData.stats?.bedwars;
@@ -201,17 +193,11 @@ export default async function requirementsEmbed(uuid: string, playerData: Player
 
 export async function checkRequirements(uuid: string, playerData: Player) {
   let skyblock = [0, 0];
-  const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(uuid, { raw: true })) as any;
 
-  if (skyblockProfilesResponse.success && skyblockProfilesResponse.profiles) {
-    const { profiles } = skyblockProfilesResponse;
-    const profile = profiles.find((i: any) => i.selected);
-    if (profile) {
-      const profileData = profile.members[uuid];
-      const bankBalance = profile.banking?.balance;
-      const { networth } = await getNetworth(profileData, bankBalance);
-      skyblock = [networth, await skillAverage(profileData)];
-    }
+  const sbMember = await hypixel.getSkyblockMember(uuid).catch(() => null);
+  if (sbMember) {
+    const profile = sbMember.values().next().value as SkyblockMember;
+    skyblock = [(await profile.getNetworth()).networth, profile.skills.average];
   }
 
   const bedwarsData = playerData.stats?.bedwars;

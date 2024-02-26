@@ -23,8 +23,7 @@
     "hypixel-api-reborn": "github:BridgeSenseDev/hypixel-api-reborn",
     "math-expression-evaluator": "^2.0.5",
     "mineflayer": "^4.19.0",
-    "node-cron": "^3.0.3",
-    "skyhelper-networth": "^1.18.4"
+    "node-cron": "^3.0.3"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.23.10",

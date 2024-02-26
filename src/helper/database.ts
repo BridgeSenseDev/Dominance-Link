@@ -1,13 +1,12 @@
 import { google } from 'googleapis';
 import { schedule } from 'node-cron';
 import Database from 'better-sqlite3';
-import { getNetworth } from 'skyhelper-networth';
 import { JWT } from 'google-auth-library';
 import { Client, EmbedBuilder, Guild, GuildMember, Role } from 'discord.js';
+import { SkyblockMember } from 'hypixel-api-reborn';
 import config from '../config.json' assert { type: 'json' };
 import {
   uuidToName,
-  skillAverage,
   doubleDigits,
   abbreviateNumber,
   rankTagF,
@@ -316,12 +315,6 @@ export async function players() {
 
     const ingameRole = data.tag.replace(/\[|\]/g, '');
 
-    const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(data.uuid, { raw: true })) as any;
-    if (!skyblockProfilesResponse.success) {
-      return;
-    }
-    const { profiles } = skyblockProfilesResponse;
-
     let player;
     try {
       player = await hypixel.getPlayer(data.uuid);
@@ -335,18 +328,14 @@ export async function players() {
     const duelsWlr = +(player.stats?.duels?.WLRatio.toFixed(1) ?? 0);
 
     let networth = 0;
-    let sa = 0;
+    let sbSkillAverage = 0;
     let sbLevel = 0;
-
-    if (profiles) {
-      const profile = profiles.find((i: any) => i.selected);
-      if (profile) {
-        const profileData = profile.members[data.uuid];
-        const bankBalance = profile.banking?.balance;
-        ({ networth } = await getNetworth(profileData, bankBalance));
-        sa = await skillAverage(profileData);
-        sbLevel = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
-      }
+    const sbMember = await hypixel.getSkyblockMember(data.uuid).catch(() => null);
+    if (sbMember) {
+      const profile = sbMember.values().next().value as SkyblockMember;
+      networth = (await profile.getNetworth()).networth ?? 0;
+      sbSkillAverage = profile.skills.average;
+      sbLevel = profile.level;
     }
 
     if (data.targetRank && !['[Staff]', '[Owner]', '[GM]'].includes(data.tag) && data.targetRank !== data.tag) {
@@ -469,7 +458,7 @@ export async function players() {
       duelsWins,
       duelsWlr,
       Math.round(networth * 100) / 100 ?? 0,
-      Math.round(sa * 100) / 100 ?? 0,
+      Math.round(sbSkillAverage * 100) / 100 ?? 0,
       swLevel,
       achievementPoints,
       level,

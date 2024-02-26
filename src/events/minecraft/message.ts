@@ -1,13 +1,11 @@
 import { Client, EmbedBuilder, Guild, Role, TextChannel, ThreadChannel, WebhookClient } from 'discord.js';
-import { getNetworth } from 'skyhelper-networth';
-import { Player } from 'hypixel-api-reborn';
+import { Player, SkyblockMember } from 'hypixel-api-reborn';
 import Database from 'better-sqlite3';
 import {
   abbreviateNumber,
   addXp,
   formatNumber,
   nameToUuid,
-  skillAverage,
   timeStringToSeconds,
   uuidToDiscord
 } from '../../helper/utils.js';
@@ -80,23 +78,21 @@ function getDuelsStats(player: Player) {
 }
 
 async function getSkyblockStats(player: Player) {
-  const skyblockProfilesResponse = (await hypixel.getSkyblockProfiles(player.uuid, { raw: true })) as any;
+  let sbMember;
+  try {
+    sbMember = await hypixel.getSkyblockMember(player.uuid).catch(() => null);
+  } catch (e) {
+    return `/gc Error: ${e}`;
+  }
 
-  if (skyblockProfilesResponse.success && skyblockProfilesResponse.profiles) {
-    const { profiles } = skyblockProfilesResponse;
-    const profile = profiles.find((i: any) => i.selected);
-    if (profile) {
-      const profileData = profile.members[player.uuid];
-      const bankBalance = profile.banking?.balance;
-      const networth = abbreviateNumber((await getNetworth(profileData, bankBalance)).networth);
-      const sa = formatNumber(await skillAverage(profileData));
-      const level = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
+  if (sbMember) {
+    const profile = sbMember.values().next().value as SkyblockMember;
+    const { networth } = (await profile.getNetworth()) ?? 0;
+    const sbSkillAverage = profile.skills.average;
+    const sbLevel = profile.level;
+    const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
 
-      const rankTag = player.rank === 'Default' ? '' : `[${player.rank}] `;
-
-      return `/gc [${level}] ${rankTag}${player.nickname} NW: ${networth} SA: ${sa}`;
-    }
-    return `/gc Error: No profiles found for ${player.nickname}`;
+    return `/gc [${sbLevel}] ${rankTag}${player.nickname} NW: ${abbreviateNumber(networth)} SA: ${formatNumber(sbSkillAverage)}`;
   }
   return `/gc Error: No profiles found for ${player.nickname}`;
 }

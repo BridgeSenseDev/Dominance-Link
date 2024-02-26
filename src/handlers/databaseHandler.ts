@@ -1,8 +1,8 @@
 import Database from 'better-sqlite3';
-import { getNetworth } from 'skyhelper-networth';
 import { GuildMember } from 'discord.js';
+import { SkyblockMember } from 'hypixel-api-reborn';
 import { hypixel } from '../index.js';
-import { formatDateForDb, getESTDate, rankTagF, skillAverage, updateTable } from '../helper/utils.js';
+import { formatDateForDb, getESTDate, rankTagF, updateTable } from '../helper/utils.js';
 import { NumberObject, StringObject } from '../types/global.js';
 import { discordRoles } from '../helper/constants.js';
 import { checkRequirements } from '../helper/requirements.js';
@@ -156,21 +156,14 @@ export async function createGuildMember(uuid: string): Promise<void> {
     }
 
     let networth = 0;
-    let sa = 0;
+    let sbSkillAverage = 0;
     let sbLevel = 0;
-    const skyblockProfiles = (await hypixel.getSkyblockProfiles(uuid, { raw: true })) as any;
-    if (skyblockProfiles.success) {
-      const { profiles } = skyblockProfiles;
-      if (profiles) {
-        const profile = profiles.find((i: any) => i.selected);
-        if (profile) {
-          const profileData = profile.members[uuid];
-          const bankBalance = profile.banking?.balance;
-          ({ networth } = await getNetworth(profileData, bankBalance));
-          sa = await skillAverage(profileData);
-          sbLevel = Math.floor(profileData.leveling?.experience ? profileData.leveling.experience / 100 : 0);
-        }
-      }
+    const sbMember = await hypixel.getSkyblockMember(uuid).catch(() => null);
+    if (sbMember) {
+      const profile = sbMember.values().next().value as SkyblockMember;
+      networth = (await profile.getNetworth()).networth ?? 0;
+      sbSkillAverage = profile.skills.average;
+      sbLevel = profile.level;
     }
 
     const guildMember: HypixelGuildMember = {
@@ -189,7 +182,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
       duelsWins: player.stats?.duels?.wins ?? 0,
       duelsWlr: player.stats?.duels?.WLRatio ?? 0,
       networth,
-      skillAverage: sa,
+      skillAverage: sbSkillAverage,
       swLevel: player.stats?.skywars?.level ?? 0,
       achievementPoints: player.achievementPoints ?? 0,
       networkLevel: player.level ?? 0,
