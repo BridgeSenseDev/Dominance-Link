@@ -22,7 +22,7 @@
     "googleapis": "^133.0.0",
     "hypixel-api-reborn": "github:BridgeSenseDev/hypixel-api-reborn",
     "math-expression-evaluator": "^2.0.5",
-    "mineflayer": "^4.19.0",
+    "mineflayer": "^4.20.0",
     "node-cron": "^3.0.3"
   },
   "devDependencies": {
