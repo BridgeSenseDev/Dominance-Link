@@ -119,14 +119,14 @@ export default async function execute(client: Client, message: Message) {
       if (count) {
         const currentCount = db.prepare('SELECT * FROM counting ORDER BY count DESC LIMIT 1').get() as Count;
         if (currentCount.count + 1 === count && currentCount.discord !== author.id) {
-          await message.react('a:atick:986173414723162113');
+          await message.react(config.emojis.aTick);
           db.prepare('INSERT INTO counting (count, discord) VALUES (?, ?)').run(count, author.id);
         } else {
-          await message.react('a:across:986170696512204820');
+          await message.react(config.emojis.aCross);
         }
       }
     } catch (e) {
-      await message.react('a:across:986170696512204820');
+      await message.react(config.emojis.aCross);
     }
   }
 
@@ -144,7 +144,7 @@ export default async function execute(client: Client, message: Message) {
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle('Error')
-        .setDescription(`<a:across:986170696512204820> <@${author.id}> Please verify first in <#907911357582704640>`);
+        .setDescription(`${config.emojis.aCross} <@${author.id}> Please verify first in <#907911357582704640>`);
       await message.reply({ embeds: [embed] });
       return;
     }
@@ -192,7 +192,7 @@ export default async function execute(client: Client, message: Message) {
         .setCustomId('removeMute')
         .setLabel('Remove Mute')
         .setStyle(ButtonStyle.Danger)
-        .setEmoji(':three_oclock_3d:1029704628310388796')
+        .setEmoji(config.emojis.clock)
     );
 
     await textChannels.automod.send({ embeds: [embed], components: [row] });

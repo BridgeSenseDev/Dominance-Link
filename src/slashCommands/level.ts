@@ -187,7 +187,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> **${user}** is not verified`);
+      .setDescription(`${config.emojis.aCross} **${user}** is not verified`);
     await interaction.editReply({ embeds: [embed] });
     return;
   }

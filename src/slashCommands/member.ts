@@ -51,7 +51,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> **${interaction.options.getString('name')}** is an invalid IGN`);
+      .setDescription(`${config.emojis.aCross} **${interaction.options.getString('name')}** is an invalid IGN`);
     await interaction.editReply({ embeds: [embed] });
     return;
   }
@@ -61,7 +61,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> **${interaction.options.getString('name')}** is not in Dominance`);
+      .setDescription(`${config.emojis.aCross} **${interaction.options.getString('name')}** is not in Dominance`);
     await interaction.editReply({ embeds: [embed] });
     return;
   }

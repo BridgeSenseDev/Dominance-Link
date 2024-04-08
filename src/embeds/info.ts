@@ -33,9 +33,9 @@ client.on('ready', async () => {
         `before reapplying\n\n${bullet} **Where can I apply?**\n${invis}${sub}<#1017099269372657724>\n\n${bullet} **How do I rankup ` +
         `once in the guild?**\n${invis}${sub} Learn about guild ranks in <#660448787147390977>\n\n${bullet} **How much GEXP do I need ` +
         `to get every week?**\n${invis}${sub} We have **NO** GEXP requirements\n\n${bullet} **Can public members participate in ` +
-        `events**?\n${invis}${sub} Yes\n\n${dividers(22)}\n\n** Socials:**\n\n<:discord:963609407390883860> [Discord Invite]` +
-        `(https://dominance.cf/discord)\n🌐 [Website](https://dominance.cf/)\n<:hypixel:968022561940209664> [Hypixel Forum Post]` +
-        `(https://dominance.cf/forums)\n\n${dividers(22)}\n\n**Guild Art:**\n\n<:optifine:1132910187494248508> [Dominance Cape]` +
+        `events**?\n${invis}${sub} Yes\n\n${dividers(22)}\n\n** Socials:**\n\n${config.emojis.discord} [Discord Invite]` +
+        `(https://dominance.cf/discord)\n🌐 [Website](https://dominance.cf/)\n${config.emojis.hypixel} [Hypixel Forum Post]` +
+        `(https://dominance.cf/forums)\n\n${dividers(22)}\n\n**Guild Art:**\n\n${config.emojis.optifine} [Dominance Cape]` +
         `(https://livzmc.net/banner/?=aafKhtptpghhhgih)`
     )
     .setFooter({

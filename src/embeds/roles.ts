@@ -56,7 +56,7 @@ client.on('ready', async () => {
         inline: true
       },
       {
-        name: '<:staff:1006186955941347419> Guild Member Roles',
+        name: `${config.emojis.staff} Guild Member Roles`,
         value:
           `${bullet} <@&817133925834162177>\n${bullet} <@&1031926129822539786>\n` +
           `${bullet} <@&1031566725432492133>\n${bullet} <@&950083054326677514>\n` +
@@ -71,27 +71,27 @@ client.on('ready', async () => {
       .setCustomId('notifications')
       .setLabel('Notifications')
       .setStyle(ButtonStyle.Primary)
-      .setEmoji('a:anotif:999683838357807235'),
+      .setEmoji(config.emojis.aBell),
     new ButtonBuilder()
       .setCustomId('polls')
       .setLabel('Polls')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(':poll:1039179935966842940'),
+      .setEmoji(config.emojis.poll),
     new ButtonBuilder()
       .setCustomId('qotd')
       .setLabel('QOTD')
       .setStyle(ButtonStyle.Primary)
-      .setEmoji('a:aquestion:999684566220558507'),
+      .setEmoji(config.emojis.aQuestion),
     new ButtonBuilder()
       .setCustomId('events')
       .setLabel('Events')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji('a:confetti:999682055099134102'),
+      .setEmoji(config.emojis.aConfetti),
     new ButtonBuilder()
       .setCustomId('bot_updates')
       .setLabel('Bot Updates')
       .setStyle(ButtonStyle.Primary)
-      .setEmoji('a:discordbot:1002234067372220425')
+      .setEmoji(config.emojis.aDiscordbot)
   );
 
   const notificationsEmbed = new EmbedBuilder()
@@ -107,22 +107,22 @@ client.on('ready', async () => {
       .setCustomId('bedwars')
       .setLabel('Bedwars')
       .setStyle(ButtonStyle.Success)
-      .setEmoji(':BedWars:862909669362499584'),
+      .setEmoji(config.emojis.bedwars),
     new ButtonBuilder()
       .setCustomId('duels')
       .setLabel('Duels')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(':Duels:1154626664379187321'),
+      .setEmoji(config.emojis.duels),
     new ButtonBuilder()
       .setCustomId('skyblock')
       .setLabel('Skyblock')
       .setStyle(ButtonStyle.Success)
-      .setEmoji(':SkyBlock:862923987259490324'),
+      .setEmoji(config.emojis.skyblock),
     new ButtonBuilder()
       .setCustomId('skywars')
       .setLabel('Skywars')
       .setStyle(ButtonStyle.Secondary)
-      .setEmoji(':Skywars:862910064649044029')
+      .setEmoji(config.emojis.skywars)
   );
 
   const gamemodesEmbed = new EmbedBuilder()

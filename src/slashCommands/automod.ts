@@ -97,7 +97,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   for (const category in limits) {
     if (!scores[category]?.summaryScore?.value) continue;
     const score = scores[category].summaryScore.value;
-    const emoji = score > limits[category] ? '<a:across:986170696512204820>' : '<a:atick:986173414723162113>';
+    const emoji = score > limits[category] ? '<a:across:986170696512204820>' : '${config.emojis.aTick}';
     fields.push({ name: category, value: `${emoji} ${score.toFixed(2)} / ${limits[category]}` });
     if (score > limits[category]) {
       passesAutomod = false;

@@ -19,7 +19,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> You do not have permission to use this command`);
+      .setDescription(`${config.emojis.aCross} You do not have permission to use this command`);
     interaction.editReply({ embeds: [embed] });
     return;
   }
@@ -31,7 +31,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> Guild staff cannot be muted through this command.`);
+      .setDescription(`${config.emojis.aCross} Guild staff cannot be muted through this command.`);
     interaction.editReply({ embeds: [embed] });
     return;
   }
@@ -54,7 +54,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Caution')
-      .setDescription(`<a:across:986170696512204820> Guild mute timed out.`);
+      .setDescription(`${config.emojis.aCross} Guild mute timed out.`);
     await interaction.editReply({ embeds: [embed] });
     return;
   }

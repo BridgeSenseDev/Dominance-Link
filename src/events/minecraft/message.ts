@@ -248,7 +248,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
           const embed = new EmbedBuilder()
             .setColor(config.colors.red)
             .setTitle('Caution')
-            .setDescription(`<a:across:986170696512204820> Guild invite timed out.`);
+            .setDescription(`${config.emojis.aCross} Guild invite timed out.`);
           await channel.send({ content, embeds: [embed] });
         }
         return;

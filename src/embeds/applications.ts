@@ -39,7 +39,7 @@ client.on('ready', async () => {
       .setCustomId('requirements')
       .setLabel('Check Requirements')
       .setStyle(ButtonStyle.Success)
-      .setEmoji('a:checkmark:1011799454959022081')
+      .setEmoji(config.emojis.aTick)
   );
 
   const applicationsEmbed = new EmbedBuilder()
@@ -63,7 +63,7 @@ client.on('ready', async () => {
       .setCustomId('apply')
       .setLabel('Apply')
       .setStyle(ButtonStyle.Success)
-      .setEmoji('a:checkmark:1011799454959022081')
+      .setEmoji(config.emojis.aCheckmark)
   );
 
   const channel = client.channels.cache.get('1017099269372657724') as TextChannel;

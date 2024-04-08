@@ -83,7 +83,7 @@ export async function breakUpdate() {
         .setCustomId('break')
         .setLabel('Break Form')
         .setStyle(ButtonStyle.Success)
-        .setEmoji(':moon:1067803032944922624')
+        .setEmoji(config.emojis.moon)
     );
     await messages.break.edit({ embeds: [embed], components: [row] });
   }, 60 * 1000);

@@ -8,6 +8,7 @@ import {
   MessageActionRowComponentBuilder,
   ComponentType
 } from 'discord.js';
+import config from '../config.json' assert { type: 'json' };
 
 export default async function pagination(
   interaction: ChatInputCommandInteraction<CacheType>,
@@ -17,13 +18,10 @@ export default async function pagination(
   const paginatorRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId('leftPage')
-      .setEmoji('<:left_arrow:1144817673293811742>')
+      .setEmoji(config.emojis.leftArrow)
       .setStyle(ButtonStyle.Danger)
       .setDisabled(true),
-    new ButtonBuilder()
-      .setCustomId('rightPage')
-      .setEmoji(':right_arrow:1144817676569542656')
-      .setStyle(ButtonStyle.Success)
+    new ButtonBuilder().setCustomId('rightPage').setEmoji(config.emojis.rightArrow).setStyle(ButtonStyle.Success)
   );
 
   let components = actionsRows ? [...actionsRows.flat(), paginatorRow] : [paginatorRow];

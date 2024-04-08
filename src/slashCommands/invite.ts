@@ -16,7 +16,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> You do not have permission to use this command`);
+      .setDescription(`${config.emojis.aCross} You do not have permission to use this command`);
     interaction.editReply({ embeds: [embed] });
     return;
   }
@@ -41,7 +41,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Caution')
-      .setDescription(`<a:across:986170696512204820> Guild invite timed out.`);
+      .setDescription(`${config.emojis.aCross} Guild invite timed out.`);
     await interaction.editReply({ embeds: [embed] });
     return;
   }

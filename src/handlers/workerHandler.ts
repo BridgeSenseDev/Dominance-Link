@@ -44,7 +44,7 @@ export function autoRejoin() {
         .setColor(config.colors.red)
         .setTitle('Disconnected')
         .setDescription(`${config.minecraft.ign} has been disconnected from hypixel. Trying to reconnect...`)
-        .addFields({ name: '<:clock_:969185417712775168> Time', value: `<t:${Math.floor(Date.now() / 1000)}:R>` });
+        .addFields({ name: `${config.emojis.clock} Time`, value: `<t:${Math.floor(Date.now() / 1000)}:R>` });
       await textChannels.botStatus.send({ embeds: [embed] });
       try {
         quit();

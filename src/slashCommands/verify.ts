@@ -38,7 +38,7 @@ async function verify(
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> ${discordUser} is not in the discord server`);
+      .setDescription(`${config.emojis.aCross} ${discordUser} is not in the discord server`);
     await interaction.editReply({ embeds: [embed] });
     return;
   }
@@ -51,7 +51,7 @@ async function verify(
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> [${ign}](https://mcuuid.net/?q=${ign}) does not exist`);
+      .setDescription(`${config.emojis.aCross} [${ign}](https://mcuuid.net/?q=${ign}) does not exist`);
     await interaction.editReply({ embeds: [embed] });
     return;
   }
@@ -60,7 +60,7 @@ async function verify(
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> [${ign}](https://mcuuid.net/?q=${ign}) does not exist`);
+      .setDescription(`${config.emojis.aCross} [${ign}](https://mcuuid.net/?q=${ign}) does not exist`);
     await interaction.editReply({ embeds: [embed] });
     return;
   }
@@ -71,7 +71,7 @@ async function verify(
       .setColor(config.colors.red)
       .setTitle('Caution')
       .setDescription(
-        `<:warning_3d:1144472923885801532> **\`${name}\`** is already verified to the discord account <@${member.discord}>\nAre you **CERTAIN** ` +
+        `${config.emojis.warning3d} **\`${name}\`** is already verified to the discord account <@${member.discord}>\nAre you **CERTAIN** ` +
           `you want to replace <@${member.discord}> with ${discordUser}?`
       );
     return embed;
@@ -83,7 +83,7 @@ async function verify(
       .setColor(config.colors.red)
       .setTitle('Caution')
       .setDescription(
-        `<:warning_3d:1144472923885801532> ${discordUser} is already verified to [this](https://namemc.com/search?q=${member.uuid}) ` +
+        `${config.emojis.warning3d} ${discordUser} is already verified to [this](https://namemc.com/search?q=${member.uuid}) ` +
           `minecraft account\n\nAre you **CERTAIN** you want to replace [this](https://namemc.com/search?q=${member.uuid}) account with [this](https://namemc.com/search?q=${uuid}) account?`
       );
     return embed;
@@ -97,7 +97,7 @@ async function verify(
       .setColor(config.colors.red)
       .setTitle('Caution')
       .setDescription(
-        `<:warning_3d:1144472923885801532> Hypixel API request for **\`${name}\`**'s discord tag failed\nError: ${e}` +
+        `${config.emojis.warning3d} Hypixel API request for **\`${name}\`**'s discord tag failed\nError: ${e}` +
           `\n\nAre you **CERTAIN** \`${name}\`'s discord account is ${discordUser}?`
       );
     return embed;
@@ -110,7 +110,7 @@ async function verify(
       .setColor(config.colors.red)
       .setTitle('Caution')
       .setDescription(
-        `<:warning_3d:1144472923885801532> **\`${name}\`** doesn't have a discord linked on hypixel\n\nAre you **CERTAIN** that \`${name}\`'s ` +
+        `${config.emojis.warning3d} **\`${name}\`** doesn't have a discord linked on hypixel\n\nAre you **CERTAIN** that \`${name}\`'s ` +
           `discord account is ${discordUser}?`
       );
     return embed;
@@ -142,8 +142,8 @@ async function verify(
         .setColor(config.colors.green)
         .setTitle('Verification Successful')
         .setDescription(
-          `<a:atick:986173414723162113> **\`${name}\`** is not in Dominance\n<:add:1005843961652453487>\
-              Added: <@&445669382539051008>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
+          `${config.emojis.aTick} **\`${name}\`** is not in Dominance\n${config.emojis.add}\
+              Added: <@&445669382539051008>\n${config.emojis.minus} Removed: <@&${discordRoles.unverified}>`
         )
         .setThumbnail(
           `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
@@ -156,8 +156,8 @@ async function verify(
         .setColor(config.colors.green)
         .setTitle('Verification Successful')
         .setDescription(
-          `<a:atick:986173414723162113> **\`${name}\`** is in Dominance\n<:add:1005843961652453487> Added: <@&445669382539051008>, ` +
-            `<@&1031926129822539786>\n<:minus:1005843963686686730> Removed: <@&${discordRoles.unverified}>`
+          `${config.emojis.aTick} **\`${name}\`** is in Dominance\n${config.emojis.add} Added: <@&445669382539051008>, ` +
+            `<@&1031926129822539786>\n${config.emojis.minus} Removed: <@&${discordRoles.unverified}>`
         )
         .setThumbnail(
           `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
@@ -169,7 +169,7 @@ async function verify(
       .setColor(config.colors.red)
       .setTitle('Caution')
       .setDescription(
-        `<:warning_3d:1144472923885801532> \`${name}\` has the discord name **${discord}** on hypixel\nIt does not match ` +
+        `${config.emojis.warning3d} \`${name}\` has the discord name **${discord}** on hypixel\nIt does not match ` +
           `their discord name **${discordUser.tag}**\n\nAre you **CERTAIN** \`${name}\`'s discord account is ${discordUser}?`
       );
     return embed;
@@ -183,7 +183,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> You do not have permission to use this command`);
+      .setDescription(`${config.emojis.aCross} You do not have permission to use this command`);
     return interaction.editReply({ embeds: [embed] });
   }
 
@@ -197,12 +197,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         .setCustomId('confirmVerification')
         .setStyle(ButtonStyle.Success)
         .setLabel('Confirm')
-        .setEmoji('a:checkmark:1011799454959022081'),
+        .setEmoji(config.emojis.aCheckmark),
       new ButtonBuilder()
         .setCustomId('denyVerification')
         .setStyle(ButtonStyle.Danger)
         .setLabel('Deny')
-        .setEmoji('a:across:986170696512204820')
+        .setEmoji(config.emojis.aCross)
     );
 
     const message = await interaction.editReply({ embeds: [verifyErrorEmbed], components: [row] });

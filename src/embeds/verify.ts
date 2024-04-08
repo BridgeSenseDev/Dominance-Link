@@ -34,12 +34,12 @@ client.on('ready', async () => {
       .setCustomId('verify')
       .setLabel('Verify')
       .setStyle(ButtonStyle.Success)
-      .setEmoji('a:checkmark:1011799454959022081'),
+      .setEmoji(config.emojis.aCheckmark),
     new ButtonBuilder()
       .setCustomId('unverify')
       .setLabel('Unverify')
       .setStyle(ButtonStyle.Danger)
-      .setEmoji(':unlocked_3d:1088687657300795504')
+      .setEmoji(config.emojis.unlocked3d)
   );
 
   const channel = client.channels.cache.get('1031568019522072677') as TextChannel;

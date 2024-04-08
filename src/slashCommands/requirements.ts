@@ -18,7 +18,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Error')
-      .setDescription(`<a:across:986170696512204820> ${e}`);
+      .setDescription(`${config.emojis.aCross} ${e}`);
     await interaction.editReply({ embeds: [embed] });
     return;
   }

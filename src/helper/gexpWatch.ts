@@ -18,9 +18,9 @@ interface GuildWatch {
 
 function gexpGained(gained: number): [string, number] {
   if (gained >= 0) {
-    return ['<:up1:969182381485482064> Gained', config.colors.green];
+    return [`${config.emojis.up} Gained`, config.colors.green];
   }
-  return ['<:down:969182381162500097> Lost', config.colors.red];
+  return [`${config.emojis.down} Lost`, config.colors.red];
 }
 
 // Format "DD/MM/YYYY"
@@ -132,18 +132,18 @@ export default async function gexpWatch() {
             .setDescription(
               `${gexpGained(gained)[0]} **${Math.abs(
                 gained
-              ).toLocaleString()}** GEXP\n<:clock_:969185417712775168> Recorded <t:${unix}:R>`
+              ).toLocaleString()}** GEXP\n${config.emojis.clock} Recorded <t:${unix}:R>`
             )
             .addFields(
               {
-                name: '<:week:982237517233414194> Weekly',
+                name: `${config.emojis.week} Weekly`,
                 value: `${gexpGained(difference - weekly)[0]} **${Math.abs(
                   difference - weekly
                 ).toLocaleString()}** GEXP`,
                 inline: true
               },
               {
-                name: '<:calendar_3d:1029713106550657055> Monthly',
+                name: `${config.emojis.calendar3d} Monthly`,
                 value: `${gexpGained(difference - monthly)[0]} **${Math.abs(
                   difference - monthly
                 ).toLocaleString()}** GEXP`,
