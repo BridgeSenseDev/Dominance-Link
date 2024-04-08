@@ -254,10 +254,11 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         return;
       }
 
-      chat(`/msg ${author} ${receivedMessage}`);
+      chat(`/msg ${author} ${receivedMessage.string}`);
 
       if (channel) {
         await channel.send({
+          content,
           files: [
             await messageToImage(
               `§b-------------------------------------------------------------§r ${receivedMessage.motd} §b-------------------------------------------------------------`
@@ -437,7 +438,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(breakData.discord, uuid);
       chat(`/gc Welcome back from your break, ${name}! ${funFact}`);
       await textChannels.guildChat.send(
-        `<a:wave_animated:1036265311390928897> Welcome back from your break, <@${breakData.discord}>! ${funFacts[2].fact}`
+        `${config.emojis.aWave} Welcome back from your break, <@${breakData.discord}>! ${funFacts[2].fact}`
       );
       return;
     } catch (e) {
@@ -448,14 +449,12 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
     if (discordId) {
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordId, uuid);
       await textChannels.guildChat.send(
-        `<a:wave_animated:1036265311390928897> Welcome to Dominance, <@${discordId}>! ${funFacts[2].fact}`
+        `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFacts[2].fact}`
       );
       const member = await textChannels.guildChat.guild.members.fetch(discordId);
       await member.roles.add(discordRoles.slayer);
     } else {
-      await textChannels.guildChat.send(
-        `<a:wave_animated:1036265311390928897> Welcome to Dominance, ${name}! ${funFacts[2].fact}`
-      );
+      await textChannels.guildChat.send(`${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFacts[2].fact}`);
     }
   }
   if (msg.includes('left the guild!') || msg.includes('was kicked')) {

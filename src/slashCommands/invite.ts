@@ -1,8 +1,14 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder, TextChannel, ThreadChannel } from 'discord.js';
+import Database from 'better-sqlite3';
 import { chat, waitForMessage } from '../handlers/workerHandler.js';
 import messageToImage from '../helper/messageToImage.js';
 import config from '../config.json' assert { type: 'json' };
 import { discordToUuid, isStaff } from '../helper/utils.js';
+import client from '../index.js';
+import { WaitlistMember, BreakMember } from '../types/global.js';
+
+const db = new Database('guild.db');
+db.defaultSafeIntegers(true);
 
 export const data = new SlashCommandBuilder()
   .setName('invite')
@@ -37,13 +43,44 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     5000
   );
 
+  const waitlist = db.prepare('SELECT discord, channel FROM waitlist WHERE uuid = ?').get(name) as WaitlistMember;
+  const breaks = db.prepare('SELECT discord, thread FROM breaks WHERE uuid = ?').get(name) as BreakMember;
+  let channel;
+  let content;
+  if (waitlist) {
+    channel = client.channels.cache.get(waitlist.channel) as TextChannel;
+    content = `<@${waitlist.discord}>`;
+  } else if (breaks) {
+    channel = client.channels.cache.get(breaks.thread) as ThreadChannel;
+    content = `<@${breaks.discord}>`;
+  }
+
   if (!receivedMessage) {
+    if (channel) {
+      const embed = new EmbedBuilder()
+        .setColor(config.colors.red)
+        .setTitle('Caution')
+        .setDescription(`${config.emojis.aCross} Guild invite timed out.`);
+      await channel.send({ content, embeds: [embed] });
+    }
+
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle('Caution')
       .setDescription(`${config.emojis.aCross} Guild invite timed out.`);
     await interaction.editReply({ embeds: [embed] });
     return;
+  }
+
+  if (channel) {
+    await channel.send({
+      content,
+      files: [
+        await messageToImage(
+          `§b-------------------------------------------------------------§r ${receivedMessage.motd} §b-------------------------------------------------------------`
+        )
+      ]
+    });
   }
 
   await interaction.editReply({

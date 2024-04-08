@@ -22,6 +22,7 @@ import Database from 'better-sqlite3';
 import {
   discordToUuid,
   formatNumber,
+  generateHeadUrl,
   hypixelApiError,
   nameToUuid,
   removeSectionSymbols,
@@ -101,9 +102,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setColor(requirementData.color)
         .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
         .setDescription(requirementData.requirementEmbed)
-        .setThumbnail(
-          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-        );
+        .setThumbnail(generateHeadUrl(uuid, playerResponse.nickname));
       await interaction.editReply({ embeds: [embed] });
     } else if (interaction.customId === 'verify') {
       const modal = new ModalBuilder().setCustomId('verification').setTitle('Verification');
@@ -189,9 +188,7 @@ export default async function execute(client: Client, interaction: Interaction) 
                 `${config.minecraft.ign}\`\n\nYou won't be able to see guild channels until you have joined in-game\n\n${bullet} ` +
                 `**Confused?**\nFeel free to ask any questions here, only ping staff if needed!`
             )
-            .setThumbnail(
-              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-            );
+            .setThumbnail(generateHeadUrl(uuid!, name));
           const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
               .setCustomId('closeApplication')
@@ -561,9 +558,7 @@ export default async function execute(client: Client, interaction: Interaction) 
               `${config.emojis.aTick} **${name}** is not in Dominance\n${config.emojis.add}\
                     Added: <@&445669382539051008>\n${config.emojis.minus} Removed: <@&${discordRoles.unverified}>`
             )
-            .setThumbnail(
-              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-            );
+            .setThumbnail(generateHeadUrl(uuid, name));
 
           await interaction.editReply({ embeds: [embed] });
         } else {
@@ -576,9 +571,7 @@ export default async function execute(client: Client, interaction: Interaction) 
               `${config.emojis.aTick} **${name}** is in Dominance\n${config.emojis.add}\
                       Added: <@&445669382539051008>, <@&1031926129822539786>\n${config.emojis.minus} Removed: <@&${discordRoles.unverified}>`
             )
-            .setThumbnail(
-              `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-            );
+            .setThumbnail(generateHeadUrl(uuid, name));
           await interaction.editReply({ embeds: [embed] });
         }
       } else {
@@ -606,9 +599,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const applicationEmbed = new EmbedBuilder()
         .setColor(requirementData.color)
         .setTitle(`${interaction.user.tag}'s Application`)
-        .setThumbnail(
-          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-        )
+        .setThumbnail(generateHeadUrl(uuid, name))
         .setDescription(
           `${config.emojis.keycap1_3d} **What games do you mainly play?**\n${q1}\n\n${config.emojis.keycap2_3d} ` +
             `**Why should we accept you?**\n${q2}\n\n${config.emojis.keycap3_3d} **Do you know anyone from the guild?**\n${q3}` +
@@ -654,9 +645,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const replyEmbed = new EmbedBuilder()
         .setColor(requirementData.color)
         .setTitle(`${interaction.user.tag}'s application has been received`)
-        .setThumbnail(
-          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-        )
+        .setThumbnail(generateHeadUrl(uuid, name))
         .setDescription(
           `${config.emojis.keycap1_3d} **What games do you mainly play?**\n${q1}\n\n${config.emojis.keycap2_3d} ` +
             `**Why should we accept you?**\n${q2}\n\n${config.emojis.keycap3_3d} **Do you know anyone from the guild?**\n${q3}` +
@@ -681,9 +670,7 @@ export default async function execute(client: Client, interaction: Interaction) 
           .setColor(config.colors.discordGray)
           .setTitle(`Error!`)
           .setDescription(`You already have an active break form in <#${thread.thread}>`)
-          .setThumbnail(
-            `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-          );
+          .setThumbnail(generateHeadUrl(uuid, name));
         await interaction.editReply({ embeds: [replyEmbed] });
         return;
       }
@@ -706,9 +693,7 @@ export default async function execute(client: Client, interaction: Interaction) 
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`${name}'s Break Application`)
-        .setThumbnail(
-          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-        )
+        .setThumbnail(generateHeadUrl(uuid, name))
         .setDescription(
           `${config.emojis.keycap1_3d} **How long will you be inactive for?**\n${q1}\n\n${config.emojis.keycap2_3d} ` +
             `**What is your reason for inactivity?**\n${q2}`
@@ -742,9 +727,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setColor(config.colors.discordGray)
         .setTitle(`${name}'s break form has been received`)
         .setDescription(`You may update your break status in <#${threadChannel.id}>`)
-        .setThumbnail(
-          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-        );
+        .setThumbnail(generateHeadUrl(uuid, name));
       await interaction.editReply({ embeds: [replyEmbed] });
       db.prepare('INSERT INTO breaks (uuid, discord, thread, time, reason) VALUES (?, ?, ?, ?, ?)').run(
         uuid,

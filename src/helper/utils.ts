@@ -470,3 +470,7 @@ export async function isStaff(identifier: string) {
   if (!guildMember) return false;
   return ['[GUILDMASTER]', '[Owner]', '[Staff]'].includes(guildMember.tag);
 }
+
+export function generateHeadUrl(uuid: string, name: string) {
+  return `https://heads.discordsrv.com/head.png?uuid=${uuid}&name=${name}&overlay`;
+}

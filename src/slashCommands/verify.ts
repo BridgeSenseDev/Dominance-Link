@@ -14,6 +14,7 @@ import config from '../config.json' assert { type: 'json' };
 import { discordRoles } from '../helper/constants.js';
 import { hypixel } from '../index.js';
 import { createMember, fetchMember } from '../handlers/databaseHandler.js';
+import { generateHeadUrl } from '../helper/utils.js';
 
 const db = new Database('guild.db');
 
@@ -145,9 +146,7 @@ async function verify(
           `${config.emojis.aTick} **\`${name}\`** is not in Dominance\n${config.emojis.add}\
               Added: <@&445669382539051008>\n${config.emojis.minus} Removed: <@&${discordRoles.unverified}>`
         )
-        .setThumbnail(
-          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-        );
+        .setThumbnail(generateHeadUrl(uuid, name));
       await interaction.editReply({ embeds: [embed] });
     } else {
       await discordMember.roles.add(interaction.guild!.roles.cache.get(discordRoles.slayer) as Role);
@@ -159,9 +158,7 @@ async function verify(
           `${config.emojis.aTick} **\`${name}\`** is in Dominance\n${config.emojis.add} Added: <@&445669382539051008>, ` +
             `<@&1031926129822539786>\n${config.emojis.minus} Removed: <@&${discordRoles.unverified}>`
         )
-        .setThumbnail(
-          `https://crafatar.com/avatars/${uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-        );
+        .setThumbnail(generateHeadUrl(uuid, name));
       await interaction.editReply({ embeds: [embed] });
     }
   } else {
