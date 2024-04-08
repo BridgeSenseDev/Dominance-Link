@@ -14,7 +14,7 @@ import {
   getESTDate,
   updateTable
 } from './utils.js';
-import { bwPrestiges, duelsDivisionRoles, discordRoles, hypixelRoles } from './constants.js';
+import { bwPrestiges, discordRoles, hypixelRoles } from './constants.js';
 import { HypixelGuildMember, HypixelRoleKeys, StringObject } from '../types/global.d.js';
 import { textChannels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
@@ -376,23 +376,6 @@ export async function players() {
       }
       if (bwRole) {
         await member.roles.add(bwRole);
-      }
-
-      // Duels roles
-      let highestRole = null;
-      for (const wins in duelsDivisionRoles) {
-        if (duelsWins >= parseInt(wins, 10)) {
-          highestRole = duelsDivisionRoles[wins];
-        }
-      }
-
-      for (const wins in duelsDivisionRoles) {
-        const roleId = duelsDivisionRoles[wins];
-        if (highestRole === roleId) {
-          await member.roles.add(roleId);
-        } else if (member.roles.cache.has(roleId)) {
-          await member.roles.remove(roleId);
-        }
       }
 
       if (!['[Owner]', '[GUILDMASTER]'].includes(data.tag)) {

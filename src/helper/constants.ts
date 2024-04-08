@@ -1,20 +1,6 @@
 import { StringObject } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
 
-export const duelsDivisions = [
-  { name: 'Rookie', key: 'rookie' },
-  { name: 'Iron', key: 'iron' },
-  { name: 'Gold', key: 'gold' },
-  { name: 'Diamond', key: 'diamond' },
-  { name: 'Master', key: 'master' },
-  { name: 'Legend', key: 'legend' },
-  { name: 'Grandmaster', key: 'grandmaster' },
-  { name: 'Supreme', key: 'supreme' },
-  { name: 'WORLD ELITE', key: 'world_elite' },
-  { name: 'WORLD MASTER', key: 'world_master' },
-  { name: "WORLD'S BEST", key: 'worlds_best' }
-];
-
 export const levelingXp = [
   50, 125, 200, 300, 500, 750, 1000, 1500, 2000, 3500, 5000, 7500, 10000, 15000, 20000, 30000, 50000, 75000, 100000,
   200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1100000, 1200000, 1300000, 1400000, 1500000,
@@ -129,20 +115,6 @@ export const bwPrestiges: { [key: number]: string } = {
   2700: '1109042192422543361',
   2800: '1109042216015495178',
   2900: '1109042201658392636'
-};
-
-export const duelsDivisionRoles: { [key: number]: string } = {
-  100: '1112678406052642826',
-  200: '1112678409659764746',
-  500: '1112678412184727572',
-  1000: '1112678414277677137',
-  2000: '1112678416001552454',
-  4000: '1112683733129121832',
-  10000: '1112683744428556368',
-  20000: '1112683753274343504',
-  50000: '1112683756852084848',
-  100000: '1112684312479932466',
-  200000: '1112684316837826622'
 };
 
 export function dividers(amount: number) {
