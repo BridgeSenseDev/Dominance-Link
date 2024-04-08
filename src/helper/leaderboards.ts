@@ -6,6 +6,7 @@ import { abbreviateNumber, formatNumber, sleep } from './utils.js';
 import { textChannels } from '../events/discord/ready.js';
 import { HypixelGuildMember } from '../types/global.d.js';
 import { fetchGexpForMember } from '../handlers/databaseHandler.js';
+import config from '../config.json' assert { type: 'json' };
 
 const db = new Database('guild.db');
 GlobalFonts.registerFromPath('./fonts/Minecraft Regular.ttf', 'Minecraft');
@@ -148,7 +149,7 @@ async function generateLeaderboard(channel: GuildChannel, order: keyof HypixelGu
               .setLabel('Scroll To Top')
               .setStyle(ButtonStyle.Link)
               .setURL(messageArray[messageArray.length - 1].url)
-              .setEmoji({ id: '1036842301428875304' })
+              .setEmoji(config.emojis.up3d)
           )
         : undefined;
 

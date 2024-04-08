@@ -21,7 +21,7 @@ client.on('ready', async () => {
     .setAuthor({ name: 'Roles Info', iconURL: config.guild.icon })
     .addFields(
       {
-        name: '<a:economy:1006182871314219169> Economy Roles',
+        name: `${config.emojis.aEconomy} Economy Roles`,
         value:
           `${bullet} <@&349212066164244480>\n${bullet} <@&348938634227089411>\n` +
           `${bullet} <@&1028900715189514350>\n${bullet} <@&348946342707462144>\n` +
@@ -32,7 +32,7 @@ client.on('ready', async () => {
         inline: true
       },
       {
-        name: '<a:economy:1006182871314219169> Economy Roles',
+        name: `${config.emojis.aEconomy} Economy Roles`,
         value:
           `${bullet} <@&488352526110818304>\n${bullet} <@&488352576568557568>\n` +
           `${bullet} <@&1028890537979297853>\n${bullet} <@&488352607807733791>\n` +
@@ -48,11 +48,10 @@ client.on('ready', async () => {
         inline: true
       },
       {
-        name: '<a:talking:1004962079154896967> Discord Activity Roles',
+        name: `${config.emojis.aTalking} Discord Activity Roles`,
         value:
-          `${bullet} <@&755123236114792468>\n${bullet} <@&755122545488822534>\n` +
-          `${bullet} <@&932284834791960628>\n${bullet} <@&919688791361466368>\n` +
-          `${bullet} <@&932285657903161374>\n${bullet} <@&755123430256279633>\n`,
+          `${bullet} <@&1226228193602699304>\n${bullet} <@&1226228134962008124>\n` +
+          `${bullet} <@&1226228052921548871>`,
         inline: true
       },
       {

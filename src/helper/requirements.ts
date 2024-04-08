@@ -30,15 +30,14 @@ export default async function requirementsEmbed(uuid: string, playerData: Player
   let reqs;
 
   if (!playerData.achievementPoints) {
-    requirementEmbed +=
-      ':red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** `0 / 9,000`\n\n';
+    requirementEmbed += `':red_circle: **Achievements**\n${config.emojis.aCross} **Achievement Points:** \`0 / 9,000\`\n\n`;
   } else if (playerData.achievementPoints >= 9000) {
     meetingReqs = true;
     requirementEmbed += `:green_circle: **Achievements**\n${config.emojis.aTick} **Achievement Points:** \`${formatNumber(
       playerData.achievementPoints
     )}\`\n\n`;
   } else {
-    requirementEmbed += `:red_circle: **Achievements**\n<a:across:986170696512204820> **Achievement Points:** \`${formatNumber(
+    requirementEmbed += `:red_circle: **Achievements**\n${config.emojis.aCross} **Achievement Points:** \`${formatNumber(
       playerData.achievementPoints
     )} / 9,000\`\n\n`;
   }
@@ -162,8 +161,7 @@ export default async function requirementsEmbed(uuid: string, playerData: Player
     )} / 3b\`\n`;
   }
   if (skyblock[1] === 0) {
-    requirementEmbed +=
-      '<a:across:986170696512204820> **Skyblock Skill Average:** `No Skyblock Data / API Disabled`\n\n';
+    requirementEmbed += `${config.emojis.aCross} **Skyblock Skill Average:** \`No Skyblock Data / API Disabled\`\n\n`;
   } else if (skyblock[1] >= 40) {
     requirementEmbed += `${config.emojis.aTick} **Skyblock Skill Average:** \`${
       Math.round(skyblock[1] * 10) / 10

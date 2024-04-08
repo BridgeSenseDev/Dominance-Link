@@ -2,6 +2,7 @@ import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from '
 import config from '../config.json' assert { type: 'json' };
 import requirementsEmbed from '../helper/requirements.js';
 import { hypixel } from '../index.js';
+import { generateHeadUrl } from '../helper/utils.js';
 
 export const data = new SlashCommandBuilder()
   .setName('reqs')
@@ -29,8 +30,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     .setColor(requirementData.color)
     .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
     .setDescription(requirementData.requirementEmbed)
-    .setThumbnail(
-      `https://crafatar.com/avatars/${player.uuid}?size=160&default=MHF_Steve&overlay&id=c5d2e47fddf04254900423bb014ff1cd`
-    );
+    .setThumbnail(generateHeadUrl(player.uuid, player.nickname));
   await interaction.editReply({ embeds: [embed] });
 }
