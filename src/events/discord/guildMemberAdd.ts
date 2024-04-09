@@ -2,7 +2,7 @@ import { Client, EmbedBuilder, GuildMember, Role } from 'discord.js';
 import Database from 'better-sqlite3';
 import { Guild } from 'hypixel-api-reborn';
 import config from '../../config.json' assert { type: 'json' };
-import { invis, discordRoles } from '../../helper/constants.js';
+import { invis } from '../../helper/constants.js';
 import { textChannels } from './ready.js';
 import { hypixel } from '../../index.js';
 import { fetchMember } from '../../handlers/databaseHandler.js';
@@ -26,11 +26,11 @@ export default async function execute(client: Client, member: GuildMember) {
 
       if (guild?.name?.toLowerCase() === 'dominance') {
         db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(member.user.id, uuid);
-        await member.roles.add(member.guild!.roles.cache.get(discordRoles.slayer) as Role);
+        await member.roles.add(member.guild!.roles.cache.get(config.roles.slayer) as Role);
       }
       await member.setNickname(player.nickname);
-      await member.roles.add(member.guild!.roles.cache.get(discordRoles.verified) as Role);
-      await member.roles.remove(member.guild!.roles.cache.get(discordRoles.unverified) as Role);
+      await member.roles.add(member.guild!.roles.cache.get(config.roles.verified) as Role);
+      await member.roles.remove(member.guild!.roles.cache.get(config.roles.unverified) as Role);
     }
   }
 

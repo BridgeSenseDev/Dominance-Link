@@ -4,8 +4,9 @@ import { SkyblockMember } from 'hypixel-api-reborn';
 import { hypixel } from '../index.js';
 import { formatDateForDb, getESTDate, rankTagF, updateTable } from '../helper/utils.js';
 import { NumberObject, StringObject } from '../types/global.js';
-import { discordRoles } from '../helper/constants.js';
+import config from '../config.json' assert { type: 'json' };
 import { checkRequirements } from '../helper/requirements.js';
+import { guildMemberRoles } from '../helper/constants.js';
 
 const db = new Database('guild.db');
 
@@ -80,8 +81,8 @@ export async function createMember(member: GuildMember, uuid: string): Promise<v
     xp
   );
 
-  await member.roles.remove(discordRoles.unverified);
-  await member.roles.add(discordRoles.verified);
+  await member.roles.remove(config.roles.unverified);
+  await member.roles.add(config.roles.verified);
 }
 
 export async function archiveMember(member: GuildMember | null, discordId?: string): Promise<void> {
@@ -102,17 +103,9 @@ export async function archiveMember(member: GuildMember | null, discordId?: stri
   }
 
   if (member) {
-    await member.roles.add(discordRoles.unverified);
-    for (const role of [
-      discordRoles.verified,
-      discordRoles.slayer,
-      discordRoles.elite,
-      discordRoles.hero,
-      discordRoles.supreme,
-      discordRoles.dominator,
-      discordRoles.goat,
-      discordRoles.staff
-    ]) {
+    await member.roles.add(config.roles.unverified);
+    await member.roles.remove(config.roles.verified);
+    for (const role of [...guildMemberRoles, config.roles.break]) {
       if (member.roles.cache.has(role)) {
         await member.roles.remove(role);
       }
@@ -252,13 +245,11 @@ export async function archiveGuildMember(member: GuildMember | null, uuid?: stri
   }
 
   if (member) {
-    await member.roles.remove(discordRoles.slayer);
-    await member.roles.remove(discordRoles.elite);
-    await member.roles.remove(discordRoles.hero);
-    await member.roles.remove(discordRoles.supreme);
-    await member.roles.remove(discordRoles.dominator);
-    await member.roles.remove(discordRoles.goat);
-    await member.roles.remove(discordRoles.staff);
+    for (const role of [...guildMemberRoles, config.roles.break]) {
+      if (member.roles.cache.has(role)) {
+        await member.roles.remove(role);
+      }
+    }
   }
 }
 

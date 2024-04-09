@@ -6,7 +6,6 @@ import { addXp, discordToUuid, formatMentions, uuidToName } from '../../helper/u
 import config from '../../config.json' assert { type: 'json' };
 import { chat } from '../../handlers/workerHandler.js';
 import { textChannels } from './ready.js';
-import { discordRoles } from '../../helper/constants.js';
 import { Count, NumberObject } from '../../types/global.d.js';
 import { fetchGuildMember } from '../../handlers/databaseHandler.js';
 
@@ -140,7 +139,7 @@ export default async function execute(client: Client, message: Message) {
 
   if (!user) {
     if (!uuid) {
-      await member!.roles.add(member!.guild.roles.cache.get(discordRoles.unverified)!);
+      await member!.roles.add(member!.guild.roles.cache.get(config.roles.unverified)!);
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle('Error')
@@ -149,7 +148,7 @@ export default async function execute(client: Client, message: Message) {
       return;
     }
 
-    if (member?.roles.cache.has(discordRoles.Break)) {
+    if (member?.roles.cache.has(config.roles.break)) {
       tag = '[Break]';
     }
 

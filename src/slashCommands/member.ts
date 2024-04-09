@@ -113,7 +113,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       height: 32
     },
     {
-      text: `§f${new Date(guildMember.joined).toLocaleDateString('en-GB', {
+      text: `§f${new Date(parseInt(guildMember.joined, 10)).toLocaleDateString('en-GB', {
         timeZone: 'UTC'
       })} ➔ ${new Date().toLocaleDateString('en-GB', { timeZone: 'UTC' })}`,
       font: '20px Minecraft'
@@ -162,7 +162,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       '§cGEXP / Day',
       `§c${abbreviateNumber(
         gexpHistory.lifetimeGexp /
-          Number((new Date().getTime() - new Date(guildMember.joined).getTime()) / (1000 * 3600 * 24))
+          Number((new Date().getTime() - new Date(parseInt(guildMember.joined, 10)).getTime()) / (1000 * 3600 * 24))
       )}`
     ],
     ['§cGEXP / Playtime', `§c${abbreviateNumber(gexpHistory.lifetimeGexp / (guildMember.playtime / 3600))} / H`],

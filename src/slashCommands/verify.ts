@@ -11,7 +11,6 @@ import {
 } from 'discord.js';
 import Database from 'better-sqlite3';
 import config from '../config.json' assert { type: 'json' };
-import { discordRoles } from '../helper/constants.js';
 import { hypixel } from '../index.js';
 import { createMember, fetchMember } from '../handlers/databaseHandler.js';
 import { generateHeadUrl } from '../helper/utils.js';
@@ -144,19 +143,19 @@ async function verify(
         .setTitle('Verification Successful')
         .setDescription(
           `${config.emojis.aTick} **\`${name}\`** is not in Dominance\n${config.emojis.add}\
-              Added: <@&445669382539051008>\n${config.emojis.minus} Removed: <@&${discordRoles.unverified}>`
+              Added: <@&445669382539051008>\n${config.emojis.minus} Removed: <@&${config.roles.unverified}>`
         )
         .setThumbnail(generateHeadUrl(uuid, name));
       await interaction.editReply({ embeds: [embed] });
     } else {
-      await discordMember.roles.add(interaction.guild!.roles.cache.get(discordRoles.slayer) as Role);
+      await discordMember.roles.add(interaction.guild!.roles.cache.get(config.roles.slayer) as Role);
       db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(discordUser.id, uuid);
       const embed = new EmbedBuilder()
         .setColor(config.colors.green)
         .setTitle('Verification Successful')
         .setDescription(
           `${config.emojis.aTick} **\`${name}\`** is in Dominance\n${config.emojis.add} Added: <@&445669382539051008>, ` +
-            `<@&1031926129822539786>\n${config.emojis.minus} Removed: <@&${discordRoles.unverified}>`
+            `<@&1031926129822539786>\n${config.emojis.minus} Removed: <@&${config.roles.unverified}>`
         )
         .setThumbnail(generateHeadUrl(uuid, name));
       await interaction.editReply({ embeds: [embed] });

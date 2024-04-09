@@ -1,6 +1,18 @@
 import { StringObject } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
 
+export const guildMemberRoles = [
+  config.roles.seniorStaff,
+  config.roles.recruitmentStaff,
+  config.roles.eventStaff,
+  config.roles.goat,
+  config.roles.dominator,
+  config.roles.supreme,
+  config.roles.hero,
+  config.roles.elite,
+  config.roles.slayer
+];
+
 export const levelingXp = [
   50, 125, 200, 300, 500, 750, 1000, 1500, 2000, 3500, 5000, 7500, 10000, 15000, 20000, 30000, 50000, 75000, 100000,
   200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 1100000, 1200000, 1300000, 1400000, 1500000,
@@ -57,32 +69,6 @@ export const hypixelRoles = {
   supreme: { name: 'Supreme', gexp: 250000, days: 300 },
   hero: { name: 'Hero', gexp: 175000, days: 100 },
   elite: { name: 'Elite', gexp: 125000, days: 50 }
-} as const;
-
-export const discordRoles = {
-  owner: '1066802933687132190',
-  headStaff: '1038567890158354563',
-  seniorStaff: '844591760294281226',
-  developer: '1031236481026637914',
-  staff: '1005725104430395452',
-  goat: '1142652461425889371',
-  dominator: '1142652458355658873',
-  supreme: '1142652454450778132',
-  hero: '950083054326677514',
-  elite: '1031566725432492133',
-  slayer: '1031926129822539786',
-  verified: '445669382539051008',
-  unverified: '907911526118223912',
-  Break: '817133925834162177',
-  notifications: '789800580314824744',
-  polls: '1039191632207151104',
-  qotd: '829991529857810452',
-  events: '655711286755065856',
-  bot_updates: '1039190833552961538',
-  bedwars: '903995572392984576',
-  duels: '903996109096103986',
-  skyblock: '903996220551360642',
-  skywars: '903996253589880832'
 } as const;
 
 export const bwPrestiges: { [key: number]: string } = {

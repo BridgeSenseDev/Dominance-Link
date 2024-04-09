@@ -13,7 +13,6 @@ import messageToImage from '../../helper/messageToImage.js';
 import config from '../../config.json' assert { type: 'json' };
 import { chat, waitForMessage } from '../../handlers/workerHandler.js';
 import { textChannels } from '../discord/ready.js';
-import { discordRoles } from '../../helper/constants.js';
 import { BreakMember, WaitlistMember } from '../../types/global.d.js';
 import { hypixel } from '../../index.js';
 import { archiveGuildMember, createGuildMember } from '../../handlers/databaseHandler.js';
@@ -426,8 +425,8 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
       const member = await textChannels.guildChat.guild.members.fetch(breakData.discord);
       const thread = client.channels.cache.get(breakData.thread) as ThreadChannel;
       db.prepare('DELETE FROM breaks WHERE uuid = ?').run(uuid);
-      await member.roles.remove(thread.guild!.roles.cache.get(discordRoles.Break) as Role);
-      await member.roles.add(discordRoles.slayer);
+      await member.roles.remove(thread.guild!.roles.cache.get(config.roles.break) as Role);
+      await member.roles.add(config.roles.slayer);
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`Welcome back, ${name}!`)
@@ -452,7 +451,7 @@ export default async function execute(client: Client, msg: string, rawMsg: strin
         `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFacts[2].fact}`
       );
       const member = await textChannels.guildChat.guild.members.fetch(discordId);
-      await member.roles.add(discordRoles.slayer);
+      await member.roles.add(config.roles.slayer);
     } else {
       await textChannels.guildChat.send(`${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFacts[2].fact}`);
     }

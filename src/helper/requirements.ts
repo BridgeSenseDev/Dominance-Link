@@ -42,16 +42,16 @@ export default async function requirementsEmbed(uuid: string, playerData: Player
     )} / 9,000\`\n\n`;
   }
 
-  if (bedwars[0] >= 300 && bedwars[1] >= 3) {
+  if (bedwars[0] >= 500 && bedwars[1] >= 3) {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Bedwars 1**\n';
   } else {
     requirementEmbed += ':red_circle: **Bedwars 1**\n';
   }
-  if (bedwars[0] >= 300) {
+  if (bedwars[0] >= 500) {
     requirementEmbed += `${config.emojis.aTick} **Bedwars Stars:** \`${bedwars[0]}\`\n`;
   } else {
-    requirementEmbed += `${config.emojis.aCross} **Bedwars Stars:** \`${bedwars[0]} / 300\`\n`;
+    requirementEmbed += `${config.emojis.aCross} **Bedwars Stars:** \`${bedwars[0]} / 500\`\n`;
   }
   if (bedwars[1] >= 3) {
     requirementEmbed += `${config.emojis.aTick} **Bedwars FKDR:** \`${bedwars[1]}\`\n\n`;
@@ -76,16 +76,16 @@ export default async function requirementsEmbed(uuid: string, playerData: Player
     requirementEmbed += `${config.emojis.aCross} **Bedwars FKDR:** \`${bedwars[1]} / 5\`\n\n`;
   }
 
-  if (duels[0] >= 6500 && duels[1] >= 2) {
+  if (duels[0] >= 10000 && duels[1] >= 2) {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Duels 1**\n';
   } else {
     requirementEmbed += ':red_circle: **Duels 1**\n';
   }
-  if (duels[0] >= 6500) {
+  if (duels[0] >= 10000) {
     requirementEmbed += `${config.emojis.aTick} **Duels Wins:** \`${formatNumber(duels[0])}\`\n`;
   } else {
-    requirementEmbed += `${config.emojis.aCross} **Duels Wins:** \`${formatNumber(duels[0])} / 6,500\`\n`;
+    requirementEmbed += `${config.emojis.aCross} **Duels Wins:** \`${formatNumber(duels[0])} / 10,000\`\n`;
   }
   if (duels[1] >= 2) {
     requirementEmbed += `${config.emojis.aTick} **Duels WLR:** \`${duels[1]}\`\n\n`;
@@ -93,25 +93,25 @@ export default async function requirementsEmbed(uuid: string, playerData: Player
     requirementEmbed += `${config.emojis.aCross} **Duels WLR:** \`${duels[1]} / 2\`\n\n`;
   }
 
-  if (duels[0] >= 3000 && duels[1] >= 4) {
+  if (duels[0] >= 5000 && duels[1] >= 3) {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Duels 2**\n';
   } else {
     requirementEmbed += ':red_circle: **Duels 2**\n';
   }
-  if (duels[0] >= 3000) {
+  if (duels[0] >= 5000) {
     requirementEmbed += `${config.emojis.aTick} **Duels Wins:** \`${formatNumber(duels[0])}\`\n`;
   } else {
-    requirementEmbed += `${config.emojis.aCross} **Duels Wins:** \`${formatNumber(duels[0])} / 3,000\`\n`;
+    requirementEmbed += `${config.emojis.aCross} **Duels Wins:** \`${formatNumber(duels[0])} / 5,000\`\n`;
   }
-  if (duels[1] >= 4) {
+  if (duels[1] >= 3) {
     requirementEmbed += `${config.emojis.aTick} **Duels WLR:** \`${duels[1]}\`\n\n`;
   } else {
-    requirementEmbed += `${config.emojis.aCross} **Duels WLR:** \`${duels[1]} / 4\`\n\n`;
+    requirementEmbed += `${config.emojis.aCross} **Duels WLR:** \`${duels[1]} / 3\`\n\n`;
   }
 
   const stars = parseInt(skywars[0].slice(0, -1), 10);
-  if (stars >= 12 && skywars[1] >= 1) {
+  if (stars >= 15 && skywars[1] >= 1) {
     meetingReqs = true;
     requirementEmbed += ':green_circle: **Skywars 1**\n';
   } else {
@@ -120,7 +120,7 @@ export default async function requirementsEmbed(uuid: string, playerData: Player
   if (stars >= 12) {
     requirementEmbed += `${config.emojis.aTick} **Skywars Stars:** \`${skywars[0]}\`\n`;
   } else {
-    requirementEmbed += `${config.emojis.aCross} **Skywars Stars:** \`${skywars[0]} / 12⁕\`\n`;
+    requirementEmbed += `${config.emojis.aCross} **Skywars Stars:** \`${skywars[0]} / 15☠\`\n`;
   }
   if (skywars[1] >= 1) {
     requirementEmbed += `${config.emojis.aTick} **Skywars KDR:** \`${skywars[1]}\`\n\n`;

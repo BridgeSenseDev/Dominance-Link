@@ -75,14 +75,14 @@ export default async function execute(client: Client) {
   channelUpdate(client);
   autoRejoin();
   database();
-  gsrun(sheet, client);
+  gsrun(sheet);
   startBot();
   unverifiedUpdate();
   breakUpdate();
   players();
   leaderboards();
   logInterval();
-  weekly(client);
+  weekly();
   reqsUpdate();
 
   console.log(`[DISCORD] Logged in as ${client.user!.tag}`);

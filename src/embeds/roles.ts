@@ -57,10 +57,11 @@ client.on('ready', async () => {
       {
         name: `${config.emojis.staff} Guild Member Roles`,
         value:
-          `${bullet} <@&817133925834162177>\n${bullet} <@&1031926129822539786>\n` +
-          `${bullet} <@&1031566725432492133>\n${bullet} <@&950083054326677514>\n` +
-          `${bullet} <@&1142652454450778132>\n${bullet} <@&1142652458355658873>\n` +
-          `${bullet} <@&1142652461425889371>\n${bullet} <@&1005725104430395452>`,
+          `${bullet} ${config.roles.recruitmentStaff}\n${bullet} ${config.roles.eventStaff}\n` +
+          `${bullet} ${config.roles.goat}\n${bullet} ${config.roles.dominator}\n` +
+          `${bullet} ${config.roles.supreme}\n${bullet} ${config.roles.hero}\n` +
+          `${bullet} ${config.roles.elite}\n${bullet} ${config.roles.slayer}\n`+
+          `${bullet} ${config.roles.slayer}\n${bullet} ${config.roles.break}\n`,
         inline: true
       }
     );
