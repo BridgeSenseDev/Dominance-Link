@@ -459,7 +459,9 @@ export async function players() {
         }
       }
 
-      await member.roles.add((config.roles.days as { [key: string]: string })[highestRole.toString()]);
+      if (highestRole) {
+        await member.roles.add((config.roles.days as { [key: string]: string })[highestRole.toString()]);
+      }
 
       for (const day of dayRoles) {
         if (
