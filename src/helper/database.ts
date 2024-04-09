@@ -421,8 +421,28 @@ export async function players() {
         // Remove higher roles
         if (['Slayer', 'Elite'].includes(ingameRole)) {
           await removeHigherRoles(member, ingameRole.toLowerCase(), roles);
-        } else if (ingameRole === 'Hero' && data.targetRank) {
-          await removeHigherRoles(member, data.targetRank.slice(1, -1).toLowerCase(), roles);
+
+      // Days in guild roles
+      const days = (new Date().getTime() - new Date(parseInt(data.joined, 10)).getTime()) / (1000 * 3600 * 24);
+
+      const dayRoles = Object.keys(config.roles.days).map(Number);
+
+      let highestRole = 0;
+
+      for (const day of dayRoles) {
+        if (days >= day) {
+          highestRole = day;
+        }
+      }
+
+      await member.roles.add((config.roles.days as { [key: string]: string })[highestRole.toString()]);
+
+      for (const day of dayRoles) {
+        if (
+          day !== highestRole &&
+          member.roles.cache.has((config.roles.days as { [key: string]: string })[day.toString()])
+        ) {
+          await member.roles.remove((config.roles.days as { [key: string]: string })[day.toString()]);
         }
       }
     }
