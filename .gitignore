@@ -6,3 +6,4 @@ dist
 .history
 src/embeds/guildInfo.ts
 test/
+.idea/
