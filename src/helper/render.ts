@@ -48,13 +48,15 @@ function renderText(
         }
         shadowCode += '1)';
         ctx.shadowColor = shadowCode;
+        ctx.shadowBlur = 0.001;
         ctx.fillStyle = colorCode;
       }
-      ctx.fillText(currentMessage, Math.round(x), y);
+      ctx.fillText(currentMessage, Math.round(x), y + 1);
       x += ctx.measureText(currentMessage).width;
     }
   } else {
     let wordX = x;
+    y += height / 2;
     let splitMessageSpace = header.split(' ');
     ctx.textBaseline = 'top';
     ctx.font = '20px Minecraft';
@@ -77,12 +79,13 @@ function renderText(
         }
         shadowCode += '1)';
         ctx.shadowColor = shadowCode;
+        ctx.shadowBlur = 0.001;
         ctx.fillStyle = colorCode;
       }
       ctx.fillText(
         currentMessage,
         Math.round(wordX + width / 2 - ctx.measureText(removeSectionSymbols(header)).width / 2),
-        y + textY[0]
+        y - textY[0]
       );
       wordX += ctx.measureText(currentMessage).width;
     }
@@ -109,6 +112,7 @@ function renderText(
         }
         shadowCode += '1)';
         ctx.shadowColor = shadowCode;
+        ctx.shadowBlur = 0.001;
         ctx.fillStyle = colorCode;
       }
       ctx.fillText(
@@ -153,6 +157,7 @@ export default function renderBox(
   const shadowDistance = 4;
   const fill = resolveFill('rgba(0, 0, 0, 0.5)', ctx, x, y, width, height);
   ctx.fillStyle = fill;
+  ctx.shadowBlur = 0;
 
   x = Math.round(x);
   y = Math.round(y);

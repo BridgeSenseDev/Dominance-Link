@@ -474,3 +474,8 @@ export async function isStaff(identifier: string) {
 export function generateHeadUrl(uuid: string, name: string) {
   return `https://heads.discordsrv.com/head.png?uuid=${uuid}&name=${name}&overlay`;
 }
+
+export function getDaysInGuild(joined: string, baseDays: number) {
+  const daysSinceJoin = (new Date().getTime() - new Date(parseInt(joined, 10)).getTime()) / (1000 * 3600 * 24);
+  return daysSinceJoin + baseDays;
+}

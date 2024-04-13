@@ -1,11 +1,17 @@
 import { readFileSync } from 'fs';
-import { SlashCommandBuilder, ChatInputCommandInteraction, EmbedBuilder } from 'discord.js';
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ChatInputCommandInteraction,
+  EmbedBuilder,
+  SlashCommandBuilder
+} from 'discord.js';
 import { createCanvas, Image } from '@napi-rs/canvas';
 import renderBox, { renderSkin } from '../helper/render.js';
-import { abbreviateNumber, nameToUuid, uuidToName } from '../helper/utils.js';
+import { abbreviateNumber, getDaysInGuild, nameToUuid, uuidToName } from '../helper/utils.js';
 import { StringObject } from '../types/global.d.js';
 import config from '../config.json' assert { type: 'json' };
-import { hypixel } from '../index.js';
 import {
   fetchGexpForMember,
   fetchGuildMember,
@@ -23,25 +29,47 @@ const tagColorCodes: StringObject = {
   '[GM]': '§4[GM]'
 };
 
-async function getOnlineStatus(uuid: string) {
-  async function isOnline() {
-    const status = await hypixel.getStatus(uuid);
-    return status.online;
-  }
-
-  async function isInPlaytime() {
-    return (await uuidToName(uuid))! in global.playtime;
-  }
-
-  return (await (isOnline() || isInPlaytime())) ? '§aCurrently Online' : '§cCurrently Offline';
-}
-
 export const data = new SlashCommandBuilder()
   .setName('member')
   .setDescription('View individual guild member stats')
   .addStringOption((option) =>
     option.setName('name').setDescription('Minecraft username').setRequired(true).setAutocomplete(true)
   );
+
+function daysColor(days: number) {
+  if (days > 500) {
+    return '§4';
+  } else if (days > 400) {
+    return '§c';
+  } else if (days > 300) {
+    return '§5';
+  } else if (days > 200) {
+    return '§6';
+  } else if (days > 100) {
+    return '§2';
+  }
+  return '§a';
+}
+
+function formatUnixTimestamp(unixTimestamp: number): string {
+  // Convert Unix timestamp to milliseconds
+  const date = new Date(unixTimestamp * 1000);
+
+  // Extract date components
+  const day = date.getDate();
+  const month = date.getMonth() + 1; // Months are 0-based in JavaScript
+  const year = date.getFullYear();
+
+  // Extract time components and convert to 12-hour format
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours %= 12;
+  hours = hours || 12;
+
+  // Format date and time
+  return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year} ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+}
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
@@ -113,9 +141,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       height: 32
     },
     {
-      text: `§f${new Date(parseInt(guildMember.joined, 10)).toLocaleDateString('en-GB', {
-        timeZone: 'UTC'
-      })} ➔ ${new Date().toLocaleDateString('en-GB', { timeZone: 'UTC' })}`,
+      text: `§7Joined At: §3${formatUnixTimestamp(parseInt(guildMember.joined, 10) / 1000)}`,
       font: '20px Minecraft'
     }
   );
@@ -165,10 +191,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
           Number((new Date().getTime() - new Date(parseInt(guildMember.joined, 10)).getTime()) / (1000 * 3600 * 24))
       )}`
     ],
-    ['§cGEXP / Playtime', `§c${abbreviateNumber(gexpHistory.lifetimeGexp / (guildMember.playtime / 3600))} / H`],
+    [
+      '§cDays In Guild',
+      `§c${abbreviateNumber((new Date().getTime() - new Date(parseInt(guildMember.joined, 10)).getTime()) / (1000 * 3600 * 24))}`
+    ],
     ['§6Playtime', `§6${(guildMember.playtime / 3600).toFixed(1)}H`],
-    ['§6MC Messages', `§6${guildMember.messages}`],
-    ['§6DC Messages', `§6${dcMessages}`]
+    ['§6MC Messages', `§6${abbreviateNumber(guildMember.messages)}`],
+    ['§6DC Messages', `§6${abbreviateNumber(dcMessages)}`]
   ];
 
   for (let i = 0; i < 9; i++) {
@@ -188,7 +217,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
         header: mainData[i][0],
         text: mainData[i][1],
         font: '30px Minecraft',
-        textY: [10, 36]
+        textY: [24, 6]
       }
     );
     x += 191;
@@ -206,7 +235,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       header: '§bWeekly Guild Contribution',
       text: `§b${((guildMember.weeklyGexp / fetchTotalWeeklyGexp()) * 100).toFixed(1)}%`,
       font: '20px Minecraft',
-      textY: [3, 30]
+      textY: [19, 9]
     }
   );
 
@@ -222,7 +251,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       header: '§bLifetime Guild Contribution',
       text: `§b${((gexpHistory.lifetimeGexp / fetchTotalLifetimeGexp()) * 100).toFixed(1)}%`,
       font: '20px Minecraft',
-      textY: [3, 30]
+      textY: [19, 9]
     }
   );
 
@@ -235,7 +264,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       height: 32
     },
     {
-      text: await getOnlineStatus(uuid),
+      text: `§7Total Days In Guild: ${daysColor(getDaysInGuild(guildMember.joined, guildMember.baseDays))}${abbreviateNumber(getDaysInGuild(guildMember.joined, guildMember.baseDays))} Days`,
       font: '20px Minecraft'
     }
   );
@@ -255,6 +284,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   );
 
   await renderSkin(ctx, { x: 15, y: 14, width: 126, height: 132 }, uuid);
+
+  if (config.admins.includes(interaction.member!.user.id)) {
+    const memberDaysRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder().setCustomId(`baseDays${uuid}`).setLabel('Change base days').setStyle(ButtonStyle.Secondary)
+    );
+    await interaction.editReply({ files: [canvas.toBuffer('image/png')], components: [memberDaysRow] });
+    return;
+  }
 
   await interaction.editReply({ files: [canvas.toBuffer('image/png')] });
 }

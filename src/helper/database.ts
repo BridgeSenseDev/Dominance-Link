@@ -12,14 +12,15 @@ import {
   rankTagF,
   formatDateForDb,
   getESTDate,
-  updateTable
+  updateTable,
+  getDaysInGuild
 } from './utils.js';
 import { bwPrestiges, guildMemberRoles, hypixelRoles } from './constants.js';
 import { HypixelGuildMember, HypixelRoleKeys, StringObject } from '../types/global.d.js';
 import { textChannels } from '../events/discord/ready.js';
 import { chat } from '../handlers/workerHandler.js';
 import client, { hypixel } from '../index.js';
-import { archiveGuildMember, archiveMember, createGuildMember } from '../handlers/databaseHandler.js';
+import { archiveGuildMember, archiveMember, createGuildMember, fetchGuildMember } from '../handlers/databaseHandler.js';
 import { checkRequirements } from './requirements.js';
 
 const db = new Database('guild.db');
@@ -182,6 +183,7 @@ export async function database() {
     updateTable('2022-10-17', formatDateForDb(today));
 
     for (const member of guild.members) {
+      const data = fetchGuildMember(member.uuid);
       const { joinedAtTimestamp, uuid, rank, expHistory } = member;
       const weeklyGexp = member.expHistory.reduce((acc, cur) => acc + cur.exp, 0);
       const currentDay = expHistory[0].day;
@@ -189,8 +191,11 @@ export async function database() {
 
       createGuildMember(uuid);
 
-      db.prepare(`UPDATE guildMembers SET (joined, tag, weeklyGexp) = (?, ?, ?) WHERE uuid = ?`).run(
-        joinedAtTimestamp,
+      if (data && data.joined === '0') {
+        db.prepare('UPDATE guildMembers SET (joined) = ? WHERE uuid = ?').run(joinedAtTimestamp, data.uuid);
+      }
+
+      db.prepare(`UPDATE guildMembers SET (tag, weeklyGexp) = (?, ?) WHERE uuid = ?`).run(
         `[${rank}]`,
         weeklyGexp,
         uuid
@@ -447,7 +452,7 @@ export async function players() {
       }
 
       // Days in guild roles
-      const days = (new Date().getTime() - new Date(parseInt(data.joined, 10)).getTime()) / (1000 * 3600 * 24);
+      const days = getDaysInGuild(data.joined, data.baseDays);
 
       const dayRoles = Object.keys(config.roles.days).map(Number);
 

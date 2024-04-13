@@ -2,8 +2,8 @@ import Database from 'better-sqlite3';
 import { GuildMember } from 'discord.js';
 import { SkyblockMember } from 'hypixel-api-reborn';
 import { hypixel } from '../index.js';
-import { formatDateForDb, getESTDate, rankTagF, updateTable } from '../helper/utils.js';
-import { NumberObject, StringObject } from '../types/global.js';
+import { formatDateForDb, getDaysInGuild, getESTDate, rankTagF, updateTable } from '../helper/utils.js';
+import { StringObject } from '../types/global.js';
 import config from '../config.json' assert { type: 'json' };
 import { checkRequirements } from '../helper/requirements.js';
 import { guildMemberRoles } from '../helper/constants.js';
@@ -24,6 +24,7 @@ interface HypixelGuildMember {
   tag: string;
   weeklyGexp: number;
   joined: string;
+  baseDays: number;
   targetRank: string | null;
   playtime: number;
   nameColor: string;
@@ -39,6 +40,14 @@ interface HypixelGuildMember {
   networkLevel: number;
   sbLevel: number;
   quests: number;
+}
+
+interface GuildMemberArchive {
+  uuid: string;
+  discord: string | null;
+  messages: number;
+  baseDays: number;
+  playtime: number;
 }
 
 interface GexpHistory {
@@ -136,10 +145,13 @@ export async function createGuildMember(uuid: string): Promise<void> {
   if (!member) {
     let messages = 0;
     let playtime = 0;
+    let baseDays = 0;
 
     if (db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid)) {
-      const memberArchive = db.prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?').get(uuid) as NumberObject;
-      ({ messages, playtime } = memberArchive);
+      const memberArchive = db
+        .prepare('SELECT * FROM guildMemberArchives WHERE uuid = ?')
+        .get(uuid) as GuildMemberArchive;
+      ({ messages, playtime, baseDays } = memberArchive);
       db.prepare('DELETE FROM guildMemberArchives WHERE uuid = ?').run(uuid);
     }
 
@@ -166,6 +178,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
       tag: '',
       weeklyGexp: 0,
       joined: '0',
+      baseDays,
       targetRank: null,
       playtime,
       nameColor: rankTagF(player) ?? '',
@@ -184,7 +197,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
     };
 
     db.prepare(
-      'INSERT INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, targetRank, playtime, nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, baseDays, targetRank, playtime, nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
     ).run([
       guildMember.uuid,
       guildMember.discord,
@@ -192,6 +205,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
       guildMember.tag,
       guildMember.weeklyGexp,
       guildMember.joined,
+      guildMember.baseDays,
       guildMember.targetRank,
       guildMember.playtime,
       guildMember.nameColor,
@@ -226,11 +240,14 @@ export async function archiveGuildMember(member: GuildMember | null, uuid?: stri
   const guildMemberData = fetchGuildMember(identifier!);
 
   if (guildMemberData) {
-    db.prepare('INSERT INTO guildMemberArchives (uuid, discord, messages, playtime) VALUES (?, ?, ?, ?)').run(
+    db.prepare(
+      'INSERT INTO guildMemberArchives (uuid, discord, messages, playtime, baseDays) VALUES (?, ?, ?, ?, ?)'
+    ).run(
       guildMemberData.uuid,
       guildMemberData.discord,
       guildMemberData.messages,
-      guildMemberData.playtime
+      guildMemberData.playtime,
+      getDaysInGuild(guildMemberData.joined, guildMemberData.baseDays)
     );
 
     db.prepare('DELETE FROM guildMembers WHERE uuid = ?').run(guildMemberData.uuid);

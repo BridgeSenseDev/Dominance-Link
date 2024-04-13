@@ -1,28 +1,29 @@
 import {
-  EmbedBuilder,
-  InteractionType,
-  TextInputBuilder,
-  ModalBuilder,
-  TextInputStyle,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
   Client,
-  Interaction,
-  GuildMember,
-  Role,
-  Guild,
-  TextChannel,
-  ThreadChannel,
   ComponentType,
-  StringSelectMenuBuilder
+  EmbedBuilder,
+  Guild,
+  GuildMember,
+  Interaction,
+  ModalBuilder,
+  Role,
+  StringSelectMenuBuilder,
+  TextChannel,
+  TextInputBuilder,
+  TextInputStyle,
+  ThreadChannel
 } from 'discord.js';
 import Database from 'better-sqlite3';
 import {
+  abbreviateNumber,
   discordToUuid,
   formatNumber,
   generateHeadUrl,
+  getDaysInGuild,
   hypixelApiError,
   nameToUuid,
   removeSectionSymbols,
@@ -66,7 +67,36 @@ export default async function execute(client: Client, interaction: Interaction) 
       .slice(0, 25);
     await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
   } else if (interaction.isButton()) {
-    if (interaction.customId in config.autoRoles) {
+    if (interaction.customId.startsWith('baseDays')) {
+      if (!config.admins.includes(interaction.member!.user.id)) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Error')
+          .setDescription(`${config.emojis.aCross} You do not have permission to use this`);
+        return interaction.editReply({ embeds: [embed] });
+      }
+
+      const uuidPattern = /baseDays(\w+)/;
+      const match = interaction.customId.match(uuidPattern);
+      const extractedUuid = match ? match[1] : '';
+
+      if (!extractedUuid) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Error')
+          .setDescription(`${config.emojis.aCross} Failed to extract uuid`);
+        return interaction.editReply({ embeds: [embed] });
+      }
+
+      const modal = new ModalBuilder().setCustomId(`setBaseDays${extractedUuid}`).setTitle('Set Base Days');
+      const name = new TextInputBuilder()
+        .setCustomId('baseDaysInput')
+        .setLabel('Previous amount of days in guild')
+        .setStyle(TextInputStyle.Short);
+      const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(name);
+      modal.addComponents(firstActionRow);
+      await interaction.showModal(modal);
+    } else if (interaction.customId in config.autoRoles) {
       const roleId = config.autoRoles[interaction.customId as keyof typeof config.autoRoles];
       let msg;
       await interaction.deferReply({ ephemeral: true });
@@ -126,7 +156,7 @@ export default async function execute(client: Client, interaction: Interaction) 
         return;
       }
 
-      archiveMember(member);
+      await archiveMember(member);
 
       const embed = new EmbedBuilder()
         .setColor(config.colors.green)
@@ -448,8 +478,56 @@ export default async function execute(client: Client, interaction: Interaction) 
       await interaction.message.edit({ embeds: [embed], components: [] });
       await interaction.deleteReply();
     }
-  } else if (interaction.type === InteractionType.ModalSubmit) {
-    if (interaction.customId === 'verification') {
+  } else if (interaction.isModalSubmit()) {
+    if (interaction.customId.startsWith('setBaseDays')) {
+      await interaction.deferReply({ ephemeral: true });
+
+      const uuidPattern = /setBaseDays(\w+)/;
+      const match = interaction.customId.match(uuidPattern);
+      const extractedUuid = match ? match[1] : '';
+
+      if (!extractedUuid) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Error')
+          .setDescription(`${config.emojis.aCross} Failed to extract uuid`);
+        return interaction.editReply({ embeds: [embed] });
+      }
+
+      const baseDays = interaction.fields.getTextInputValue('baseDaysInput');
+
+      if (Number.isNaN(parseInt(baseDays, 10))) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle('Error')
+          .setDescription(`${config.emojis.aCross} Invalid base days`);
+        await interaction.editReply({ embeds: [embed] });
+      } else {
+        const days = parseInt(baseDays, 10);
+        db.prepare('UPDATE guildMembers SET baseDays = ? WHERE uuid = ?').run(days, extractedUuid);
+
+        const guildMember = fetchGuildMember(extractedUuid);
+
+        if (!guildMember) {
+          const embed = new EmbedBuilder()
+            .setColor(config.colors.red)
+            .setTitle('Error')
+            .setDescription(`${config.emojis.aCross} Failed to fetch guild member`);
+          return interaction.editReply({ embeds: [embed] });
+        }
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.green)
+          .setTitle('Base Days Change Successful')
+          .setDescription(
+            `${config.emojis.aTick} **${await uuidToName(extractedUuid)}**\nCurrent days in guild: \`` +
+              `${abbreviateNumber((new Date().getTime() - new Date(parseInt(guildMember.joined, 10)).getTime()) / (1000 * 3600 * 24))}\`` +
+              `\nPrevious days in guild: \`${abbreviateNumber(guildMember.baseDays)}\`\nTotal days in guild: \`` +
+              `${abbreviateNumber(getDaysInGuild(guildMember.joined, guildMember.baseDays))}\``
+          );
+
+        await interaction.editReply({ embeds: [embed] });
+      }
+    } else if (interaction.customId === 'verification') {
       await interaction.deferReply({ ephemeral: true });
 
       let name;
