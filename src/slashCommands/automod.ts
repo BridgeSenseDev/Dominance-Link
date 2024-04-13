@@ -1,7 +1,11 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
-import { google } from 'googleapis';
-import config from '../config.json' assert { type: 'json' };
-import { NumberObject } from '../types/global.d.js';
+import {
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  SlashCommandBuilder,
+} from "discord.js";
+import config from "../config.json" assert { type: "json" };
+import { getProfanityScores } from "../helper/utils.js";
+import type { NumberObject } from "../types/global";
 
 const limits: NumberObject = {
   TOXICITY: 0.7,
@@ -11,103 +15,60 @@ const limits: NumberObject = {
   PROFANITY: 0.7,
   THREAT: 0.8,
   SEXUALLY_EXPLICIT: 0.8,
-  OBSCENE: 0.8
+  OBSCENE: 0.8,
 };
 
-async function checkProfanity(message: string) {
-  message = message.replace(/\*([^*]+)\*/g, '$1');
-  message = message.replace(/_([^_]+)_/g, '$1');
-  message = message.replace(/\*\*([^*]+)\*\*/g, '$1');
-  message = message.replace(/__([^_]+)__/g, '$1');
-  message = message.replace(/\|\|([^|]+)\|\|/g, '$1');
-  message = message.replace(/~([^~]+)~/g, '$1');
-  message = message.replace(/~~([^~]+)~~/g, '$1');
-  message = message.replace(/`([^`]+)`/g, '$1');
-  message = message.replace(/```([^`]+)```/g, '$1');
-  message = message.replace(/:([^:]+):/g, '$1');
-
-  const client = (await google.discoverAPI(
-    'https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1'
-  )) as any;
-
-  const analyzeRequest = {
-    comment: {
-      text: message
-    },
-    requestedAttributes: {
-      TOXICITY: {},
-      SEVERE_TOXICITY: {},
-      IDENTITY_ATTACK: {},
-      INSULT: {},
-      PROFANITY: {},
-      THREAT: {},
-      SEXUALLY_EXPLICIT: {}
-    }
-  };
-
-  const analyzeRequestNotEn = {
-    comment: {
-      text: message
-    },
-    requestedAttributes: {
-      TOXICITY: {},
-      SEVERE_TOXICITY: {},
-      IDENTITY_ATTACK: {},
-      INSULT: {},
-      PROFANITY: {},
-      THREAT: {}
-    }
-  };
-
-  let response;
-  try {
-    response = await client.comments.analyze({
-      key: config.keys.googleCloud,
-      resource: analyzeRequest
-    });
-  } catch (e) {
-    try {
-      response = await client.comments.analyze({
-        key: config.keys.googleCloud,
-        resource: analyzeRequestNotEn
-      });
-    } catch (err) {
-      return false;
-    }
-  }
-
-  return response.data.attributeScores;
-}
-
 export const data = new SlashCommandBuilder()
-  .setName('automod')
-  .setDescription('Test Dominance Link automod filters')
+  .setName("automod")
+  .setDescription("Test Dominance Link automod filters")
   .addStringOption((option) =>
-    option.setName('message').setDescription('The message you want automod to check').setRequired(true)
+    option
+      .setName("message")
+      .setDescription("The message you want automod to check")
+      .setRequired(true),
   );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply({ ephemeral: true });
-  const message = interaction.options.getString('message')!;
-  const scores = await checkProfanity(message);
+  const message = interaction.options.getString("message");
+
+  if (!message) {
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.red)
+      .setTitle("Error")
+      .setDescription(`${config.emojis.aCross} Message missing`);
+    return interaction.editReply({ embeds: [embed] });
+  }
+
+  const scores = await getProfanityScores(message);
 
   const fields = [];
   let passesAutomod = true;
 
-  for (const category in limits) {
-    if (!scores[category]?.summaryScore?.value) continue;
-    const score = scores[category].summaryScore.value;
-    const emoji = score > limits[category] ? config.emojis.aCross : config.emojis.aTick;
-    fields.push({ name: category, value: `${emoji} ${score.toFixed(2)} / ${limits[category]}` });
-    if (score > limits[category]) {
-      passesAutomod = false;
+  if (!scores) {
+    return;
+  }
+
+  for (const attribute in scores) {
+    const attributeScore = scores[attribute as keyof typeof scores];
+    if (attributeScore && "summaryScore" in attributeScore) {
+      const score = attributeScore.summaryScore.value;
+      const emoji =
+        score > limits[attribute] ? config.emojis.aCross : config.emojis.aTick;
+      fields.push({
+        name: attribute,
+        value: `${emoji} ${score.toFixed(2)} / ${limits[attribute]}`,
+      });
+      if (score > limits[attribute]) {
+        passesAutomod = false;
+      }
     }
   }
 
   const embed = new EmbedBuilder()
-    .setTitle(`Message Passes Automod: ${passesAutomod ? 'Yes' : 'No'}`)
+    .setTitle(`Message Passes Automod: ${passesAutomod ? "Yes" : "No"}`)
     .addFields(...fields)
     .setColor(passesAutomod ? config.colors.green : config.colors.red);
 
-  interaction.editReply({ embeds: [embed] });
+  await interaction.editReply({ embeds: [embed] });
 }

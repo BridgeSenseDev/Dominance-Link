@@ -1,38 +1,55 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { chat, waitForMessage } from '../handlers/workerHandler.js';
-import messageToImage from '../helper/messageToImage.js';
-import config from '../config.json' assert { type: 'json' };
-import { discordToUuid, isStaff } from '../helper/utils.js';
+import {
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  SlashCommandBuilder,
+} from "discord.js";
+import config from "../config.json" assert { type: "json" };
+import { chat, waitForMessage } from "../handlers/workerHandler.js";
+import { discordToUuid, isStaff } from "../helper/clientUtils.js";
+import messageToImage from "../helper/messageToImage.js";
 
 export const data = new SlashCommandBuilder()
-  .setName('mute')
-  .setDescription('Mutes the given user for a given amount of time.')
+  .setName("mute")
+  .setDescription("Mutes the given user for a given amount of time.")
   .addStringOption((option) =>
-    option.setName('name').setDescription('Minecraft Username').setRequired(true).setAutocomplete(true)
+    option
+      .setName("name")
+      .setDescription("Minecraft Username")
+      .setRequired(true)
+      .setAutocomplete(true),
   )
-  .addStringOption((option) => option.setName('time').setDescription("Time e.g. ('1h' / '1d')").setRequired(true));
+  .addStringOption((option) =>
+    option
+      .setName("time")
+      .setDescription("Time e.g. ('1h' / '1d')")
+      .setRequired(true),
+  );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
 
-  if (!(await isStaff(discordToUuid(interaction.user.id) ?? ''))) {
+  if (!(await isStaff(discordToUuid(interaction.user.id) ?? ""))) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
-      .setTitle('Error')
-      .setDescription(`${config.emojis.aCross} You do not have permission to use this command`);
-    interaction.editReply({ embeds: [embed] });
+      .setTitle("Error")
+      .setDescription(
+        `${config.emojis.aCross} You do not have permission to use this command`,
+      );
+    await interaction.editReply({ embeds: [embed] });
     return;
   }
 
-  const name = interaction.options.getString('name');
-  const time = interaction.options.getString('time');
+  const name = interaction.options.getString("name");
+  const time = interaction.options.getString("time");
 
-  if (await isStaff(name!)) {
+  if (await isStaff(name ?? "")) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
-      .setTitle('Error')
-      .setDescription(`${config.emojis.aCross} Guild staff cannot be muted through this command.`);
-    interaction.editReply({ embeds: [embed] });
+      .setTitle("Error")
+      .setDescription(
+        `${config.emojis.aCross} Guild staff cannot be muted through this command.`,
+      );
+    await interaction.editReply({ embeds: [embed] });
     return;
   }
 
@@ -40,20 +57,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   const receivedMessage = await waitForMessage(
     [
-      'You cannot mute someone for less than a minute',
+      "You cannot mute someone for less than a minute",
       `Invalid usage! '/guild mute <player/everyone> <time>'`,
       `${name} is not in your guild!`,
-      'This player is already muted!',
+      "This player is already muted!",
       `${name} for ${time}`,
-      `Can't find a player by the name of '${name}'`
+      `Can't find a player by the name of '${name}'`,
     ],
-    5000
+    5000,
   );
 
   if (!receivedMessage) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
-      .setTitle('Caution')
+      .setTitle("Caution")
       .setDescription(`${config.emojis.aCross} Guild mute timed out.`);
     await interaction.editReply({ embeds: [embed] });
     return;
@@ -62,8 +79,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.editReply({
     files: [
       await messageToImage(
-        `§b-------------------------------------------------------------§r ${receivedMessage.motd} §b-------------------------------------------------------------`
-      )
-    ]
+        `§b-------------------------------------------------------------§r ${receivedMessage.motd} §b-------------------------------------------------------------`,
+      ),
+    ],
   });
 }

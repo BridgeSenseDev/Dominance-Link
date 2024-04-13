@@ -1,9 +1,14 @@
-import { Collection } from 'discord.js';
-import { DisTube } from 'distube';
+import type { Collection } from "discord.js";
+import type { DisTube } from "distube";
 
-declare module 'discord.js' {
+export interface SlashCommandJsonData {
+  data: SlashCommandBuilder;
+  execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
+}
+
+declare module "discord.js" {
   export interface Client {
-    commands: Collection<unknown, any>;
+    commands: Collection<unknown, SlashCommandJsonData>;
     distube: DisTube;
   }
 }

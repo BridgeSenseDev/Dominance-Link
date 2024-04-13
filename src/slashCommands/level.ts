@@ -1,13 +1,21 @@
-import { GlobalFonts, createCanvas, loadImage } from '@napi-rs/canvas';
-import { ChatInputCommandInteraction, EmbedBuilder, GuildMember, SlashCommandBuilder } from 'discord.js';
-import Database from 'better-sqlite3';
-import { getLevelDetails } from '../helper/utils.js';
-import config from '../config.json' assert { type: 'json' };
-import { fetchMember } from '../handlers/databaseHandler.js';
+import { GlobalFonts, createCanvas, loadImage } from "@napi-rs/canvas";
+import Database from "better-sqlite3";
+import {
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  type GuildMember,
+  SlashCommandBuilder,
+} from "discord.js";
+import config from "../config.json" assert { type: "json" };
+import { fetchMember } from "../handlers/databaseHandler.js";
+import { getLevelDetails } from "../helper/clientUtils.js";
 
-GlobalFonts.registerFromPath('./fonts/Nunito-Semibold.ttf', 'Nunito-Semibold');
-GlobalFonts.registerFromPath('./fonts/Nunito-ExtraBold.ttf', 'Nunito-ExtraBold');
-const db = new Database('guild.db');
+GlobalFonts.registerFromPath("./fonts/Nunito-Semibold.ttf", "Nunito-Semibold");
+GlobalFonts.registerFromPath(
+  "./fonts/Nunito-ExtraBold.ttf",
+  "Nunito-ExtraBold",
+);
+const db = new Database("guild.db");
 
 interface RankCardOptions {
   displayName: string;
@@ -30,12 +38,12 @@ async function createRankCard({
   requiredXP,
   status,
   avatar,
-  colorTextDefault = '#FFFFFF',
-  currentXPColor = '#FFFFFF',
-  requiredXPColor = '#7F8384'
+  colorTextDefault = "#FFFFFF",
+  currentXPColor = "#FFFFFF",
+  requiredXPColor = "#7F8384",
 }: RankCardOptions) {
   const canvas = createCanvas(1000, 250);
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
 
   // Border radius
   ctx.save();
@@ -48,7 +56,13 @@ async function createRankCard({
   ctx.clip();
 
   // Background
-  ctx.drawImage(await loadImage('./images/levels.png'), 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(
+    await loadImage("./images/levels.png"),
+    0,
+    0,
+    canvas.width,
+    canvas.height,
+  );
 
   // Avatar
   ctx.beginPath();
@@ -61,38 +75,38 @@ async function createRankCard({
   try {
     ctx.drawImage(await loadImage(avatar), 30, 50, 150, 150);
   } catch (err) {
-    throw new Error('Error loading the avatar image. The URL may be invalid.');
+    throw new Error("Error loading the avatar image. The URL may be invalid.");
   }
   ctx.restore();
 
   // Status
   ctx.beginPath();
-  if (status === 'online') {
+  if (status === "online") {
     ctx.arc(159, 179, 17, 0, Math.PI * 2);
-    ctx.fillStyle = '#57F287';
-  } else if (status === 'idle') {
+    ctx.fillStyle = "#57F287";
+  } else if (status === "idle") {
     ctx.arc(159, 179, 17, Math.PI * 0.9, Math.PI * 1.6, true);
     ctx.arc(148, 168, 17, Math.PI * 1.9, Math.PI * 0.6);
-    ctx.fillStyle = '#faa61a';
-  } else if (status === 'dnd') {
+    ctx.fillStyle = "#faa61a";
+  } else if (status === "dnd") {
     ctx.arc(151, 179, 3.5, Math.PI * 1.5, Math.PI * 0.5, true);
     ctx.arc(167, 179, 3.5, Math.PI * 0.5, Math.PI * 1.5, true);
     ctx.closePath();
     ctx.arc(159, 179, 17, 0, Math.PI * 2);
-    ctx.fillStyle = '#ed4245';
-  } else if (status === 'streaming') {
+    ctx.fillStyle = "#ed4245";
+  } else if (status === "streaming") {
     ctx.moveTo(168, 179);
     ctx.lineTo(154.5, 170);
     ctx.lineTo(154.5, 188);
     ctx.closePath();
     ctx.arc(159, 179, 17, 0, Math.PI * 2);
-    ctx.fillStyle = '#593695';
+    ctx.fillStyle = "#593695";
   } else {
     ctx.arc(159, 179, 9, Math.PI * 1.5, Math.PI * 0.5, true);
     ctx.arc(159, 179, 9, Math.PI * 0.5, Math.PI * 1.5, true);
     ctx.closePath();
     ctx.arc(159, 179, 17, 0, Math.PI * 2);
-    ctx.fillStyle = '#747f8d';
+    ctx.fillStyle = "#747f8d";
   }
   ctx.fill();
 
@@ -100,7 +114,7 @@ async function createRankCard({
   ctx.save();
 
   ctx.beginPath();
-  ctx.fillStyle = '#333333';
+  ctx.fillStyle = "#333333";
   ctx.arc(canvas.width - 47.5, 182.5, 17.5, Math.PI * 1.5, Math.PI * 0.5);
   ctx.arc(227.5, 182.5, 17.5, Math.PI * 0.5, Math.PI * 1.5);
   ctx.fill();
@@ -113,7 +127,7 @@ async function createRankCard({
     ctx.beginPath();
     const onePercentBar = (canvas.width - 30 - 210) / 100;
     const pxBar = onePercentBar * currentPercentXP;
-    ctx.fillStyle = '#3cc356';
+    ctx.fillStyle = "#3cc356";
     ctx.arc(192.5 + pxBar, 182.5, 17.5, Math.PI * 1.5, Math.PI * 0.5);
     ctx.arc(227.5, 182.5, 17.5, Math.PI * 0.5, Math.PI * 1.5);
     ctx.fill();
@@ -125,20 +139,20 @@ async function createRankCard({
 
   // XP
   ctx.save();
-  ctx.font = `600 35px Nunito-Semibold`;
-  ctx.textAlign = 'right';
+  ctx.font = "600 35px Nunito-Semibold";
+  ctx.textAlign = "right";
   ctx.fillStyle = requiredXPColor;
   ctx.fillText(`${requiredXP} XP`, offsetLvlXP, 150);
   offsetLvlXP -= ctx.measureText(`${requiredXP} XP`).width + 3;
-  ctx.fillText('/', offsetLvlXP, 150);
+  ctx.fillText("/", offsetLvlXP, 150);
   ctx.fillStyle = currentXPColor;
-  offsetLvlXP -= ctx.measureText(`/`).width + 3;
+  offsetLvlXP -= ctx.measureText("/").width + 3;
   ctx.fillText(`${xp}`, offsetLvlXP, 150);
   offsetLvlXP -= ctx.measureText(`${xp}`).width;
   ctx.restore();
 
   // Username
-  ctx.font = `800 40px Nunito-ExtraBold`;
+  ctx.font = "800 40px Nunito-ExtraBold";
   ctx.fillStyle = colorTextDefault;
   ctx.fillText(displayName.toUpperCase(), 210, 150, offsetLvlXP - 210 - 15);
 
@@ -146,47 +160,53 @@ async function createRankCard({
 
   // Level
   let offsetRankX = canvas.width - 30;
-  ctx.textAlign = 'right';
+  ctx.textAlign = "right";
 
   ctx.fillStyle = colorTextDefault;
 
-  ctx.font = `600 60px Nunito-Semibold`;
+  ctx.font = "600 60px Nunito-Semibold";
   ctx.fillText(`${currentLvl}`, offsetRankX, 75);
   offsetRankX -= ctx.measureText(`${currentLvl}`).width + 5;
 
-  ctx.font = `600 35px Nunito-Semibold`;
-  ctx.fillText(`LEVEL `, offsetRankX, 75);
-  offsetRankX -= ctx.measureText('LEVEL ').width;
+  ctx.font = "600 35px Nunito-Semibold";
+  ctx.fillText("LEVEL ", offsetRankX, 75);
+  offsetRankX -= ctx.measureText("LEVEL ").width;
 
   // Rank
-  ctx.font = `600 60px Nunito-Semibold`;
+  ctx.font = "600 60px Nunito-Semibold";
   ctx.fillText(`#${rank}`, offsetRankX, 75);
   offsetRankX -= ctx.measureText(`#${rank}`).width + 5;
 
-  ctx.font = `600 35px Nunito-Semibold`;
-  ctx.fillText(' RANK ', offsetRankX, 75);
+  ctx.font = "600 35px Nunito-Semibold";
+  ctx.fillText(" RANK ", offsetRankX, 75);
   ctx.restore();
 
   return canvas;
 }
 
 export const data = new SlashCommandBuilder()
-  .setName('level')
-  .setDescription('View your levelling information')
-  .addUserOption((option) => option.setName('member').setDescription('The user that you want to check the level of'));
+  .setName("level")
+  .setDescription("View your levelling information")
+  .addUserOption((option) =>
+    option
+      .setName("member")
+      .setDescription("The user that you want to check the level of"),
+  );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
 
   const user = (
-    interaction.options.getMember('member') ? interaction.options.getMember('member')! : interaction.member!
+    interaction.options.getMember("member")
+      ? interaction.options.getMember("member")
+      : interaction.member
   ) as GuildMember;
   const member = fetchMember(user.id);
 
   if (!member) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
-      .setTitle('Error')
+      .setTitle("Error")
       .setDescription(`${config.emojis.aCross} **${user}** is not verified`);
     await interaction.editReply({ embeds: [embed] });
     return;
@@ -195,13 +215,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const { displayName } = user;
   const { rank } = db
     .prepare(
-      'SELECT rank FROM (SELECT xp, discord, RANK() OVER (ORDER BY xp DESC) as rank FROM members) WHERE discord = ?'
+      "SELECT rank FROM (SELECT xp, discord, RANK() OVER (ORDER BY xp DESC) as rank FROM members) WHERE discord = ?",
     )
     .get(user.id) as { rank: number };
   const { xp } = member;
-  const { currentLevel, xpInCurrentLevel, xpTillNextLevel } = getLevelDetails(xp);
+  const { currentLevel, xpInCurrentLevel, xpTillNextLevel } =
+    getLevelDetails(xp);
   const status = user.presence?.status;
-  const displayAvatarURL = user.displayAvatarURL({ extension: 'png' });
+  const displayAvatarURL = user.displayAvatarURL({ extension: "png" });
 
   const rankCard = await createRankCard({
     displayName,
@@ -210,8 +231,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     xp: xpInCurrentLevel,
     requiredXP: xpInCurrentLevel + xpTillNextLevel,
     status,
-    avatar: displayAvatarURL
+    avatar: displayAvatarURL,
   });
 
-  await interaction.editReply({ files: [rankCard.toBuffer('image/png')] });
+  await interaction.editReply({ files: [rankCard.toBuffer("image/png")] });
 }

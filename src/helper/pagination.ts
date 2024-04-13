@@ -1,42 +1,49 @@
 import {
-  ButtonStyle,
-  CacheType,
-  ChatInputCommandInteraction,
-  EmbedBuilder,
-  ButtonBuilder,
   ActionRowBuilder,
-  MessageActionRowComponentBuilder,
-  ComponentType
-} from 'discord.js';
-import config from '../config.json' assert { type: 'json' };
+  ButtonBuilder,
+  ButtonStyle,
+  type ChatInputCommandInteraction,
+  ComponentType,
+  type EmbedBuilder,
+  type MessageActionRowComponentBuilder,
+} from "discord.js";
+import config from "../config.json" assert { type: "json" };
 
 export default async function pagination(
-  interaction: ChatInputCommandInteraction<CacheType>,
+  interaction: ChatInputCommandInteraction,
   embeds: EmbedBuilder[],
-  actionsRows?: ActionRowBuilder<MessageActionRowComponentBuilder>[]
+  actionsRows?: ActionRowBuilder<MessageActionRowComponentBuilder>[],
 ) {
   const paginatorRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setCustomId('leftPage')
+      .setCustomId("leftPage")
       .setEmoji(config.emojis.leftArrow)
       .setStyle(ButtonStyle.Danger)
       .setDisabled(true),
-    new ButtonBuilder().setCustomId('rightPage').setEmoji(config.emojis.rightArrow).setStyle(ButtonStyle.Success)
+    new ButtonBuilder()
+      .setCustomId("rightPage")
+      .setEmoji(config.emojis.rightArrow)
+      .setStyle(ButtonStyle.Success),
   );
 
-  let components = actionsRows ? [...actionsRows.flat(), paginatorRow] : [paginatorRow];
-  const message = await interaction.editReply({ embeds: [embeds[0]], components });
+  let components = actionsRows
+    ? [...actionsRows.flat(), paginatorRow]
+    : [paginatorRow];
+  const message = await interaction.editReply({
+    embeds: [embeds[0]],
+    components,
+  });
   let page = 0;
 
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
-    time: 5 * 60 * 1000
+    time: 5 * 60 * 1000,
   });
 
-  collector.on('collect', async (collectorInteraction) => {
-    if (collectorInteraction.customId === 'leftPage') {
+  collector.on("collect", async (collectorInteraction) => {
+    if (collectorInteraction.customId === "leftPage") {
       page--;
-    } else if (collectorInteraction.customId === 'rightPage') {
+    } else if (collectorInteraction.customId === "rightPage") {
       page++;
     }
 
@@ -51,11 +58,13 @@ export default async function pagination(
       paginatorRow.components[0].setDisabled(false);
     }
 
-    components = actionsRows ? [...actionsRows.flat(), paginatorRow] : [paginatorRow];
+    components = actionsRows
+      ? [...actionsRows.flat(), paginatorRow]
+      : [paginatorRow];
     await collectorInteraction.update({ embeds: [embeds[page]], components });
   });
 
-  collector.on('end', async () => {
+  collector.on("end", async () => {
     await interaction.editReply({ embeds: [embeds[page]], components: [] });
   });
 }

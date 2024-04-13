@@ -1,45 +1,53 @@
+import Database from "better-sqlite3";
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ChannelType,
-  Client,
+  type Client,
   ComponentType,
   EmbedBuilder,
-  Guild,
-  GuildMember,
-  Interaction,
+  type Guild,
+  type GuildMember,
+  type Interaction,
   ModalBuilder,
-  Role,
+  type Role,
   StringSelectMenuBuilder,
-  TextChannel,
+  type TextChannel,
   TextInputBuilder,
   TextInputStyle,
-  ThreadChannel
-} from 'discord.js';
-import Database from 'better-sqlite3';
+  type ThreadChannel,
+} from "discord.js";
+import config from "../../config.json" assert { type: "json" };
+import {
+  archiveMember,
+  createMember,
+  fetchGuildMember,
+  fetchMember,
+} from "../../handlers/databaseHandler.js";
+import { hypixelApiError } from "../../helper/clientUtils.js";
 import {
   abbreviateNumber,
   discordToUuid,
   formatNumber,
   generateHeadUrl,
   getDaysInGuild,
-  hypixelApiError,
   nameToUuid,
   removeSectionSymbols,
-  uuidToName
-} from '../../helper/utils.js';
-import requirementsEmbed from '../../helper/requirements.js';
-import config from '../../config.json' assert { type: 'json' };
-import { textChannels } from './ready.js';
-import { bullet, dividers } from '../../helper/constants.js';
-import { BreakMember } from '../../types/global.d.js';
-import { hypixel } from '../../index.js';
-import { archiveMember, createMember, fetchGuildMember, fetchMember } from '../../handlers/databaseHandler.js';
+  uuidToName,
+} from "../../helper/clientUtils.js";
+import { bullet, dividers } from "../../helper/constants.js";
+import requirementsEmbed from "../../helper/requirements.js";
+import { hypixel } from "../../index.js";
+import type { BreakMember } from "../../types/global";
+import { textChannels } from "./ready.js";
 
-const db = new Database('guild.db');
+const db = new Database("guild.db");
 
-export default async function execute(client: Client, interaction: Interaction) {
+export default async function execute(
+  client: Client,
+  interaction: Interaction,
+) {
   const member = interaction.member as GuildMember;
   if (interaction.isChatInputCommand()) {
     const command = client.commands.get(interaction.commandName);
@@ -50,55 +58,73 @@ export default async function execute(client: Client, interaction: Interaction) 
       await command.execute(interaction);
     } catch (error) {
       console.error(error);
-      await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+      await interaction.reply({
+        content: "There was an error while executing this command!",
+        ephemeral: true,
+      });
     }
   } else if (interaction.isAutocomplete()) {
     const nameColorArray = db
-      .prepare('SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC')
+      .prepare("SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC")
       .pluck()
       .all() as Array<string>;
     const choices: string[] = nameColorArray
       .filter(Boolean)
-      .map((nameColor) => removeSectionSymbols(nameColor).split(' ')[nameColor.split(' ').length - 1]);
+      .map(
+        (nameColor) =>
+          removeSectionSymbols(nameColor).split(" ")[
+            nameColor.split(" ").length - 1
+          ],
+      );
 
     const focusedValue = interaction.options.getFocused();
     const filtered = choices
-      .filter((choice) => choice.toLowerCase().startsWith(focusedValue.toLowerCase()))
+      .filter((choice) =>
+        choice.toLowerCase().startsWith(focusedValue.toLowerCase()),
+      )
       .slice(0, 25);
-    await interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
+    await interaction.respond(
+      filtered.map((choice) => ({ name: choice, value: choice })),
+    );
   } else if (interaction.isButton()) {
-    if (interaction.customId.startsWith('baseDays')) {
-      if (!config.admins.includes(interaction.member!.user.id)) {
+    if (interaction.customId.startsWith("baseDays")) {
+      if (!config.admins.includes(interaction.member?.user.id ?? "")) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Error')
-          .setDescription(`${config.emojis.aCross} You do not have permission to use this`);
+          .setTitle("Error")
+          .setDescription(
+            `${config.emojis.aCross} You do not have permission to use this`,
+          );
         return interaction.editReply({ embeds: [embed] });
       }
 
       const uuidPattern = /baseDays(\w+)/;
       const match = interaction.customId.match(uuidPattern);
-      const extractedUuid = match ? match[1] : '';
+      const extractedUuid = match ? match[1] : "";
 
       if (!extractedUuid) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Error')
+          .setTitle("Error")
           .setDescription(`${config.emojis.aCross} Failed to extract uuid`);
         return interaction.editReply({ embeds: [embed] });
       }
 
-      const modal = new ModalBuilder().setCustomId(`setBaseDays${extractedUuid}`).setTitle('Set Base Days');
+      const modal = new ModalBuilder()
+        .setCustomId(`setBaseDays${extractedUuid}`)
+        .setTitle("Set Base Days");
       const name = new TextInputBuilder()
-        .setCustomId('baseDaysInput')
-        .setLabel('Previous amount of days in guild')
+        .setCustomId("baseDaysInput")
+        .setLabel("Previous amount of days in guild")
         .setStyle(TextInputStyle.Short);
-      const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(name);
+      const firstActionRow =
+        new ActionRowBuilder<TextInputBuilder>().addComponents(name);
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId in config.autoRoles) {
-      const roleId = config.autoRoles[interaction.customId as keyof typeof config.autoRoles];
-      let msg;
+      const roleId =
+        config.autoRoles[interaction.customId as keyof typeof config.autoRoles];
+      let msg: string;
       await interaction.deferReply({ ephemeral: true });
       if (member.roles.resolve(roleId)) {
         await member.roles.remove(roleId);
@@ -108,15 +134,17 @@ export default async function execute(client: Client, interaction: Interaction) 
         msg = `${config.emojis.add} <@&${roleId}>`;
       }
       await interaction.editReply({ content: msg });
-    } else if (interaction.customId === 'requirements') {
+    } else if (interaction.customId === "requirements") {
       const uuid = discordToUuid(interaction.user.id);
       await interaction.deferReply({ ephemeral: true });
       if (!uuid) {
-        await member.roles.add(interaction.guild!.roles.cache.get(config.roles.unverified) as Role);
+        await member.roles.add(
+          interaction.guild?.roles.cache.get(config.roles.unverified) as Role,
+        );
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Error')
-          .setDescription('Please verify first in <#1031568019522072677>');
+          .setTitle("Error")
+          .setDescription("Please verify first in <#1031568019522072677>");
         await interaction.editReply({ embeds: [embed] });
         return;
       }
@@ -134,16 +162,19 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setDescription(requirementData.requirementEmbed)
         .setThumbnail(generateHeadUrl(uuid, playerResponse.nickname));
       await interaction.editReply({ embeds: [embed] });
-    } else if (interaction.customId === 'verify') {
-      const modal = new ModalBuilder().setCustomId('verification').setTitle('Verification');
+    } else if (interaction.customId === "verify") {
+      const modal = new ModalBuilder()
+        .setCustomId("verification")
+        .setTitle("Verification");
       const name = new TextInputBuilder()
-        .setCustomId('verificationInput')
-        .setLabel('PLEASE ENTER YOUR MINECRAFT USERNAME')
+        .setCustomId("verificationInput")
+        .setLabel("PLEASE ENTER YOUR MINECRAFT USERNAME")
         .setStyle(TextInputStyle.Short);
-      const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(name);
+      const firstActionRow =
+        new ActionRowBuilder<TextInputBuilder>().addComponents(name);
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
-    } else if (interaction.customId === 'unverify') {
+    } else if (interaction.customId === "unVerify") {
       await interaction.deferReply({ ephemeral: true });
 
       const memberData = fetchMember(interaction.user.id);
@@ -151,7 +182,9 @@ export default async function execute(client: Client, interaction: Interaction) 
       if (!memberData) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setDescription(`${config.emojis.aCross} <@${interaction.user.id}> is already unverified`);
+          .setDescription(
+            `${config.emojis.aCross} <@${interaction.user.id}> is already unverified`,
+          );
         await interaction.editReply({ embeds: [embed] });
         return;
       }
@@ -160,140 +193,200 @@ export default async function execute(client: Client, interaction: Interaction) 
 
       const embed = new EmbedBuilder()
         .setColor(config.colors.green)
-        .setDescription(`${config.emojis.aTick} <@${interaction.user.id}> has been successfully unverified`);
+        .setDescription(
+          `${config.emojis.aTick} <@${interaction.user.id}> has been successfully unverified`,
+        );
       await interaction.editReply({ embeds: [embed] });
-    } else if (interaction.customId === 'apply') {
+    } else if (interaction.customId === "apply") {
       const uuid = discordToUuid(interaction.user.id);
       if (!uuid) {
-        await member.roles.add(interaction.guild!.roles.cache.get(config.roles.unverified) as Role);
+        await member.roles.add(
+          interaction.guild?.roles.cache.get(config.roles.unverified) as Role,
+        );
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Error')
-          .setDescription('Please verify first in <#1031568019522072677>');
+          .setTitle("Error")
+          .setDescription("Please verify first in <#1031568019522072677>");
         await interaction.reply({ embeds: [embed], ephemeral: true });
         return;
       }
-      const modal = new ModalBuilder().setCustomId('applications').setTitle('Dominance Application');
+      const modal = new ModalBuilder()
+        .setCustomId("applications")
+        .setTitle("Dominance Application");
       const q1Input = new TextInputBuilder()
-        .setCustomId('q1Input')
-        .setLabel('What games do you main / have good stats in?')
+        .setCustomId("q1Input")
+        .setLabel("What games do you main / have good stats in?")
         .setStyle(TextInputStyle.Short);
       const q2Input = new TextInputBuilder()
-        .setCustomId('q2Input')
-        .setLabel('Why should we accept you?')
+        .setCustomId("q2Input")
+        .setLabel("Why should we accept you?")
         .setStyle(TextInputStyle.Paragraph);
       const q3Input = new TextInputBuilder()
-        .setCustomId('q3Input')
-        .setLabel('Do you know anyone from the guild?')
+        .setCustomId("q3Input")
+        .setLabel("Do you know anyone from the guild?")
         .setStyle(TextInputStyle.Paragraph);
-      const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(q1Input);
-      const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(q2Input);
-      const thirdActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(q3Input);
+      const firstActionRow =
+        new ActionRowBuilder<TextInputBuilder>().addComponents(q1Input);
+      const secondActionRow =
+        new ActionRowBuilder<TextInputBuilder>().addComponents(q2Input);
+      const thirdActionRow =
+        new ActionRowBuilder<TextInputBuilder>().addComponents(q3Input);
       modal.addComponents(firstActionRow, secondActionRow, thirdActionRow);
       await interaction.showModal(modal);
-    } else if (interaction.customId === 'accept') {
+    } else if (interaction.customId === "accept") {
       await interaction.deferReply({ ephemeral: true });
-      const name = interaction.message.embeds[0].data.fields![0].value;
-      const discordId = interaction.message.embeds[0].data.fields![3].value.slice(2, -1);
+
+      const name = interaction.message.embeds[0].data.fields?.[0].value;
+      const discordId =
+        interaction.message.embeds[0].data.fields?.[3].value.slice(2, -1);
+
+      if (!name) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle("Error")
+          .setDescription(`${config.emojis.aCross} Failed to fetch uuid`);
+        return interaction.editReply({ embeds: [embed] });
+      }
+
+      if (!discordId) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle("Error")
+          .setDescription(
+            `${config.emojis.aCross} Failed to extract discord ID`,
+          );
+        return interaction.editReply({ embeds: [embed] });
+      }
+
       const uuid = await nameToUuid(name);
       const user = await client.users.fetch(discordId);
       (interaction.guild as Guild).channels
         .create({
           name: `⌛┃${name}`,
           type: ChannelType.GuildText,
-          parent: '1020948893204217856'
+          parent: "1020948893204217856",
         })
         .then(async (channel) => {
           await channel.permissionOverwrites.edit(user, {
             ViewChannel: true,
             SendMessages: true,
-            ReadMessageHistory: true
+            ReadMessageHistory: true,
           });
           const embed = new EmbedBuilder()
             .setColor(config.colors.green)
             .setTitle(`Congrats ${name}, your application has been accepted!`)
             .setDescription(
-              `**How to get started:**\n\n${bullet} **Join The Guild**\nYou can be invited to the guild anytime without ` +
-                `staff. Just type \`/msg ${config.minecraft.ign} .\` in-game or if you are muted, type \`/immuted ` +
-                `${config.minecraft.ign}\`\n\nYou won't be able to see guild channels until you have joined in-game\n\n${bullet} ` +
-                `**Confused?**\nFeel free to ask any questions here, only ping staff if needed!`
+              `**How to get started:**\n\n${bullet} **Join The Guild**\nYou can be invited to the guild anytime \
+							without staff. Just type \`/msg ${config.minecraft.ign} .\` in-game or if you are muted, type \`/immuted \
+							${config.minecraft.ign}\`\n\nYou won't be able to see guild channels until you have joined in-game\n\n\
+							${bullet} **Confused?**\nFeel free to ask any questions here, only ping staff if needed!`,
             )
-            .setThumbnail(generateHeadUrl(uuid!, name));
+            .setThumbnail(generateHeadUrl(uuid ?? "", name));
           const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
-              .setCustomId('closeApplication')
+              .setCustomId("closeApplication")
               .setStyle(ButtonStyle.Danger)
-              .setLabel('Close Application')
-              .setEmoji(config.emojis.locked3d)
+              .setLabel("Close Application")
+              .setEmoji(config.emojis.locked3d),
           );
-          db.prepare('INSERT INTO waitlist (uuid, discord, time, channel) VALUES (?, ?, ?, ?)').run(
-            uuid,
-            discordId,
-            Math.floor(Date.now() / 1000),
-            channel.id
-          );
-          await channel.send({ content: user.toString(), embeds: [embed], components: [row] });
+          db.prepare(
+            "INSERT INTO waitlist (uuid, discord, time, channel) VALUES (?, ?, ?, ?)",
+          ).run(uuid, discordId, Math.floor(Date.now() / 1000), channel.id);
+          await channel.send({
+            content: user.toString(),
+            embeds: [embed],
+            components: [row],
+          });
           const applicationEmbed = new EmbedBuilder()
             .setColor(config.colors.green)
             .setTitle(`${name}'s application has been accepted`)
-            .setDescription(interaction.message.embeds[0].data.description!)
+            .setDescription(
+              interaction.message.embeds[0].data.description ?? "",
+            )
             .addFields(
-              { name: `${config.emojis.user} Accepted By`, value: interaction.user.toString(), inline: true },
+              {
+                name: `${config.emojis.user} Accepted By`,
+                value: interaction.user.toString(),
+                inline: true,
+              },
               {
                 name: `${config.emojis.page} Meeting Reqs`,
-                value: interaction.message.embeds[0].data.fields![1].value,
-                inline: true
+                value:
+                  interaction.message.embeds[0].data.fields?.[1].value ?? "",
+                inline: true,
               },
               {
                 name: `${config.emojis.clock} Application Made`,
-                value: interaction.message.embeds[0].data.fields![5].value,
-                inline: true
-              }
+                value:
+                  interaction.message.embeds[0].data.fields?.[5].value ?? "",
+                inline: true,
+              },
             );
-          await textChannels.applicationLogs.send({ embeds: [applicationEmbed] });
+          await textChannels.applicationLogs.send({
+            embeds: [applicationEmbed],
+          });
           await interaction.deleteReply();
           await interaction.message.delete();
         });
-    } else if (interaction.customId === 'deny') {
-      const discordId = interaction.message.embeds[0].data.fields![3].value.slice(2, -1);
-      const name = interaction.message.embeds[0].data.fields![0].value;
+    } else if (interaction.customId === "deny") {
+      const discordId =
+        interaction.message.embeds[0].data.fields?.[3].value.slice(2, -1);
+
+      if (!discordId) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle("Error")
+          .setDescription(
+            `${config.emojis.aCross} Failed to extract discord ID`,
+          );
+        return interaction.editReply({ embeds: [embed] });
+      }
+
+      const name = interaction.message.embeds[0].data.fields?.[0].value;
       const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
-        new StringSelectMenuBuilder().setCustomId(discordId).setPlaceholder('Select a reason').addOptions(
-          {
-            label: 'Not meeting guild requirements',
-            value: 'Not meeting guild requirements'
-          },
-          {
-            label: 'Not writing enough on your application',
-            value: 'Not writing enough on your application'
-          },
-          {
-            label: 'Being a guild hopper',
-            value: 'Being a guild hopper'
-          },
-          {
-            label: 'Being a known hacker / cheater',
-            value: 'Being a known hacker / cheater'
-          },
-          {
-            label: 'Being toxic',
-            value: 'Being toxic'
-          }
-        )
+        new StringSelectMenuBuilder()
+          .setCustomId(discordId)
+          .setPlaceholder("Select a reason")
+          .addOptions(
+            {
+              label: "Not meeting guild requirements",
+              value: "Not meeting guild requirements",
+            },
+            {
+              label: "Not writing enough on your application",
+              value: "Not writing enough on your application",
+            },
+            {
+              label: "Being a guild hopper",
+              value: "Being a guild hopper",
+            },
+            {
+              label: "Being a known hacker / cheater",
+              value: "Being a known hacker / cheater",
+            },
+            {
+              label: "Being toxic",
+              value: "Being toxic",
+            },
+          ),
       );
-      const message = await interaction.reply({ components: [row], ephemeral: true, fetchReply: true });
+      const message = await interaction.reply({
+        components: [row],
+        ephemeral: true,
+        fetchReply: true,
+      });
       const collector = message.createMessageComponentCollector({
         componentType: ComponentType.StringSelect,
-        time: 60 * 1000
+        time: 60 * 1000,
       });
 
-      collector.on('collect', async (collectorInteraction) => {
+      collector.on("collect", async (collectorInteraction) => {
         if (collectorInteraction.isStringSelectMenu()) {
           await collectorInteraction.deferReply({ ephemeral: true });
           const user = await client.users.fetch(collectorInteraction.customId);
           const embed = new EmbedBuilder()
             .setColor(config.colors.red)
-            .setTitle('Your Dominance application has been denied')
+            .setTitle("Your Dominance application has been denied")
             .setDescription(`**Reason:** ${collectorInteraction.values}`);
           try {
             await user.send({ embeds: [embed] });
@@ -303,84 +396,113 @@ export default async function execute(client: Client, interaction: Interaction) 
           const applicationEmbed = new EmbedBuilder()
             .setColor(config.colors.red)
             .setTitle(`${name}'s application has been denied`)
-            .setDescription(interaction.message.embeds[0].data.description!)
+            .setDescription(
+              interaction.message.embeds[0].data.description ?? "",
+            )
             .addFields(
-              { name: `${config.emojis.user} Denied By`, value: interaction.user.toString(), inline: true },
+              {
+                name: `${config.emojis.user} Denied By`,
+                value: interaction.user.toString(),
+                inline: true,
+              },
               {
                 name: `${config.emojis.page} Meeting Reqs`,
-                value: interaction.message.embeds[0].data.fields![1].value,
-                inline: true
+                value:
+                  interaction.message.embeds[0].data.fields?.[1].value ?? "",
+                inline: true,
               },
               {
                 name: `${config.emojis.clock} Application Made`,
-                value: interaction.message.embeds[0].data.fields![5].value,
-                inline: true
-              }
+                value:
+                  interaction.message.embeds[0].data.fields?.[5].value ?? "",
+                inline: true,
+              },
             );
-          await textChannels.applicationLogs.send({ embeds: [applicationEmbed] });
+          await textChannels.applicationLogs.send({
+            embeds: [applicationEmbed],
+          });
           await interaction.deleteReply();
           await interaction.message.delete();
           await collectorInteraction.deleteReply();
           collector.stop();
         }
       });
-    } else if (interaction.customId === 'break') {
-      const modal = new ModalBuilder().setCustomId('breakModal').setTitle('Break Form');
+    } else if (interaction.customId === "break") {
+      const modal = new ModalBuilder()
+        .setCustomId("breakModal")
+        .setTitle("Break Form");
       const q1Input = new TextInputBuilder()
-        .setCustomId('q1Input')
-        .setLabel('How long will you be inactive for?')
+        .setCustomId("q1Input")
+        .setLabel("How long will you be inactive for?")
         .setStyle(TextInputStyle.Short);
       const q2Input = new TextInputBuilder()
-        .setCustomId('q2Input')
-        .setLabel('What is your reason for inactivity?')
+        .setCustomId("q2Input")
+        .setLabel("What is your reason for inactivity?")
         .setStyle(TextInputStyle.Paragraph);
-      const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(q1Input);
-      const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(q2Input);
+      const firstActionRow =
+        new ActionRowBuilder<TextInputBuilder>().addComponents(q1Input);
+      const secondActionRow =
+        new ActionRowBuilder<TextInputBuilder>().addComponents(q2Input);
       modal.addComponents(firstActionRow, secondActionRow);
       await interaction.showModal(modal);
-    } else if (interaction.customId === 'endBreak') {
+    } else if (interaction.customId === "endBreak") {
       await interaction.deferReply({ fetchReply: true });
       const breakData = db
-        .prepare('SELECT * FROM breaks WHERE discord = ?')
-        .get(interaction.message.embeds[0].fields[1].value.slice(2, -1)) as BreakMember;
+        .prepare("SELECT * FROM breaks WHERE discord = ?")
+        .get(
+          interaction.message.embeds[0].fields[1].value.slice(2, -1),
+        ) as BreakMember;
       const name = await uuidToName(breakData.uuid);
       if (interaction.user.id !== breakData.discord) {
-        const breakMember = interaction.guild?.members.cache.get(breakData.discord) as GuildMember;
-        if (!config.admins.includes(interaction.member!.user.id)) {
+        const breakMember = interaction.guild?.members.cache.get(
+          breakData.discord,
+        ) as GuildMember;
+        if (!config.admins.includes(interaction.member?.user.id ?? "")) {
           const embed = new EmbedBuilder()
             .setColor(config.colors.discordGray)
-            .setDescription(`Only admins can close this application`);
+            .setDescription("Only admins can close this application");
           await interaction.editReply({ embeds: [embed] });
           return;
         }
         const confirmationEmbed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
-          .setTitle(`End Break Confirmation`)
-          .setDescription(`Please confirm that you want to end **${name}'s** break`);
+          .setTitle("End Break Confirmation")
+          .setDescription(
+            `Please confirm that you want to end **${name}'s** break`,
+          );
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
-            .setCustomId('confirm')
+            .setCustomId("confirm")
             .setStyle(ButtonStyle.Success)
-            .setLabel('Confirm')
-            .setEmoji(config.emojis.aCheckmark)
+            .setLabel("Confirm")
+            .setEmoji(config.emojis.aCheckmark),
         );
-        const message = await interaction.editReply({ embeds: [confirmationEmbed], components: [row] });
+        const message = await interaction.editReply({
+          embeds: [confirmationEmbed],
+          components: [row],
+        });
         const collector = message.createMessageComponentCollector({
           componentType: ComponentType.Button,
-          time: 60 * 1000
+          time: 60 * 1000,
         });
 
-        collector.on('collect', async (collectorInteraction) => {
-          if (collectorInteraction.customId === 'confirm') {
+        collector.on("collect", async (collectorInteraction) => {
+          if (collectorInteraction.customId === "confirm") {
             await collectorInteraction.deferReply();
             if (breakMember !== undefined) {
-              await breakMember.roles.remove(interaction.guild!.roles.cache.get(config.roles.break) as Role);
+              await breakMember.roles.remove(
+                interaction.guild?.roles.cache.get(config.roles.break) as Role,
+              );
             }
-            db.prepare('DELETE FROM breaks WHERE discord = ?').run(breakData.discord);
+            db.prepare("DELETE FROM breaks WHERE discord = ?").run(
+              breakData.discord,
+            );
             const embed = new EmbedBuilder()
               .setColor(config.colors.discordGray)
-              .setTitle(`${await uuidToName(breakData.uuid)}'s Break Has Been Ended`)
-              .setDescription(`This thread has been archived.`);
+              .setTitle(
+                `${await uuidToName(breakData.uuid)}'s Break Has Been Ended`,
+              )
+              .setDescription("This thread has been archived.");
             await interaction.deleteReply();
             await collectorInteraction.editReply({ embeds: [embed] });
             await (collectorInteraction.channel as ThreadChannel).setLocked();
@@ -394,155 +516,203 @@ export default async function execute(client: Client, interaction: Interaction) 
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
           .setDescription(
-            `Please rejoin the guild before closing the break form.\nYou can rejoin by messaging ${config.minecraft.ign} in Hypixel`
+            `Please rejoin the guild before closing the break form.\nYou can rejoin by messaging ${config.minecraft.ign} in Hypixel`,
           );
         await interaction.editReply({ embeds: [embed] });
         return;
       }
-      db.prepare('DELETE FROM breaks WHERE discord = ?').run(interaction.user.id);
-      await member.roles.remove(interaction.guild!.roles.cache.get(config.roles.break) as Role);
+      db.prepare("DELETE FROM breaks WHERE discord = ?").run(
+        interaction.user.id,
+      );
+      await member.roles.remove(
+        interaction.guild?.roles.cache.get(config.roles.break) as Role,
+      );
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`Welcome back, ${await uuidToName(breakData.uuid)}!`)
-        .setDescription(`This thread has been archived. Enjoy your stay!`);
+        .setDescription("This thread has been archived. Enjoy your stay!");
       await interaction.editReply({ embeds: [embed] });
       await (interaction.channel as ThreadChannel).setLocked();
       await (interaction.channel as ThreadChannel).setArchived();
-    } else if (interaction.customId === 'closeApplication') {
-      if (!config.admins.includes(interaction.member!.user.id)) {
+    } else if (interaction.customId === "closeApplication") {
+      if (!config.admins.includes(interaction.member?.user.id ?? "")) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
-          .setDescription(`Only admins can close this application`);
+          .setDescription("Only admins can close this application");
         await interaction.reply({ embeds: [embed], ephemeral: true });
         return;
       }
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
-        .setTitle(`Close Confirmation`)
-        .setDescription(`Please confirm that you want to close this application`);
+        .setTitle("Close Confirmation")
+        .setDescription(
+          "Please confirm that you want to close this application",
+        );
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
-          .setCustomId('confirm')
+          .setCustomId("confirm")
           .setStyle(ButtonStyle.Success)
-          .setLabel('Confirm')
-          .setEmoji(config.emojis.aCheckmark)
+          .setLabel("Confirm")
+          .setEmoji(config.emojis.aCheckmark),
       );
-      const message = await interaction.reply({ embeds: [embed], components: [row], fetchReply: true });
+      const message = await interaction.reply({
+        embeds: [embed],
+        components: [row],
+        fetchReply: true,
+      });
       const collector = message.createMessageComponentCollector({
         componentType: ComponentType.Button,
-        time: 60 * 1000
+        time: 60 * 1000,
       });
 
-      collector.on('collect', async (collectorInteraction) => {
-        if (collectorInteraction.customId === 'confirm') {
-          db.prepare('DELETE FROM waitlist WHERE channel = ?').run(collectorInteraction.channelId);
+      collector.on("collect", async (collectorInteraction) => {
+        if (collectorInteraction.customId === "confirm") {
+          db.prepare("DELETE FROM waitlist WHERE channel = ?").run(
+            collectorInteraction.channelId,
+          );
           await collectorInteraction.channel?.delete();
           collector.stop();
         }
       });
-    } else if (interaction.customId === 'removeMute') {
+    } else if (interaction.customId === "removeMute") {
       await interaction.deferReply();
-      const timeoutMember = await interaction.guild!.members.fetch(
-        interaction.message.embeds[0].description!.match(/<@(\d+)>/)?.[1]!
+      const timeoutMember = await interaction.guild?.members.fetch(
+        interaction.message.embeds[0].description?.match(/<@(\d+)>/)?.[1] ?? "",
       );
 
+      if (!timeoutMember) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle("Error")
+          .setDescription("Failed to fetch timeout member");
+
+        return interaction.editReply({ embeds: [embed] });
+      }
+
       try {
-        await textChannels.minecraftLink.permissionOverwrites.delete(timeoutMember);
+        await textChannels.minecraftLink.permissionOverwrites.delete(
+          timeoutMember,
+        );
       } catch (e) {
         /* empty */
       }
 
       try {
-        await textChannels.officerChat.permissionOverwrites.delete(timeoutMember);
+        await textChannels.officerChat.permissionOverwrites.delete(
+          timeoutMember,
+        );
       } catch (e) {
         /* empty */
       }
 
       let embed = new EmbedBuilder()
         .setColor(config.colors.green)
-        .setTitle('Timeout Removed')
+        .setTitle("Timeout Removed")
         .setDescription(
-          `After manual review, your timeout has been removed.\nAutomod filters can be tested using </automod:1159506896043118622> in <#1017269021927817236>`
+          "After manual review, your timeout has been removed.\nAuto mod filters can be tested using </automod:1159506896043118622> in <#1017269021927817236>",
         );
 
       await timeoutMember.send({ embeds: [embed] });
 
       embed = new EmbedBuilder()
         .setColor(config.colors.red)
-        .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
+        .setTitle(
+          `AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`,
+        )
         .setDescription(
-          `**<@${timeoutMember.id}> timeout has been removed by ${interaction.user}**\n${
-            interaction.message.embeds[0].description!.split('\n')[1]
-          }`
+          `**<@${timeoutMember.id}> timeout has been removed by ${
+            interaction.user
+          }**\n${interaction.message.embeds[0].description?.split("\n")[1]}`,
         );
       await interaction.message.edit({ embeds: [embed], components: [] });
       await interaction.deleteReply();
     }
   } else if (interaction.isModalSubmit()) {
-    if (interaction.customId.startsWith('setBaseDays')) {
+    if (interaction.customId.startsWith("setBaseDays")) {
       await interaction.deferReply({ ephemeral: true });
 
       const uuidPattern = /setBaseDays(\w+)/;
       const match = interaction.customId.match(uuidPattern);
-      const extractedUuid = match ? match[1] : '';
+      const extractedUuid = match ? match[1] : "";
 
       if (!extractedUuid) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Error')
+          .setTitle("Error")
           .setDescription(`${config.emojis.aCross} Failed to extract uuid`);
         return interaction.editReply({ embeds: [embed] });
       }
 
-      const baseDays = interaction.fields.getTextInputValue('baseDaysInput');
+      const baseDays = interaction.fields.getTextInputValue("baseDaysInput");
 
-      if (Number.isNaN(parseInt(baseDays, 10))) {
+      if (Number.isNaN(Number.parseInt(baseDays, 10))) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Error')
+          .setTitle("Error")
           .setDescription(`${config.emojis.aCross} Invalid base days`);
         await interaction.editReply({ embeds: [embed] });
       } else {
-        const days = parseInt(baseDays, 10);
-        db.prepare('UPDATE guildMembers SET baseDays = ? WHERE uuid = ?').run(days, extractedUuid);
+        const days = Number.parseInt(baseDays, 10);
+        db.prepare("UPDATE guildMembers SET baseDays = ? WHERE uuid = ?").run(
+          days,
+          extractedUuid,
+        );
 
         const guildMember = fetchGuildMember(extractedUuid);
 
         if (!guildMember) {
           const embed = new EmbedBuilder()
             .setColor(config.colors.red)
-            .setTitle('Error')
-            .setDescription(`${config.emojis.aCross} Failed to fetch guild member`);
+            .setTitle("Error")
+            .setDescription(
+              `${config.emojis.aCross} Failed to fetch guild member`,
+            );
           return interaction.editReply({ embeds: [embed] });
         }
         const embed = new EmbedBuilder()
           .setColor(config.colors.green)
-          .setTitle('Base Days Change Successful')
+          .setTitle("Base Days Change Successful")
           .setDescription(
-            `${config.emojis.aTick} **${await uuidToName(extractedUuid)}**\nCurrent days in guild: \`` +
-              `${abbreviateNumber((new Date().getTime() - new Date(parseInt(guildMember.joined, 10)).getTime()) / (1000 * 3600 * 24))}\`` +
-              `\nPrevious days in guild: \`${abbreviateNumber(guildMember.baseDays)}\`\nTotal days in guild: \`` +
-              `${abbreviateNumber(getDaysInGuild(guildMember.joined, guildMember.baseDays))}\``
+            `${config.emojis.aTick} **${await uuidToName(
+              extractedUuid,
+            )}**\nCurrent days in guild: \`` +
+              `${abbreviateNumber(
+                (new Date().getTime() -
+                  new Date(Number.parseInt(guildMember.joined, 10)).getTime()) /
+                  (1000 * 3600 * 24),
+              )}\`` +
+              `\nPrevious days in guild: \`${abbreviateNumber(
+                guildMember.baseDays,
+              )}\`\nTotal days in guild: \`` +
+              `${abbreviateNumber(
+                getDaysInGuild(guildMember.joined, guildMember.baseDays),
+              )}\``,
           );
 
         await interaction.editReply({ embeds: [embed] });
       }
-    } else if (interaction.customId === 'verification') {
+    } else if (interaction.customId === "verification") {
       await interaction.deferReply({ ephemeral: true });
 
-      let name;
-      let uuid;
-      const ign = interaction.fields.getTextInputValue('verificationInput');
+      let name: string;
+      let uuid: string;
+      const ign = interaction.fields.getTextInputValue("verificationInput");
 
       try {
-        const playerData = (await (await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)).json()).data.player;
+        const playerData = (
+          await (
+            await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)
+          ).json()
+        ).data.player;
         uuid = playerData.raw_id;
         name = playerData.username;
       } catch (e) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Error')
-          .setDescription(`${config.emojis.aCross} [${ign}](https://mcuuid.net/?q=${ign}) does not exist`);
+          .setTitle("Error")
+          .setDescription(
+            `${config.emojis.aCross} [${ign}](https://mcuuid.net/?q=${ign}) does not exist`,
+          );
         await interaction.editReply({ embeds: [embed] });
         return;
       }
@@ -550,8 +720,10 @@ export default async function execute(client: Client, interaction: Interaction) 
       if (!uuid || !name) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Error')
-          .setDescription(`${config.emojis.aCross} [${ign}](https://mcuuid.net/?q=${ign}) does not exist`);
+          .setTitle("Error")
+          .setDescription(
+            `${config.emojis.aCross} [${ign}](https://mcuuid.net/?q=${ign}) does not exist`,
+          );
         await interaction.editReply({ embeds: [embed] });
         return;
       }
@@ -560,15 +732,19 @@ export default async function execute(client: Client, interaction: Interaction) 
 
       if (memberData) {
         if (memberData.discord === interaction.user.id) {
-          await member.roles.remove(interaction.guild!.roles.cache.get(config.roles.unverified) as Role);
-          await member.roles.add(interaction.guild!.roles.cache.get(config.roles.verified) as Role);
+          await member.roles.remove(
+            interaction.guild?.roles.cache.get(config.roles.unverified) as Role,
+          );
+          await member.roles.add(
+            interaction.guild?.roles.cache.get(config.roles.verified) as Role,
+          );
         }
 
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Verification Unsuccessful')
+          .setTitle("Verification Unsuccessful")
           .setDescription(
-            `${config.emojis.aCross} **\`${name}\`** is already verified to the discord account <@${memberData.discord}>`
+            `${config.emojis.aCross} **\`${name}\`** is already verified to the discord account <@${memberData.discord}>`,
           );
         interaction.editReply({ embeds: [embed] });
         return;
@@ -577,16 +753,19 @@ export default async function execute(client: Client, interaction: Interaction) 
       memberData = fetchMember(interaction.user.id);
       if (memberData) {
         if (memberData.uuid === uuid) {
-          await member.roles.remove(interaction.guild!.roles.cache.get(config.roles.unverified) as Role);
-          await member.roles.add(interaction.guild!.roles.cache.get(config.roles.verified) as Role);
+          await member.roles.remove(
+            interaction.guild?.roles.cache.get(config.roles.unverified) as Role,
+          );
+          await member.roles.add(
+            interaction.guild?.roles.cache.get(config.roles.verified) as Role,
+          );
         }
 
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Verification Unsuccessful')
+          .setTitle("Verification Unsuccessful")
           .setDescription(
-            `${config.emojis.aCross} ${interaction.user} is already verified to [this](https://namemc.com/search?q=${memberData.uuid}) ` +
-              `minecraft account`
+            `${config.emojis.aCross} ${interaction.user} is already verified to [this](https://namemc.com/search?q=${memberData.uuid}) minecraft account`,
           );
         interaction.editReply({ embeds: [embed] });
         return;
@@ -599,15 +778,17 @@ export default async function execute(client: Client, interaction: Interaction) 
       if (!playerResponse) return;
 
       name = playerResponse.nickname;
-      const discord = playerResponse.socialMedia.find((media) => media.name === 'Discord')?.link;
+      const discord = playerResponse.socialMedia.find(
+        (media) => media.name === "Discord",
+      )?.link;
 
       if (!discord) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Verification Unsuccessful')
+          .setTitle("Verification Unsuccessful")
           .setDescription(
-            `${config.emojis.aCross} **${name}** doesn't have a discord linked on hypixel\nPlease link your social media` +
-              `following [this tutorial](https://www.youtube.com/watch?v=gqUPbkxxKLI&feature=emb_title)`
+            `${config.emojis.aCross} **${name}** doesn't have a discord linked on hypixel\nPlease link your social \
+						media following [this tutorial](https://www.youtube.com/watch?v=gqUPbkxxKLI&feature=emb_title)`,
           );
         await interaction.editReply({ embeds: [embed] });
         return;
@@ -618,61 +799,73 @@ export default async function execute(client: Client, interaction: Interaction) 
 
         const { displayName } = member;
         if (!displayName.toUpperCase().includes(name.toUpperCase())) {
-          if (/\(.*?\)/.test(displayName.split(' ')[1])) {
-            await member.setNickname(displayName.replace(displayName.split(' ')[0], name));
+          if (/\(.*?\)/.test(displayName.split(" ")[1])) {
+            await member.setNickname(
+              displayName.replace(displayName.split(" ")[0], name),
+            );
           } else {
             await member.setNickname(name);
           }
         } else if (!displayName.includes(name)) {
-          await member.setNickname(displayName.replace(new RegExp(name, 'gi'), name));
+          await member.setNickname(
+            displayName.replace(new RegExp(name, "gi"), name),
+          );
         }
 
-        const guild = await hypixel.getGuild('player', uuid, {});
-        if (!guild || guild.name.toLowerCase() !== 'dominance') {
+        const guild = await hypixel.getGuild("player", uuid, {});
+        if (!guild || guild.name.toLowerCase() !== "dominance") {
           const embed = new EmbedBuilder()
             .setColor(config.colors.green)
-            .setTitle('Verification Successful')
+            .setTitle("Verification Successful")
             .setDescription(
               `${config.emojis.aTick} **${name}** is not in Dominance\n${config.emojis.add}\
-                    Added: <@&445669382539051008>\n${config.emojis.minus} Removed: <@&${config.roles.unverified}>`
+                    Added: <@&445669382539051008>\n${config.emojis.minus} Removed: <@&${config.roles.unverified}>`,
             )
             .setThumbnail(generateHeadUrl(uuid, name));
 
           await interaction.editReply({ embeds: [embed] });
         } else {
-          await member.roles.add(interaction.guild!.roles.cache.get(config.roles.slayer) as Role);
-          db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(interaction.user.id, uuid);
+          await member.roles.add(
+            interaction.guild?.roles.cache.get(config.roles.slayer) as Role,
+          );
+          db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
+            interaction.user.id,
+            uuid,
+          );
           const embed = new EmbedBuilder()
             .setColor(config.colors.green)
-            .setTitle('Verification Successful')
+            .setTitle("Verification Successful")
             .setDescription(
               `${config.emojis.aTick} **${name}** is in Dominance\n${config.emojis.add}\
-                      Added: <@&445669382539051008>, <@&1031926129822539786>\n${config.emojis.minus} Removed: <@&${config.roles.unverified}>`
+                      Added: <@&445669382539051008>, <@&1031926129822539786>\n${config.emojis.minus} Removed: <@&${config.roles.unverified}>`,
             )
             .setThumbnail(generateHeadUrl(uuid, name));
           await interaction.editReply({ embeds: [embed] });
         }
       } else {
-        const embed = new EmbedBuilder().setColor(config.colors.red).setTitle('Verification Unsuccessful')
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle("Verification Unsuccessful")
           .setDescription(`${config.emojis.aCross}${name} has a different discord account linked on hypixel\nThe discord tag **${discord}**\
                         linked on hypixel does not match your discord tag **${interaction.user.tag}**`);
         await interaction.editReply({ embeds: [embed] });
       }
-    } else if (interaction.customId === 'applications') {
+    } else if (interaction.customId === "applications") {
       await interaction.deferReply({ ephemeral: true });
-      const q1 = interaction.fields.getTextInputValue('q1Input');
-      const q2 = interaction.fields.getTextInputValue('q2Input');
-      const q3 = interaction.fields.getTextInputValue('q3Input');
+      const q1 = interaction.fields.getTextInputValue("q1Input");
+      const q2 = interaction.fields.getTextInputValue("q2Input");
+      const q3 = interaction.fields.getTextInputValue("q3Input");
 
-      const uuid = discordToUuid(interaction.user.id)!;
+      const uuid = discordToUuid(interaction.user.id);
+      if (!uuid) return;
+
       const playerResponse = await hypixel.getPlayer(uuid).catch(async (e) => {
         await interaction.editReply(hypixelApiError(e.message));
       });
-
       if (!playerResponse) return;
 
       const requirementData = await requirementsEmbed(uuid, playerResponse);
-      const name = (await uuidToName(uuid))!;
+      const name = (await uuidToName(uuid)) ?? "";
 
       const applicationEmbed = new EmbedBuilder()
         .setColor(requirementData.color)
@@ -681,73 +874,96 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setDescription(
           `${config.emojis.keycap1_3d} **What games do you mainly play?**\n${q1}\n\n${config.emojis.keycap2_3d} ` +
             `**Why should we accept you?**\n${q2}\n\n${config.emojis.keycap3_3d} **Do you know anyone from the guild?**\n${q3}` +
-            `\n\n${dividers(21)}\n\n**Requirements:**\n\n${requirementData.requirementEmbed}`
+            `\n\n${dividers(21)}\n\n**Requirements:**\n\n${
+              requirementData.requirementEmbed
+            }`,
         )
         .addFields(
-          { name: `${config.emojis.user} IGN: `, value: name, inline: true },
+          {
+            name: `${config.emojis.user} IGN: `,
+            value: name,
+            inline: true,
+          },
           {
             name: `${config.emojis.page} Meeting Requirements: `,
             value: requirementData.reqs,
-            inline: true
+            inline: true,
           },
-          { name: ':shield: Guild: ', value: playerResponse.guild?.name ?? 'None', inline: true },
-          { name: `${config.emojis.mention} Discord: `, value: `<@${interaction.user.id}>`, inline: true },
+          {
+            name: ":shield: Guild: ",
+            value: playerResponse.guild?.name ?? "None",
+            inline: true,
+          },
+          {
+            name: `${config.emojis.mention} Discord: `,
+            value: `<@${interaction.user.id}>`,
+            inline: true,
+          },
           {
             name: `${config.emojis.calendar3d} Discord Member Since: `,
-            value: `<t:${Math.floor(member.joinedTimestamp! / 1000)}:R>`,
-            inline: true
+            value: `<t:${Math.floor((member.joinedTimestamp ?? 0) / 1000)}:R>`,
+            inline: true,
           },
           {
             name: `${config.emojis.clock} Created: `,
             value: `<t:${Math.floor(Date.now() / 1000)}:R>`,
-            inline: true
-          }
+            inline: true,
+          },
         );
 
       const row = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(
           new ButtonBuilder()
-            .setCustomId('accept')
+            .setCustomId("accept")
             .setStyle(ButtonStyle.Success)
-            .setLabel('Accept')
-            .setEmoji(config.emojis.aTick)
+            .setLabel("Accept")
+            .setEmoji(config.emojis.aTick),
         )
         .addComponents(
           new ButtonBuilder()
-            .setCustomId('deny')
+            .setCustomId("deny")
             .setStyle(ButtonStyle.Danger)
-            .setLabel('Deny')
-            .setEmoji(config.emojis.aCross)
+            .setLabel("Deny")
+            .setEmoji(config.emojis.aCross),
         );
-      await textChannels.applications.send({ components: [row], embeds: [applicationEmbed] });
+      await textChannels.applications.send({
+        components: [row],
+        embeds: [applicationEmbed],
+      });
       const replyEmbed = new EmbedBuilder()
         .setColor(requirementData.color)
         .setTitle(`${interaction.user.tag}'s application has been received`)
         .setThumbnail(generateHeadUrl(uuid, name))
         .setDescription(
-          `${config.emojis.keycap1_3d} **What games do you mainly play?**\n${q1}\n\n${config.emojis.keycap2_3d} ` +
-            `**Why should we accept you?**\n${q2}\n\n${config.emojis.keycap3_3d} **Do you know anyone from the guild?**\n${q3}` +
-            `\n\n${dividers(
-              21
-            )}\n\n**Info:**\n\n${bullet} Applications usually receive a response within 24 hours\n${bullet} You will ` +
-            `be **pinged** in this server if you have been accepted\n${bullet} You will receive a dm if rejected **unless** your dm's ` +
-            `are closed`
+          `${
+            config.emojis.keycap1_3d
+          } **What games do you mainly play?**\n${q1}\n\n${
+            config.emojis.keycap2_3d
+          } **Why should we accept you?**\n${q2}\n\n${
+            config.emojis.keycap3_3d
+          } **Do you know anyone from the guild?**\n${q3}\n\n${dividers(
+            21,
+          )}\n\n**Info:**\n\n${bullet} Applications usually receive a response within 24 hours\n${bullet} You will be **pinged** in this server if you have been accepted\n${bullet} You will receive a dm if rejected **unless** your dms are closed`,
         );
       await interaction.editReply({ embeds: [replyEmbed] });
-    } else if (interaction.customId === 'breakModal') {
+    } else if (interaction.customId === "breakModal") {
       await interaction.deferReply({ ephemeral: true });
 
-      const q1 = interaction.fields.getTextInputValue('q1Input');
-      const q2 = interaction.fields.getTextInputValue('q2Input');
+      const q1 = interaction.fields.getTextInputValue("q1Input");
+      const q2 = interaction.fields.getTextInputValue("q2Input");
 
       const uuid = discordToUuid(interaction.user.id) as string;
-      const name = (await uuidToName(uuid))!;
-      const thread = db.prepare('SELECT thread FROM breaks WHERE discord = ?').get(interaction.user.id) as BreakMember;
+      const name = (await uuidToName(uuid)) ?? "";
+      const thread = db
+        .prepare("SELECT thread FROM breaks WHERE discord = ?")
+        .get(interaction.user.id) as BreakMember;
       if (thread) {
         const replyEmbed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
-          .setTitle(`Error!`)
-          .setDescription(`You already have an active break form in <#${thread.thread}>`)
+          .setTitle("Error!")
+          .setDescription(
+            `You already have an active break form in <#${thread.thread}>`,
+          )
           .setThumbnail(generateHeadUrl(uuid, name));
         await interaction.editReply({ embeds: [replyEmbed] });
         return;
@@ -759,8 +975,8 @@ export default async function execute(client: Client, interaction: Interaction) 
 
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
-          .setTitle('Error')
-          .setDescription('You are not a guild member!');
+          .setTitle("Error")
+          .setDescription("You are not a guild member!");
 
         await interaction.editReply({ embeds: [embed] });
         return;
@@ -774,28 +990,38 @@ export default async function execute(client: Client, interaction: Interaction) 
         .setThumbnail(generateHeadUrl(uuid, name))
         .setDescription(
           `${config.emojis.keycap1_3d} **How long will you be inactive for?**\n${q1}\n\n${config.emojis.keycap2_3d} ` +
-            `**What is your reason for inactivity?**\n${q2}`
+            `**What is your reason for inactivity?**\n${q2}`,
         )
         .addFields(
           {
             name: `${config.emojis.calendar3d} Days in Guild: `,
             value: `<t:${Math.floor(Number(joined) / 1000)}:R>`,
-            inline: true
+            inline: true,
           },
-          { name: `${config.emojis.mention} Discord: `, value: `<@${interaction.user.id}>`, inline: true },
-          { name: `${config.emojis.gexp} Weekly Gexp: `, value: `\`${formatNumber(weeklyGexp)!}\``, inline: true }
+          {
+            name: `${config.emojis.mention} Discord: `,
+            value: `<@${interaction.user.id}>`,
+            inline: true,
+          },
+          {
+            name: `${config.emojis.gexp} Weekly Gexp: `,
+            value: `\`${formatNumber(weeklyGexp)}\``,
+            inline: true,
+          },
         );
       const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
-          .setCustomId('endBreak')
-          .setLabel('End Break')
+          .setCustomId("endBreak")
+          .setLabel("End Break")
           .setStyle(ButtonStyle.Danger)
-          .setEmoji(config.emojis.calendar3d)
+          .setEmoji(config.emojis.calendar3d),
       );
-      const threadChannel = await (interaction.channel as TextChannel).threads.create({
+      const threadChannel = await (
+        interaction.channel as TextChannel
+      ).threads.create({
         name,
         type: ChannelType.PrivateThread,
-        invitable: false
+        invitable: false,
       });
       await threadChannel.join();
       await threadChannel.members.add(interaction.user);
@@ -804,17 +1030,17 @@ export default async function execute(client: Client, interaction: Interaction) 
       const replyEmbed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`${name}'s break form has been received`)
-        .setDescription(`You may update your break status in <#${threadChannel.id}>`)
+        .setDescription(
+          `You may update your break status in <#${threadChannel.id}>`,
+        )
         .setThumbnail(generateHeadUrl(uuid, name));
       await interaction.editReply({ embeds: [replyEmbed] });
-      db.prepare('INSERT INTO breaks (uuid, discord, thread, time, reason) VALUES (?, ?, ?, ?, ?)').run(
-        uuid,
-        interaction.user.id,
-        threadChannel.id,
-        q1,
-        q2
+      db.prepare(
+        "INSERT INTO breaks (uuid, discord, thread, time, reason) VALUES (?, ?, ?, ?, ?)",
+      ).run(uuid, interaction.user.id, threadChannel.id, q1, q2);
+      await member.roles.add(
+        interaction.guild?.roles.cache.get(config.roles.break) as Role,
       );
-      await member.roles.add(interaction.guild!.roles.cache.get(config.roles.break) as Role);
 
       await textChannels.break.send({ embeds: [embed] });
     }

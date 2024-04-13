@@ -1,110 +1,36 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Client, EmbedBuilder, Message, TextChannel } from 'discord.js';
-import Database from 'better-sqlite3';
-import { google } from 'googleapis';
-import Mexp from 'math-expression-evaluator';
-import { addXp, discordToUuid, formatMentions, uuidToName } from '../../helper/utils.js';
-import config from '../../config.json' assert { type: 'json' };
-import { chat } from '../../handlers/workerHandler.js';
-import { textChannels } from './ready.js';
-import { Count, NumberObject } from '../../types/global.d.js';
-import { fetchGuildMember } from '../../handlers/databaseHandler.js';
+import Database from "better-sqlite3";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  type Client,
+  EmbedBuilder,
+  type Message,
+  type TextChannel,
+} from "discord.js";
+import Mex from "math-expression-evaluator";
+import config from "../../config.json" assert { type: "json" };
+import { fetchGuildMember } from "../../handlers/databaseHandler.js";
+import { chat } from "../../handlers/workerHandler.js";
+import {
+  addXp,
+  discordToUuid,
+  formatMentions,
+  uuidToName,
+} from "../../helper/clientUtils.js";
+import { checkProfanity } from "../../helper/utils";
+import type { Count } from "../../types/global";
+import { textChannels } from "./ready.js";
 
-const db = new Database('guild.db');
-
-async function checkProfanity(message: string) {
-  const limits: NumberObject = {
-    TOXICITY: 0.7,
-    SEVERE_TOXICITY: 0.5,
-    IDENTITY_ATTACK: 0.6,
-    INSULT: 0.8,
-    PROFANITY: 0.7,
-    THREAT: 0.8,
-    SEXUALLY_EXPLICIT: 0.8,
-    OBSCENE: 0.8
-  };
-
-  message = message.replace(/\*([^*]+)\*/g, '$1');
-  message = message.replace(/_([^_]+)_/g, '$1');
-  message = message.replace(/\*\*([^*]+)\*\*/g, '$1');
-  message = message.replace(/__([^_]+)__/g, '$1');
-  message = message.replace(/\|\|([^|]+)\|\|/g, '$1');
-  message = message.replace(/~([^~]+)~/g, '$1');
-  message = message.replace(/~~([^~]+)~~/g, '$1');
-  message = message.replace(/`([^`]+)`/g, '$1');
-  message = message.replace(/```([^`]+)```/g, '$1');
-  message = message.replace(/:([^:]+):/g, '$1');
-
-  const client = (await google.discoverAPI(
-    'https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1'
-  )) as any;
-
-  const analyzeRequest = {
-    comment: {
-      text: message
-    },
-    requestedAttributes: {
-      TOXICITY: {},
-      SEVERE_TOXICITY: {},
-      IDENTITY_ATTACK: {},
-      INSULT: {},
-      PROFANITY: {},
-      THREAT: {},
-      SEXUALLY_EXPLICIT: {}
-    }
-  };
-
-  const analyzeRequestNotEn = {
-    comment: {
-      text: message
-    },
-    requestedAttributes: {
-      TOXICITY: {},
-      SEVERE_TOXICITY: {},
-      IDENTITY_ATTACK: {},
-      INSULT: {},
-      PROFANITY: {},
-      THREAT: {}
-    }
-  };
-
-  let response;
-  try {
-    response = await client.comments.analyze({
-      key: config.keys.googleCloud,
-      resource: analyzeRequest
-    });
-  } catch (e) {
-    try {
-      response = await client.comments.analyze({
-        key: config.keys.googleCloud,
-        resource: analyzeRequestNotEn
-      });
-    } catch (err) {
-      return false;
-    }
-  }
-
-  const { attributeScores } = response.data;
-  for (const attribute in attributeScores) {
-    if (attributeScores[attribute].summaryScore.value > limits[attribute]) {
-      return true;
-    }
-  }
-
-  if (/(?:\d{1,3}\.){2,3}\d{1,3}/g.test(message)) {
-    return true;
-  }
-
-  return false;
-}
+const db = new Database("guild.db");
 
 export default async function execute(client: Client, message: Message) {
   const { guildId, author, content, channel, member } = message;
-  if (guildId !== '242357942664429568' || author.bot) return;
-  addXp(author.id);
+  if (guildId !== "242357942664429568" || author.bot) return;
+  await addXp(author.id);
 
-  if (content.toLowerCase().includes('dominance')) {
-    await message.react(':dominance:1060579574347472946');
+  if (content.toLowerCase().includes("dominance")) {
+    await message.react(":dominance:1060579574347472946");
   }
 
   if (channel.id === textChannels.chatLogs.id) {
@@ -112,14 +38,22 @@ export default async function execute(client: Client, message: Message) {
   }
 
   if (channel.id === textChannels.counting.id) {
-    const expression = content.split(' ')[0];
+    const expression = content.split(" ")[0];
     try {
-      const count = new Mexp().eval(expression, [], {});
+      const count = new Mex().eval(expression, [], {});
       if (count) {
-        const currentCount = db.prepare('SELECT * FROM counting ORDER BY count DESC LIMIT 1').get() as Count;
-        if (currentCount.count + 1 === count && currentCount.discord !== author.id) {
+        const currentCount = db
+          .prepare("SELECT * FROM counting ORDER BY count DESC LIMIT 1")
+          .get() as Count;
+        if (
+          currentCount.count + 1 === count &&
+          currentCount.discord !== author.id
+        ) {
           await message.react(config.emojis.aTick);
-          db.prepare('INSERT INTO counting (count, discord) VALUES (?, ?)').run(count, author.id);
+          db.prepare("INSERT INTO counting (count, discord) VALUES (?, ?)").run(
+            count,
+            author.id,
+          );
         } else {
           await message.react(config.emojis.aCross);
         }
@@ -129,69 +63,89 @@ export default async function execute(client: Client, message: Message) {
     }
   }
 
-  if (![textChannels.minecraftLink.id, textChannels.officerChat.id].includes(channel.id)) return;
+  if (
+    ![textChannels.minecraftLink.id, textChannels.officerChat.id].includes(
+      channel.id,
+    )
+  )
+    return;
 
   const uuid = discordToUuid(author.id);
   let user = fetchGuildMember(author.id);
 
-  const messageContent = (await formatMentions(client, message))!.replace(/\n/g, '').replace(/[^\x00-\x7F]/g, '*');
-  let tag;
+  const messageContent = (await formatMentions(message))
+    ?.replace(/\n/g, "")
+    // biome-ignore lint/suspicious/noControlCharactersInRegex: <explanation>
+    .replace(/[^\x00-\x7F]/g, "*");
+
+  let tag = "";
 
   if (!user) {
     if (!uuid) {
-      await member!.roles.add(member!.guild.roles.cache.get(config.roles.unverified)!);
+      await member?.roles.add(config.roles.unverified);
       const embed = new EmbedBuilder()
         .setColor(config.colors.red)
-        .setTitle('Error')
-        .setDescription(`${config.emojis.aCross} <@${author.id}> Please verify first in <#907911357582704640>`);
+        .setTitle("Error")
+        .setDescription(
+          `${config.emojis.aCross} <@${author.id}> Please verify first in <#907911357582704640>`,
+        );
       await message.reply({ embeds: [embed] });
       return;
     }
 
     if (member?.roles.cache.has(config.roles.break)) {
-      tag = '[Break]';
+      tag = "[Break]";
     }
 
-    db.prepare('UPDATE guildMembers SET discord = ? WHERE uuid = ?').run(author.id, uuid);
+    db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
+      author.id,
+      uuid,
+    );
     user = fetchGuildMember(author.id);
   } else {
     tag = user.tag;
   }
 
-  const name = await uuidToName(uuid!);
-  const messageLength = `/gc ${name} ${user!.tag}: ${messageContent}`.length;
+  const name = await uuidToName(uuid ?? "");
+  const messageLength = `/gc ${name} ${user?.tag}: ${messageContent}`.length;
 
-  // Automod
+  // Auto mod
   if (await checkProfanity(content)) {
-    try {
-      await (channel as TextChannel).permissionOverwrites.edit(member!, {
-        SendMessages: false
-      });
-    } catch (e) {
-      /* empty */
+    if (member) {
+      try {
+        await (channel as TextChannel).permissionOverwrites.edit(member, {
+          SendMessages: false,
+        });
+      } catch (e) {
+        /* empty */
+      }
     }
 
     let embed = new EmbedBuilder()
       .setColor(config.colors.red)
-      .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
+      .setTitle(
+        `AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`,
+      )
       .setDescription(
-        `<@${author.id}> has been muted from <#${textChannels.minecraftLink.id}>.\nThis mute will be reviewed by staff ASAP.`
+        `<@${author.id}> has been muted from <#${textChannels.minecraftLink.id}>.\nThis mute will be reviewed by staff ASAP.`,
       );
 
     await message.reply({ embeds: [embed] });
 
     embed = new EmbedBuilder()
       .setColor(config.colors.red)
-      .setTitle(`AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`)
+      .setTitle(
+        `AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`,
+      )
       .setDescription(
-        `**<@${author.id}> has been muted from <#${textChannels.minecraftLink.id}>.**\n**Message: **${content}`
+        `**<@${author.id}> has been muted from <#${textChannels.minecraftLink.id}>.**\n**Message: **${content}`,
       );
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId('removeMute')
-        .setLabel('Remove Mute')
+        .setCustomId("removeMute")
+        .setLabel("Remove Mute")
         .setStyle(ButtonStyle.Danger)
-        .setEmoji(config.emojis.clock)
+        .setEmoji(config.emojis.clock),
     );
 
     await textChannels.automod.send({ embeds: [embed], components: [row] });
@@ -211,5 +165,7 @@ export default async function execute(client: Client, message: Message) {
 
   await message.delete();
 
-  db.prepare('UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)').run(uuid);
+  db.prepare(
+    "UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)",
+  ).run(uuid);
 }

@@ -1,6 +1,6 @@
 /* eslint-disable no-var */
 /* eslint-disable vars-on-top */
-import { hypixelRoles } from '../helper/constants';
+import type { hypixelRoles } from "../helper/constants";
 
 export interface StringObject {
   [key: string]: string;
@@ -59,8 +59,6 @@ export type HypixelRoleKeys = keyof typeof hypixelRoles;
 declare global {
   var onlineMembers: number;
   var guildOnline: string[];
-  var dominanceGexp: number;
-  var rebelGexp: number;
   var playtime: NumberObject;
   var lastMessage: StringObject;
 }

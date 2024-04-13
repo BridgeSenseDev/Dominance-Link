@@ -1,24 +1,34 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
-import config from '../config.json' assert { type: 'json' };
-import requirementsEmbed from '../helper/requirements.js';
-import { hypixel } from '../index.js';
-import { generateHeadUrl } from '../helper/utils.js';
+import {
+  type ChatInputCommandInteraction,
+  EmbedBuilder,
+  SlashCommandBuilder,
+} from "discord.js";
+import type { Player } from "hypixel-api-reborn";
+import config from "../config.json" assert { type: "json" };
+import { generateHeadUrl } from "../helper/clientUtils.js";
+import requirementsEmbed from "../helper/requirements.js";
+import { hypixel } from "../index.js";
 
 export const data = new SlashCommandBuilder()
-  .setName('reqs')
-  .setDescription('Check if you meet our guild requirements')
-  .addStringOption((option) => option.setName('ign').setDescription('Your minecraft username').setRequired(true));
+  .setName("reqs")
+  .setDescription("Check if you meet our guild requirements")
+  .addStringOption((option) =>
+    option
+      .setName("ign")
+      .setDescription("Your minecraft username")
+      .setRequired(true),
+  );
 export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
-  const ign = interaction.options.getString('ign')!;
+  const ign = interaction.options.getString("ign");
 
-  let player;
+  let player: Player | undefined;
   try {
-    player = await hypixel.getPlayer(ign);
+    player = await hypixel.getPlayer(ign ?? "");
   } catch (e) {
     const embed = new EmbedBuilder()
       .setColor(config.colors.red)
-      .setTitle('Error')
+      .setTitle("Error")
       .setDescription(`${config.emojis.aCross} ${e}`);
     await interaction.editReply({ embeds: [embed] });
     return;
