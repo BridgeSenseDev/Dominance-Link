@@ -34,7 +34,7 @@ import {
 } from "./clientUtils.js";
 import { bwPrestiges, guildMemberRoles, hypixelRoles } from "./constants.js";
 import { checkRequirements } from "./requirements.js";
-import { ensureDayExists } from "./utils";
+import { ensureDayExists } from "./utils.js";
 
 const db = new Database("guild.db");
 

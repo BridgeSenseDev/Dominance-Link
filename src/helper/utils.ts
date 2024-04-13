@@ -3,7 +3,7 @@ import Database from "better-sqlite3";
 import { google } from "googleapis";
 import config from "../config.json" assert { type: "json" };
 import type { NumberObject, StringObject } from "../types/global";
-import { formatDateForDb, updateTable } from "./clientUtils";
+import { formatDateForDb, updateTable } from "./clientUtils.js";
 
 const db = new Database("guild.db");
 db.defaultSafeIntegers(true);

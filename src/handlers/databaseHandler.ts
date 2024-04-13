@@ -10,8 +10,7 @@ import {
 } from "../helper/clientUtils.js";
 import { guildMemberRoles } from "../helper/constants.js";
 import { checkRequirements } from "../helper/requirements.js";
-import { ensureDayExists } from "../helper/utils";
-// import { ensureDayExists } from "../helper/utils";
+import { ensureDayExists } from "../helper/utils.js";
 import { hypixel } from "../index.js";
 import type { StringObject } from "../types/global";
 

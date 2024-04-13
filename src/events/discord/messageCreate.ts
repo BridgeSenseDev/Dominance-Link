@@ -18,7 +18,7 @@ import {
   formatMentions,
   uuidToName,
 } from "../../helper/clientUtils.js";
-import { checkProfanity } from "../../helper/utils";
+import { checkProfanity } from "../../helper/utils.js";
 import type { Count } from "../../types/global";
 import { textChannels } from "./ready.js";
 
