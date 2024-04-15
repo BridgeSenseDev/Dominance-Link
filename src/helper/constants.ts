@@ -61,6 +61,7 @@ export const hypixelRoles = {
   supreme: { name: "Supreme", gexp: 250000, days: 300 },
   hero: { name: "Hero", gexp: 175000, days: 100 },
   elite: { name: "Elite", gexp: 125000, days: 50 },
+  slayer: { name: "Slayer", gexp: 0, days: 0 },
 } as const;
 
 export const bwPrestiges: { [key: number]: string } = {

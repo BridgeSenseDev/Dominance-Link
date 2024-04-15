@@ -13,6 +13,7 @@ import config from "../../config.json" assert { type: "json" };
 import {
   archiveGuildMember,
   createGuildMember,
+  fetchGuildMember,
 } from "../../handlers/databaseHandler.js";
 import { chat, waitForMessage } from "../../handlers/workerHandler.js";
 import {
@@ -171,10 +172,7 @@ export default async function execute(
       const authorUuid = await nameToUuid(author);
       if (authorUuid) {
         await createGuildMember(authorUuid);
-        await addXp("", authorUuid);
-        db.prepare(
-          "UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)",
-        ).run(authorUuid);
+        await addXp(authorUuid);
       }
 
       // In-game commands
@@ -221,10 +219,7 @@ export default async function execute(
       const authorUuid = await nameToUuid(author);
       if (authorUuid) {
         await createGuildMember(authorUuid);
-        await addXp("", authorUuid);
-        db.prepare(
-          "UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)",
-        ).run(authorUuid);
+        await addXp(authorUuid);
       }
     }
   } else if (msg.startsWith("From")) {
@@ -484,16 +479,30 @@ export default async function execute(
     } catch (e) {
       /* empty */
     }
-    chat(`/gc Welcome to Dominance, ${name}! ${funFact}`);
+    const guildMember = fetchGuildMember(uuid);
+    if (guildMember?.baseDays) {
+      chat(
+        `/gc Welcome back to Dominance, ${name}! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`,
+      );
+    } else {
+      chat(`/gc Welcome to Dominance, ${name}! ${funFact}`);
+    }
     const discordId = uuidToDiscord(uuid);
     if (discordId) {
       db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
         discordId,
         uuid,
       );
-      await textChannels.guildChat.send(
-        `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFacts[2].fact}`,
-      );
+      if (guildMember?.baseDays) {
+        await textChannels.guildChat.send(
+          `${config.emojis.aWave} Welcome back to Dominance, <@${discordId}>! You have previously been in the` +
+            `guild for ${guildMember.baseDays} days. ${funFacts[2].fact}`,
+        );
+      } else {
+        await textChannels.guildChat.send(
+          `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFacts[2].fact}`,
+        );
+      }
       const member =
         await textChannels.guildChat.guild.members.fetch(discordId);
       await member.roles.add(config.roles.slayer);
@@ -501,6 +510,16 @@ export default async function execute(
       await textChannels.guildChat.send(
         `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFacts[2].fact}`,
       );
+      if (guildMember?.baseDays) {
+        await textChannels.guildChat.send(
+          `${config.emojis.aWave} Welcome to Dominance, ${name}! You have previously been in the guild for ` +
+            `${guildMember.baseDays} days. ${funFacts[2].fact}`,
+        );
+      } else {
+        await textChannels.guildChat.send(
+          `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFacts[2].fact}`,
+        );
+      }
     }
   }
   if (msg.includes("left the guild!") || msg.includes("was kicked")) {

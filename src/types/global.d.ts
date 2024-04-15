@@ -10,6 +10,13 @@ export interface NumberObject {
   [key: string]: number;
 }
 
+interface Member {
+  discord: string;
+  uuid: string;
+  messages: number;
+  xp: number;
+}
+
 export interface HypixelGuildMember {
   uuid: string;
   discord: string;
@@ -18,7 +25,7 @@ export interface HypixelGuildMember {
   weeklyGexp: number;
   joined: string;
   baseDays: number;
-  targetRank: string;
+  targetRank: string | null;
   playtime: number;
   nameColor: string;
   bwStars: number;
@@ -26,12 +33,24 @@ export interface HypixelGuildMember {
   duelsWins: number;
   duelsWlr: number;
   networth: number;
-  skillAverage: string;
+  skillAverage: number;
   swLevel: number;
-  swKdr: number;
-  [date: string]: number;
   name?: string | null;
   discordTag?: string | null;
+  [date: string]: number;
+}
+
+interface GuildMemberArchive {
+  uuid: string;
+  discord: string | null;
+  messages: number;
+  baseDays: number;
+  playtime: number;
+}
+
+interface GexpHistory {
+  uuid: string;
+  [date: string]: string | number;
 }
 
 export interface BreakMember {

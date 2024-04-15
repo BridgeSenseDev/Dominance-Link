@@ -12,16 +12,14 @@ import { guildMemberRoles } from "../helper/constants.js";
 import { checkRequirements } from "../helper/requirements.js";
 import { ensureDayExists } from "../helper/utils.js";
 import { hypixel } from "../index.js";
-import type { StringObject } from "../types/global";
+import type {
+  GexpHistory,
+  GuildMemberArchive,
+  Member,
+  StringObject,
+} from "../types/global";
 
 const db = new Database("guild.db");
-
-interface Member {
-  discord: string;
-  uuid: string;
-  messages: number;
-  xp: number;
-}
 
 interface HypixelGuildMember {
   uuid: string;
@@ -46,19 +44,6 @@ interface HypixelGuildMember {
   networkLevel: number;
   sbLevel: number;
   quests: number;
-}
-
-interface GuildMemberArchive {
-  uuid: string;
-  discord: string | null;
-  messages: number;
-  baseDays: number;
-  playtime: number;
-}
-
-interface GexpHistory {
-  uuid: string;
-  [date: string]: string | number;
 }
 
 export function fetchMember(identifier: string): Member | null {
@@ -203,7 +188,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
 
     const guildMember: HypixelGuildMember = {
       uuid: player.uuid,
-      discord,
+      discord: discord ?? "",
       messages,
       tag: "",
       weeklyGexp: 0,

@@ -19,7 +19,7 @@
     "discord.js": "^14.14.1",
     "google-auth-library": "^9.7.0",
     "googleapis": "^133.0.0",
-    "hypixel-api-reborn": "github:BridgeSenseDev/hypixel-api-reborn",
+    "hypixel-api-reborn": "github:Hypixel-API-Reborn/hypixel-api-reborn",
     "math-expression-evaluator": "^2.0.5",
     "mineflayer": "^4.20.0",
     "node-cron": "^3.0.3"

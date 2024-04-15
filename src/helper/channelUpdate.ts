@@ -2,7 +2,7 @@ import { ActivityType, type Client } from "discord.js";
 import { voiceChannels } from "../events/discord/ready.js";
 import { chat } from "../handlers/workerHandler.js";
 import { hypixel } from "../index.js";
-import { getLevel, sleep } from "./clientUtils.js";
+import { sleep } from "./clientUtils.js";
 
 async function channelUpdate(client: Client) {
   setInterval(
@@ -28,9 +28,7 @@ async function channelUpdate(client: Client) {
       // Guild level
       const guild = await hypixel.getGuild("name", "Dominance", {});
       if (guild) {
-        await voiceChannels.level.setName(
-          `📈│Guild Level: ${getLevel(guild.experience)}`,
-        );
+        await voiceChannels.level.setName(`📈│Guild Level: ${guild.level}`);
       }
 
       // Online members

@@ -46,7 +46,16 @@ export const sheet = new google.auth.JWT(
 );
 
 sheet.authorize();
+
 const roleOrder = ["slayer", "elite", "hero", "supreme", "dominator", "goat"];
+
+function getHighestDaysRole(days: number) {
+  return (
+    Object.keys(hypixelRoles).find(
+      (role) => days >= hypixelRoles[role as keyof typeof hypixelRoles].days,
+    ) || "slayer"
+  );
+}
 
 async function removeHigherRoles(
   member: GuildMember,
@@ -93,92 +102,40 @@ export async function weekly() {
       const roleDesc: StringObject = {};
       const assignedMembers = new Set();
 
-      for (const [role, data] of Object.entries(hypixelRoles)) {
-        roleDesc[role] = "";
-
-        const roleMembers = db
-          .prepare(
-            `SELECT uuid, discord, weeklyGexp, joined FROM guildMembers WHERE weeklyGexp >= (?) AND uuid NOT IN (${Array.from(
-              assignedMembers,
-            )
-              .map(() => "?")
-              .join(",")}) ORDER BY weeklyGexp DESC`,
-          )
-          .all(
-            data.gexp,
-            ...Array.from(assignedMembers),
-          ) as HypixelGuildMember[];
-
-        roleMembers.sort((a, b) => b.weeklyGexp - a.weeklyGexp);
-
-        for (const i in roleMembers) {
-          assignedMembers.add(roleMembers[i].uuid);
-
-          const days =
-            (new Date().getTime() -
-              new Date(Number.parseInt(roleMembers[i].joined, 10)).getTime()) /
-            (1000 * 3600 * 24);
-
-          if (days >= data.days) {
-            for (const j in hypixelRoles) {
-              if (days >= hypixelRoles[j as HypixelRoleKeys].days) {
-                db.prepare(
-                  "UPDATE guildMembers SET targetRank = ? WHERE uuid = ?",
-                ).run(
-                  `[${hypixelRoles[j as HypixelRoleKeys].name}]`,
-                  roleMembers[i].uuid,
-                );
-                break;
-              }
-            }
-          } else {
-            db.prepare(
-              "UPDATE guildMembers SET targetRank = ? WHERE uuid = ?",
-            ).run(`[${data.name}]`, roleMembers[i].uuid);
-          }
-
-          if (roleMembers[i].discord) {
-            roleDesc[role] += `\n\`${
-              Number.parseInt(i, 10) + 1
-            }.\` ${await client.users.fetch(
-              roleMembers[i].discord,
-            )} - \`${abbreviateNumber(roleMembers[i].weeklyGexp)}\``;
-          } else {
-            roleDesc[role] += `\n\`${
-              Number.parseInt(i, 10) + 1
-            }.\` ${await uuidToName(
-              roleMembers[i].uuid,
-            )} - \`${abbreviateNumber(roleMembers[i].weeklyGexp)}\``;
-          }
-        }
-      }
-
-      const slayerMembers = db
+      const allMembers = db
         .prepare(
-          `SELECT uuid, discord, weeklyGexp, joined FROM guildMembers WHERE uuid NOT IN (${Array.from(
-            assignedMembers,
-          )
-            .map(() => "?")
-            .join(",")})`,
+          "SELECT uuid, discord, weeklyGexp, joined, baseDays FROM guildMembers ORDER BY weeklyGexp DESC",
         )
-        .all(...Array.from(assignedMembers)) as HypixelGuildMember[];
+        .all() as HypixelGuildMember[];
 
-      for (const i in slayerMembers) {
-        const days =
-          (new Date().getTime() -
-            new Date(Number.parseInt(slayerMembers[i].joined, 10)).getTime()) /
-          (1000 * 3600 * 24);
+      for (const member of allMembers) {
+        const daysInGuild = getDaysInGuild(member.joined, member.baseDays);
+        const highestDaysRole = getHighestDaysRole(daysInGuild);
+        const weeklyRole =
+          Object.keys(hypixelRoles).find(
+            (role) =>
+              hypixelRoles[role as keyof typeof hypixelRoles].gexp <=
+              member.weeklyGexp,
+          ) || "slayer";
 
-        for (const j in hypixelRoles) {
-          if (days >= hypixelRoles[j as HypixelRoleKeys].days) {
-            db.prepare(
-              "UPDATE guildMembers SET targetRank = ? WHERE uuid = ?",
-            ).run(
-              `[${hypixelRoles[j as HypixelRoleKeys].name}]`,
-              slayerMembers[i].uuid,
-            );
-            break;
-          }
+        const assignRoleBasedOnDays =
+          roleOrder.indexOf(highestDaysRole) > roleOrder.indexOf(weeklyRole);
+
+        const targetRole = assignRoleBasedOnDays ? highestDaysRole : weeklyRole;
+        db.prepare("UPDATE guildMembers SET targetRank = ? WHERE uuid = ?").run(
+          `[${hypixelRoles[targetRole as HypixelRoleKeys].name}]`,
+          member.uuid,
+        );
+
+        if (!assignedMembers.has(member.uuid)) {
+          assignedMembers.add(member.uuid);
+          roleDesc[targetRole] = `${
+            roleDesc[targetRole] || ""
+          }\n\`${await uuidToName(member.uuid)}\` - \`${
+            assignRoleBasedOnDays
+              ? `${daysInGuild} days`
+              : abbreviateNumber(member.weeklyGexp)
+          }\``;
         }
       }
 
@@ -197,6 +154,7 @@ export async function weekly() {
         .setTitle(`Weekly Roles Update ${prevWeek} - ${previous}`)
         .setDescription(
           `${Object.entries(roleDesc)
+            .filter(([role]) => role !== "slayer")
             .filter(([, desc]) => desc.trim() !== "")
             .map(
               ([role, desc]) =>
@@ -513,6 +471,7 @@ export async function players() {
 
         if (
           inGameRole === "Hero" &&
+          data.targetRank &&
           ["[Supreme]", "[Dominator]", "[Goat]"].includes(data.targetRank)
         ) {
           // Add higher role
