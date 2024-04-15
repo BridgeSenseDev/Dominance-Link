@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { demojify } from "discord-emoji-converter";
 import {
+  type Channel,
   EmbedBuilder,
   type Message,
   type TextChannel,
@@ -9,9 +10,11 @@ import {
 import type { Player } from "hypixel-api-reborn";
 import config from "../config.json" assert { type: "json" };
 import { fetchGuildMember, fetchMember } from "../handlers/databaseHandler.js";
+import { chat } from "../handlers/workerHandler";
 import client from "../index.js";
 import type {
   BreakMember,
+  Member,
   StringObject,
   WaitlistMember,
 } from "../types/global.js";
@@ -130,32 +133,6 @@ export async function formatMentions(message: Message) {
   }
 }
 
-export function getLevel(exp: number) {
-  const expNeeded = [
-    100000, 150000, 250000, 500000, 750000, 1000000, 1250000, 1500000, 2000000,
-    2500000, 2500000, 2500000, 2500000, 2500000, 3000000,
-  ];
-  let level = 0;
-  let currentExp = exp; // Create a local variable to hold the current experience
-
-  for (let i = 0; i <= 1000; i++) {
-    let need = 0;
-    if (i >= expNeeded.length) {
-      need = expNeeded[expNeeded.length - 1];
-    } else {
-      need = expNeeded[i];
-    }
-
-    if (currentExp - need < 0) {
-      return Math.round((level + currentExp / need) * 100) / 100;
-    }
-
-    level++;
-    currentExp -= need; // Modify the local variable instead of the parameter
-  }
-  return 1000;
-}
-
 export async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -204,47 +181,60 @@ export function doubleDigits(number: number) {
   return number;
 }
 
-export async function addXp(discordId = "", ign = "") {
-  if (!discordId) {
-    const uuid = await nameToUuid(ign);
-    if (!uuid) {
-      return;
-    }
-    if (uuid in global.lastMessage) {
-      if (Date.now() / 1000 - Number(global.lastMessage[uuid]) >= 60) {
-        db.prepare("UPDATE members SET xp = xp + ? WHERE uuid = ?").run(
-          Math.floor(Math.random() * 11 + 15),
-          uuid,
+export async function addXp(
+  identifier: string,
+  channel: Channel | undefined = undefined,
+) {
+  const isUUID = isValidUUID(identifier);
+  const key = isUUID ? "uuid" : "discord";
+  const xp = Math.floor(Math.random() * 11 + 15);
+  const member = db
+    .prepare(`SELECT * FROM members WHERE ${key} = ?`)
+    .get(identifier) as Member | null;
+
+  if (member) {
+    const levelDetails = getLevelDetails(member.xp);
+    if (levelDetails.xpTillNextLevel < xp) {
+      if (isUUID) {
+        chat(
+          `${await uuidToName(member.uuid)} has reached level ${
+            levelDetails.currentLevel + 1
+          }. GG!`,
         );
-        global.lastMessage[uuid] = Math.floor(Date.now() / 1000).toString();
+      } else if (channel?.isTextBased()) {
+        await channel.send(
+          `<@${member.discord}> has reached level ${
+            levelDetails.currentLevel + 1
+          }. GG!`,
+        );
       }
-    } else {
-      db.prepare("UPDATE members SET xp = xp + ? WHERE uuid = ?").run(
-        Math.floor(Math.random() * 11 + 15),
-        uuid,
-      );
-      global.lastMessage[uuid] = Math.floor(Date.now() / 1000).toString();
     }
-    return;
   }
 
-  db.prepare(
-    "UPDATE members SET (messages) = messages + 1 WHERE discord = (?)",
-  ).run(discordId);
-  if (discordId in global.lastMessage) {
-    if (Date.now() / 1000 - Number(global.lastMessage[discordId]) >= 60) {
-      db.prepare("UPDATE members SET xp = xp + ? WHERE discord = ?").run(
-        Math.floor(Math.random() * 11 + 15),
-        discordId,
+  if (identifier in global.lastMessage) {
+    if (Date.now() / 1000 - Number(global.lastMessage[identifier]) >= 60) {
+      db.prepare(`UPDATE members SET xp = xp + ? WHERE ${key} = ?`).run(
+        xp,
+        identifier,
       );
-      global.lastMessage[discordId] = Math.floor(Date.now() / 1000).toString();
+      global.lastMessage[identifier] = Math.floor(Date.now() / 1000).toString();
     }
   } else {
-    db.prepare("UPDATE members SET xp = xp + ? WHERE discord = ?").run(
-      Math.floor(Math.random() * 11 + 15),
-      discordId,
+    db.prepare(`UPDATE members SET xp = xp + ? WHERE ${key} = ?`).run(
+      xp,
+      identifier,
     );
-    global.lastMessage[discordId] = Math.floor(Date.now() / 1000).toString();
+    global.lastMessage[identifier] = Math.floor(Date.now() / 1000).toString();
+  }
+
+  if (isUUID) {
+    db.prepare(
+      "UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)",
+    ).run(identifier);
+  } else {
+    db.prepare(
+      "UPDATE members SET (messages) = messages + 1 WHERE discord = (?)",
+    ).run(identifier);
   }
 }
 
@@ -419,11 +409,16 @@ export function generateHeadUrl(uuid: string, name: string) {
   return `https://heads.discordsrv.com/head.png?uuid=${uuid}&name=${name}&overlay`;
 }
 
-export function getDaysInGuild(joined: string, baseDays: number) {
+export function getDaysInGuild(joined = "", baseDays = 0) {
+  if (!joined) return baseDays || 0;
+
+  const joinedTimestamp = Number.parseInt(joined, 10);
+  if (Number.isNaN(joinedTimestamp)) return baseDays || 0;
+
   const daysSinceJoin =
-    (new Date().getTime() - new Date(Number.parseInt(joined, 10)).getTime()) /
+    (new Date().getTime() - new Date(joinedTimestamp).getTime()) /
     (1000 * 3600 * 24);
-  return daysSinceJoin + baseDays;
+  return Math.floor(daysSinceJoin + baseDays);
 }
 
 export function getMemberRejoinChannel(uuid: string) {

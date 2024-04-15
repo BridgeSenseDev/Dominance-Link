@@ -27,7 +27,7 @@ const db = new Database("guild.db");
 export default async function execute(client: Client, message: Message) {
   const { guildId, author, content, channel, member } = message;
   if (guildId !== "242357942664429568" || author.bot) return;
-  await addXp(author.id);
+  await addXp(author.id, message.channel);
 
   if (content.toLowerCase().includes("dominance")) {
     await message.react(":dominance:1060579574347472946");
@@ -165,6 +165,7 @@ export default async function execute(client: Client, message: Message) {
 
   await message.delete();
 
+  // Count as in-game message, but xp is already added
   db.prepare(
     "UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)",
   ).run(uuid);
