@@ -10,7 +10,7 @@ import {
 import type { Player } from "hypixel-api-reborn";
 import config from "../config.json" assert { type: "json" };
 import { fetchGuildMember, fetchMember } from "../handlers/databaseHandler.js";
-import { chat } from "../handlers/workerHandler";
+import { chat } from "../handlers/workerHandler.js";
 import client from "../index.js";
 import type {
   BreakMember,
