@@ -17,7 +17,7 @@
     "better-sqlite3": "^9.5.0",
     "discord-emoji-converter": "^1.2.10",
     "discord.js": "^14.14.1",
-    "google-auth-library": "^9.7.0",
+    "google-auth-library": "^9.8.0",
     "googleapis": "^133.0.0",
     "hypixel-api-reborn": "github:Hypixel-API-Reborn/hypixel-api-reborn",
     "math-expression-evaluator": "^2.0.5",
