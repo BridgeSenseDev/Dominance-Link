@@ -34,7 +34,7 @@ function renderText(
 
   if (header === "") {
     ctx.textBaseline = "middle";
-    console.log(removeSectionSymbols(text));
+
     x += width / 2 - ctx.measureText(removeSectionSymbols(text)).width / 2;
     y += height / 2;
     const splitMessageSpace = text.split(" ");

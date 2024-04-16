@@ -447,11 +447,18 @@ export default async function execute(
       await interaction.showModal(modal);
     } else if (interaction.customId === "endBreak") {
       await interaction.deferReply({ fetchReply: true });
+
       const breakData = db
         .prepare("SELECT * FROM breaks WHERE discord = ?")
         .get(
           interaction.message.embeds[0].fields[1].value.slice(2, -1),
         ) as BreakMember;
+
+      if (interaction.channel?.isThread() && !breakData) {
+        await interaction.channel.setLocked(true);
+        return interaction.deleteReply();
+      }
+
       const name = await uuidToName(breakData.uuid);
       if (interaction.user.id !== breakData.discord) {
         const breakMember = interaction.guild?.members.cache.get(
