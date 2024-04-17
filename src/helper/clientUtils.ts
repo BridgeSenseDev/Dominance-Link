@@ -197,15 +197,15 @@ export async function addXp(
     if (levelDetails.xpTillNextLevel < xp) {
       if (isUUID) {
         chat(
-          `${await uuidToName(member.uuid)} has reached level ${
+          `/gc ${await uuidToName(member.uuid)} has reached level ${
             levelDetails.currentLevel + 1
           }. GG!`,
         );
       } else if (channel?.isTextBased()) {
         await channel.send(
-          `<@${member.discord}> has reached level ${
+          `<@${member.discord}> has reached level **${
             levelDetails.currentLevel + 1
-          }. GG!`,
+          }**. GG!`,
         );
       }
     }

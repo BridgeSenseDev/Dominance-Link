@@ -122,18 +122,19 @@ async function createRankCard({
   ctx.closePath();
 
   // Progress Bar Front
-  const currentPercentXP = Math.floor((xp / requiredXP) * 100);
-  if (currentPercentXP >= 1) {
-    ctx.beginPath();
-    const onePercentBar = (canvas.width - 30 - 210) / 100;
-    const pxBar = onePercentBar * currentPercentXP;
-    ctx.fillStyle = "#3cc356";
-    ctx.arc(192.5 + pxBar, 182.5, 17.5, Math.PI * 1.5, Math.PI * 0.5);
-    ctx.arc(227.5, 182.5, 17.5, Math.PI * 0.5, Math.PI * 1.5);
-    ctx.fill();
-    ctx.closePath();
-    ctx.restore();
+  let currentPercentXP = Math.floor((xp / requiredXP) * 100);
+  if (currentPercentXP === 0) {
+    currentPercentXP = 1;
   }
+  ctx.beginPath();
+  const onePercentBar = (canvas.width - 30 - 210) / 100;
+  const pxBar = onePercentBar * currentPercentXP;
+  ctx.fillStyle = "#3cc356";
+  ctx.arc(192.5 + pxBar, 182.5, 17.5, Math.PI * 1.5, Math.PI * 0.5);
+  ctx.arc(227.5, 182.5, 17.5, Math.PI * 0.5, Math.PI * 1.5);
+  ctx.fill();
+  ctx.closePath();
+  ctx.restore();
 
   let offsetLvlXP = canvas.width - 30;
 

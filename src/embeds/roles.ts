@@ -61,7 +61,7 @@ client.on("ready", async () => {
           `${bullet} <@&${config.roles.goat}>\n${bullet} <@&${config.roles.dominator}>\n` +
           `${bullet} <@&${config.roles.supreme}>\n${bullet} <@&${config.roles.hero}>\n` +
           `${bullet} <@&${config.roles.elite}>\n${bullet} <@&${config.roles.slayer}>\n` +
-          `${bullet} <@&${config.roles.slayer}>\n${bullet} <@&${config.roles.break}>\n`,
+          `${bullet} <@&${config.roles.break}>`,
         inline: true,
       },
       {
