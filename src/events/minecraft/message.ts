@@ -399,22 +399,18 @@ export default async function execute(
       ],
     });
   } else if (msg.includes("joined the guild!")) {
-    let funFact: string | undefined;
     const name = msg.split(" ")[msg.split(" ").indexOf("joined") - 1];
     const uuid = await nameToUuid(name);
     if (!uuid) return;
     const funFacts = await (
-      await fetch("https://api.api-ninjas.com/v1/facts?limit=3", {
+      await fetch("https://api.api-ninjas.com/v1/facts", {
         method: "GET",
         headers: { "X-Api-Key": config.keys.apiNinjasKey },
       })
     ).json();
-    for (const i of funFacts) {
-      if (i.fact.length < 150) {
-        funFact = i.fact;
-        break;
-      }
-    }
+
+    const funFact = funFacts[0].fact.length < 150 ? funFacts[0].fact : "";
+
     await gcWebhook.send({
       username: "Dominance",
       avatarURL: config.guild.icon,
@@ -473,7 +469,7 @@ export default async function execute(
       );
       chat(`/gc Welcome back from your break, ${name}! ${funFact}`);
       await textChannels.guildChat.send(
-        `${config.emojis.aWave} Welcome back from your break, <@${breakData.discord}>! ${funFacts[2].fact}`,
+        `${config.emojis.aWave} Welcome back from your break, <@${breakData.discord}>! ${funFact}`,
       );
       return;
     } catch (e) {
@@ -496,28 +492,25 @@ export default async function execute(
       if (guildMember?.baseDays) {
         await textChannels.guildChat.send(
           `${config.emojis.aWave} Welcome back to Dominance, <@${discordId}>! You have previously been in the` +
-            `guild for ${guildMember.baseDays} days. ${funFacts[2].fact}`,
+            `guild for ${guildMember.baseDays} days. ${funFact}`,
         );
       } else {
         await textChannels.guildChat.send(
-          `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFacts[2].fact}`,
+          `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFact}`,
         );
       }
       const member =
         await textChannels.guildChat.guild.members.fetch(discordId);
       await member.roles.add(config.roles.slayer);
     } else {
-      await textChannels.guildChat.send(
-        `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFacts[2].fact}`,
-      );
       if (guildMember?.baseDays) {
         await textChannels.guildChat.send(
           `${config.emojis.aWave} Welcome to Dominance, ${name}! You have previously been in the guild for ` +
-            `${guildMember.baseDays} days. ${funFacts[2].fact}`,
+            `${guildMember.baseDays} days. ${funFact}`,
         );
       } else {
         await textChannels.guildChat.send(
-          `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFacts[2].fact}`,
+          `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFact}`,
         );
       }
     }
