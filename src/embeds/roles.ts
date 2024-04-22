@@ -73,16 +73,6 @@ client.on("ready", async () => {
 
   const notificationsRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setCustomId("notifications")
-      .setLabel("Notifications")
-      .setStyle(ButtonStyle.Primary)
-      .setEmoji(config.emojis.aBell),
-    new ButtonBuilder()
-      .setCustomId("polls")
-      .setLabel("Polls")
-      .setStyle(ButtonStyle.Secondary)
-      .setEmoji(config.emojis.poll),
-    new ButtonBuilder()
       .setCustomId("qotd")
       .setLabel("QOTD")
       .setStyle(ButtonStyle.Primary)
