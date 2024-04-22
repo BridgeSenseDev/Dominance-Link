@@ -216,15 +216,18 @@ export default async function execute(
       const q1Input = new TextInputBuilder()
         .setCustomId("q1Input")
         .setLabel("What games do you main / have good stats in?")
-        .setStyle(TextInputStyle.Short);
+        .setStyle(TextInputStyle.Short)
+        .setMaxLength(100);
       const q2Input = new TextInputBuilder()
         .setCustomId("q2Input")
         .setLabel("Why should we accept you?")
-        .setStyle(TextInputStyle.Paragraph);
+        .setStyle(TextInputStyle.Paragraph)
+        .setMaxLength(1000);
       const q3Input = new TextInputBuilder()
         .setCustomId("q3Input")
         .setLabel("Do you know anyone from the guild?")
-        .setStyle(TextInputStyle.Paragraph);
+        .setStyle(TextInputStyle.Paragraph)
+        .setMaxLength(200);
       const firstActionRow =
         new ActionRowBuilder<TextInputBuilder>().addComponents(q1Input);
       const secondActionRow =
