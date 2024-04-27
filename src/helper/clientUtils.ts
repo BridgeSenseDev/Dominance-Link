@@ -413,7 +413,8 @@ export function getDaysInGuild(joined = "", baseDays = 0) {
   if (!joined) return baseDays || 0;
 
   const joinedTimestamp = Number.parseInt(joined, 10);
-  if (Number.isNaN(joinedTimestamp)) return baseDays || 0;
+  if (Number.isNaN(joinedTimestamp) || joinedTimestamp === 0)
+    return baseDays || 0;
 
   const daysSinceJoin =
     (new Date().getTime() - new Date(joinedTimestamp).getTime()) /
