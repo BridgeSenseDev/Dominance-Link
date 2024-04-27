@@ -7,7 +7,6 @@ import {
 } from "discord.js";
 import type { JWT } from "google-auth-library";
 import { google } from "googleapis";
-import type { SkyblockMember } from "hypixel-api-reborn";
 import { schedule } from "node-cron";
 import config from "../config.json" assert { type: "json" };
 import { textChannels } from "../events/discord/ready.js";
@@ -376,14 +375,13 @@ export async function players() {
     let networth = 0;
     let sbSkillAverage = 0;
     let sbLevel = 0;
-    const sbMember = await hypixel
-      .getSkyblockMember(data.uuid)
-      .catch(() => null);
+    const sbMember = (
+      await hypixel.getSkyblockProfiles(player.uuid).catch(() => null)
+    )?.find((profile) => profile.selected)?.me;
     if (sbMember) {
-      const profile = sbMember.values().next().value as SkyblockMember;
-      networth = (await profile.getNetworth()).networth ?? 0;
-      sbSkillAverage = profile.skills.average;
-      sbLevel = profile.level;
+      networth = (await sbMember.getNetworth()).networth ?? 0;
+      sbSkillAverage = sbMember.skills.average;
+      sbLevel = sbMember.level;
     }
 
     if (

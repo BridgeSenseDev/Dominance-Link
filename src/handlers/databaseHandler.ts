@@ -1,6 +1,5 @@
 import Database from "better-sqlite3";
 import type { GuildMember } from "discord.js";
-import type { SkyblockMember } from "hypixel-api-reborn";
 import config from "../config.json" assert { type: "json" };
 import {
   formatDateForDb,
@@ -178,12 +177,13 @@ export async function createGuildMember(uuid: string): Promise<void> {
     let networth = 0;
     let sbSkillAverage = 0;
     let sbLevel = 0;
-    const sbMember = await hypixel.getSkyblockMember(uuid).catch(() => null);
+    const sbMember = (
+      await hypixel.getSkyblockProfiles(uuid).catch(() => null)
+    )?.find((profile) => profile.selected)?.me;
     if (sbMember) {
-      const profile = sbMember.values().next().value as SkyblockMember;
-      networth = (await profile.getNetworth()).networth ?? 0;
-      sbSkillAverage = profile.skills.average;
-      sbLevel = profile.level;
+      networth = (await sbMember.getNetworth()).networth ?? 0;
+      sbSkillAverage = sbMember.skills.average;
+      sbLevel = sbMember.level;
     }
 
     const guildMember: HypixelGuildMember = {
