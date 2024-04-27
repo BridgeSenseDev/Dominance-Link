@@ -32,10 +32,14 @@ async function processPlayerData(
     skywarsData?.KDRatio ?? 0,
   ];
 
-  const sbMember = await hypixel.getSkyblockMember(uuid).catch(() => null);
+  const sbMember = (
+    await hypixel.getSkyblockProfiles(uuid).catch(() => null)
+  )?.find((profile) => profile.selected)?.me;
   if (sbMember) {
-    const profile = sbMember.values().next().value as SkyblockMember;
-    skyblock = [(await profile.getNetworth()).networth, profile.skills.average];
+    skyblock = [
+      (await sbMember.getNetworth()).networth,
+      sbMember.skills.average,
+    ];
   } else {
     skyblock = [0, 0];
   }

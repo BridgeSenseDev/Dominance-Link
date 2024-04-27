@@ -89,21 +89,22 @@ function getDuelsStats(player: Player) {
 }
 
 async function getSkyblockStats(player: Player) {
-  let sbMember: Map<string, SkyblockMember> | null;
+  let sbMember: SkyblockMember | undefined;
   try {
-    sbMember = await hypixel.getSkyblockMember(player.uuid).catch(() => null);
+    sbMember = (
+      await hypixel.getSkyblockProfiles(player.uuid).catch(() => null)
+    )?.find((profile) => profile.selected)?.me;
   } catch (e) {
     return `/gc Error: ${e}`;
   }
 
   if (sbMember) {
-    const profile = sbMember.values().next().value as SkyblockMember;
-    const { networth } = (await profile.getNetworth()) ?? 0;
-    const sbSkillAverage = profile.skills.average;
-    const sbLevel = profile.level;
+    const { networth } = (await sbMember.getNetworth()) ?? 0;
+    const sbSkillAverage = sbMember.skills.average;
+    const sbLevel = sbMember.level;
     const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
 
-    return `/gc [${sbLevel}] ${rankTag}${
+    return `/gc [${Math.floor(sbLevel)}] ${rankTag}${
       player.nickname
     } NW: ${abbreviateNumber(networth)} SA: ${formatNumber(sbSkillAverage)}`;
   }
