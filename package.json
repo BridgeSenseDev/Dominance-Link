@@ -21,7 +21,7 @@
     "googleapis": "^136.0.0",
     "hypixel-api-reborn": "github:Hypixel-API-Reborn/hypixel-api-reborn",
     "math-expression-evaluator": "^2.0.5",
-    "mineflayer": "^4.20.0",
+    "mineflayer": "^4.20.1",
     "node-cron": "^3.0.3"
   },
   "devDependencies": {
