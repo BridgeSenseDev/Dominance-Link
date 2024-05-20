@@ -476,44 +476,61 @@ export default async function execute(
     } catch (e) {
       /* empty */
     }
+
     const guildMember = fetchGuildMember(uuid);
-    if (guildMember?.baseDays) {
-      chat(
-        `/gc Welcome back to Dominance, ${name}! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`,
-      );
+    let message = "";
+
+    if (guildMember) {
+      if (guildMember.baseDays === 0) {
+        message = `Welcome back to Dominance, ${name}! Your days in guild have been reset as you are not on a break. ${funFact}`;
+      } else if (guildMember.baseDays > 0) {
+        message = `Welcome back from your break, ${name}! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`;
+      } else {
+        message = `Welcome to Dominance, ${name}! ${funFact}`;
+      }
     } else {
-      chat(`/gc Welcome to Dominance, ${name}! ${funFact}`);
+      message = `Welcome to Dominance, ${name}! ${funFact}`;
     }
+
+    chat(`/gc ${message}`);
+
     const discordId = uuidToDiscord(uuid);
+    let discordMessage = "";
     if (discordId) {
       db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
         discordId,
         uuid,
       );
-      if (guildMember?.baseDays) {
-        await textChannels.guildChat.send(
-          `${config.emojis.aWave} Welcome back to Dominance, <@${discordId}>! You have previously been in the` +
-            `guild for ${guildMember.baseDays} days. ${funFact}`,
-        );
+      if (guildMember) {
+        if (guildMember.baseDays === 0) {
+          discordMessage = `${config.emojis.aWave} Welcome back to Dominance, <@${discordId}>! Your days in guild have been reset as you are not on a break. ${funFact}`;
+        } else if (guildMember.baseDays > 0) {
+          discordMessage = `${config.emojis.aWave} Welcome back from your break, <@${discordId}>! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`;
+        } else {
+          discordMessage = `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFact}`;
+        }
       } else {
-        await textChannels.guildChat.send(
-          `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFact}`,
-        );
+        discordMessage = `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFact}`;
       }
+
+      await textChannels.guildChat.send(discordMessage);
       const member =
         await textChannels.guildChat.guild.members.fetch(discordId);
       await member.roles.add(config.roles.slayer);
     } else {
-      if (guildMember?.baseDays) {
-        await textChannels.guildChat.send(
-          `${config.emojis.aWave} Welcome to Dominance, ${name}! You have previously been in the guild for ` +
-            `${guildMember.baseDays} days. ${funFact}`,
-        );
+      if (guildMember) {
+        if (guildMember.baseDays === 0) {
+          discordMessage = `${config.emojis.aWave} Welcome back to Dominance, ${name}! Your days in guild have been reset as you have not applied for a break. ${funFact}`;
+        } else if (guildMember.baseDays > 0) {
+          discordMessage = `${config.emojis.aWave} Welcome back from your break, ${name}! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`;
+        } else {
+          discordMessage = `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFact}`;
+        }
       } else {
-        await textChannels.guildChat.send(
-          `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFact}`,
-        );
+        discordMessage = `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFact}`;
       }
+
+      await textChannels.guildChat.send(discordMessage);
     }
   }
   if (msg.includes("left the guild!") || msg.includes("was kicked")) {

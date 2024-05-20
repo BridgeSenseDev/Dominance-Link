@@ -12,6 +12,7 @@ import { checkRequirements } from "../helper/requirements.js";
 import { ensureDayExists } from "../helper/utils.js";
 import { hypixel } from "../index.js";
 import type {
+  BreakMember,
   GexpHistory,
   GuildMemberArchive,
   Member,
@@ -262,6 +263,9 @@ export async function archiveGuildMember(
   if (!identifier) return;
 
   const guildMemberData = fetchGuildMember(identifier);
+  const breaks = db
+    .prepare("SELECT discord, thread FROM breaks WHERE uuid = ?")
+    .get(guildMemberData?.uuid) as BreakMember | null;
 
   if (guildMemberData) {
     db.prepare(
@@ -271,7 +275,9 @@ export async function archiveGuildMember(
       guildMemberData.discord,
       guildMemberData.messages,
       guildMemberData.playtime,
-      getDaysInGuild(guildMemberData.joined, guildMemberData.baseDays),
+      breaks
+        ? getDaysInGuild(guildMemberData.joined, guildMemberData.baseDays)
+        : 0,
     );
 
     db.prepare("DELETE FROM guildMembers WHERE uuid = ?").run(
@@ -293,6 +299,8 @@ export async function archiveGuildMember(
 
   if (member) {
     for (const role of [...guildMemberRoles, config.roles.break]) {
+      if (breaks && role === config.roles.break) continue;
+
       if (member.roles.cache.has(role)) {
         await member.roles.remove(role);
       }
