@@ -869,9 +869,11 @@ export default async function execute(
       const uuid = discordToUuid(interaction.user.id);
       if (!uuid) return;
 
-      const playerResponse = await hypixel.getPlayer(uuid).catch(async (e) => {
-        await interaction.editReply(hypixelApiError(e.message));
-      });
+      const playerResponse = await hypixel
+        .getPlayer(uuid, { guild: true })
+        .catch(async (e) => {
+          await interaction.editReply(hypixelApiError(e.message));
+        });
       if (!playerResponse) return;
 
       const requirementData = await requirementsEmbed(uuid, playerResponse);
