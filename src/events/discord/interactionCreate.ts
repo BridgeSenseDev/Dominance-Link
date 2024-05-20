@@ -18,7 +18,7 @@ import {
   TextInputStyle,
   type ThreadChannel,
 } from "discord.js";
-import config from "../../config.json" assert { type: "json" };
+import config from "../../config.json" with { type: "json" };
 import {
   archiveMember,
   createMember,

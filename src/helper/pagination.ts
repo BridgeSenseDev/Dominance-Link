@@ -7,7 +7,7 @@ import {
   type EmbedBuilder,
   type MessageActionRowComponentBuilder,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 
 export default async function pagination(
   interaction: ChatInputCommandInteraction,

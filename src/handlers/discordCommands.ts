@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { type Client, Collection, REST, Routes } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 
 export default async function discordCommands(client: Client) {
   client.commands = new Collection();

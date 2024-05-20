@@ -8,7 +8,7 @@ import {
   type ThreadChannel,
 } from "discord.js";
 import type { Player } from "hypixel-api-reborn";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { fetchGuildMember, fetchMember } from "../handlers/databaseHandler.js";
 import { chat } from "../handlers/workerHandler.js";
 import client from "../index.js";

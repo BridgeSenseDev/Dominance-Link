@@ -1,6 +1,6 @@
 import { parentPort } from "node:worker_threads";
 import mineflayer from "mineflayer";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 
 let bot: mineflayer.Bot;
 

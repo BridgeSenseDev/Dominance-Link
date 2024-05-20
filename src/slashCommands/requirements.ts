@@ -4,7 +4,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import type { Player } from "hypixel-api-reborn";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { generateHeadUrl } from "../helper/clientUtils.js";
 import requirementsEmbed from "../helper/requirements.js";
 import { hypixel } from "../index.js";

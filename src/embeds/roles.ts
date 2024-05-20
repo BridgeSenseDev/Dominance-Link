@@ -7,7 +7,7 @@ import {
   GatewayIntentBits,
   type TextChannel,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { bullet } from "../helper/constants.js";
 
 const client = new Client({

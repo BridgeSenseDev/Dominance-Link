@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { textChannels, worker } from "../events/discord/ready.js";
 import { hypixel } from "../index.js";
 

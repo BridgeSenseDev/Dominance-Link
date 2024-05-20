@@ -8,7 +8,7 @@ import {
 import type { JWT } from "google-auth-library";
 import { google } from "googleapis";
 import { schedule } from "node-cron";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { textChannels } from "../events/discord/ready.js";
 import {
   archiveGuildMember,

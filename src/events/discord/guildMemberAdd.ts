@@ -6,7 +6,7 @@ import {
   type Role,
 } from "discord.js";
 import type { Guild } from "hypixel-api-reborn";
-import config from "../../config.json" assert { type: "json" };
+import config from "../../config.json" with { type: "json" };
 import { fetchMember } from "../../handlers/databaseHandler.js";
 import { invis } from "../../helper/constants.js";
 import { hypixel } from "../../index.js";

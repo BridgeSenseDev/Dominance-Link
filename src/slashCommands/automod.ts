@@ -3,7 +3,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { getProfanityScores } from "../helper/utils.js";
 import type { NumberObject } from "../types/global";
 

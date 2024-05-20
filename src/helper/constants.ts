@@ -1,4 +1,4 @@
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import type { StringObject } from "../types/global";
 
 export const guildMemberRoles = [

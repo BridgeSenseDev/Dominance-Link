@@ -4,7 +4,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { discordToUuid, uuidToName } from "../helper/clientUtils.js";
 import pagination from "../helper/pagination.js";
 import type { Count } from "../types/global";

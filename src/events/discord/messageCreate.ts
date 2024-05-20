@@ -9,7 +9,7 @@ import {
   type TextChannel,
 } from "discord.js";
 import Mex from "math-expression-evaluator";
-import config from "../../config.json" assert { type: "json" };
+import config from "../../config.json" with { type: "json" };
 import { fetchGuildMember } from "../../handlers/databaseHandler.js";
 import { chat } from "../../handlers/workerHandler.js";
 import {

@@ -3,7 +3,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { chat, waitForMessage } from "../handlers/workerHandler.js";
 import { discordToUuid, isStaff } from "../helper/clientUtils.js";
 import messageToImage from "../helper/messageToImage.js";

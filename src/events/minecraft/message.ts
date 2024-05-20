@@ -9,7 +9,7 @@ import {
   WebhookClient,
 } from "discord.js";
 import type { Player, SkyblockMember } from "hypixel-api-reborn";
-import config from "../../config.json" assert { type: "json" };
+import config from "../../config.json" with { type: "json" };
 import {
   archiveGuildMember,
   createGuildMember,
@@ -478,7 +478,7 @@ export default async function execute(
     }
 
     const guildMember = fetchGuildMember(uuid);
-    let message = "";
+    let message: string;
 
     if (guildMember) {
       if (guildMember.baseDays === 0) {
@@ -495,7 +495,7 @@ export default async function execute(
     chat(`/gc ${message}`);
 
     const discordId = uuidToDiscord(uuid);
-    let discordMessage = "";
+    let discordMessage: string;
     if (discordId) {
       db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
         discordId,

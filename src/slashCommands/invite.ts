@@ -6,7 +6,7 @@ import {
   type TextChannel,
   type ThreadChannel,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { chat, waitForMessage } from "../handlers/workerHandler.js";
 import {
   discordToUuid,

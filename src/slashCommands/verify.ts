@@ -10,7 +10,7 @@ import {
   SlashCommandBuilder,
   type User,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { createMember, fetchMember } from "../handlers/databaseHandler.js";
 import { generateHeadUrl, nameToUuid } from "../helper/clientUtils.js";
 import { hypixel } from "../index.js";

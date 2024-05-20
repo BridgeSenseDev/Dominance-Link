@@ -6,7 +6,7 @@ import {
   type GuildMember,
   SlashCommandBuilder,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { fetchMember } from "../handlers/databaseHandler.js";
 import { getLevelDetails } from "../helper/clientUtils.js";
 

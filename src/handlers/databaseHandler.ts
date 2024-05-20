@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import type { GuildMember } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import {
   formatDateForDb,
   getDaysInGuild,

@@ -1,5 +1,5 @@
 import { writeFileSync } from "node:fs";
-import config from "../../config.json" assert { type: "json" };
+import config from "../../config.json" with { type: "json" };
 import { chat } from "../../handlers/workerHandler.js";
 import { textChannels } from "../discord/ready.js";
 

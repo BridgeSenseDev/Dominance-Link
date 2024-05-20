@@ -6,7 +6,7 @@ import {
   EmbedBuilder,
   escapeMarkdown,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { messages } from "../events/discord/ready.js";
 import type { BreakMember, HypixelGuildMember } from "../types/global";
 import { uuidToName } from "./clientUtils.js";

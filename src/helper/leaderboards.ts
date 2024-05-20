@@ -7,7 +7,7 @@ import {
   type GuildChannel,
   type Message,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { textChannels } from "../events/discord/ready.js";
 import { fetchGexpForMember } from "../handlers/databaseHandler.js";
 import type { HypixelGuildMember } from "../types/global";

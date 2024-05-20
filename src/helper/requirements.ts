@@ -1,5 +1,5 @@
 import type { Player } from "hypixel-api-reborn";
-import config from "../config.json" assert { type: "json" };
+import config from "../config.json" with { type: "json" };
 import { hypixel } from "../index.js";
 import { abbreviateNumber, formatNumber, uuidToName } from "./clientUtils.js";
 
