@@ -26,7 +26,11 @@ import {
 } from "../../helper/clientUtils.js";
 import messageToImage from "../../helper/messageToImage.js";
 import { hypixel } from "../../index.js";
-import type { BreakMember, WaitlistMember } from "../../types/global";
+import type {
+  BreakMember,
+  HypixelGuildMember,
+  WaitlistMember,
+} from "../../types/global";
 import { textChannels } from "../discord/ready.js";
 
 const db = new Database("guild.db");
@@ -400,18 +404,6 @@ export default async function execute(
       ],
     });
   } else if (msg.includes("joined the guild!")) {
-    const name = msg.split(" ")[msg.split(" ").indexOf("joined") - 1];
-    const uuid = await nameToUuid(name);
-    if (!uuid) return;
-    const funFacts = await (
-      await fetch("https://api.api-ninjas.com/v1/facts", {
-        method: "GET",
-        headers: { "X-Api-Key": config.keys.apiNinjasKey },
-      })
-    ).json();
-
-    const funFact = funFacts[0].fact.length < 150 ? funFacts[0].fact : "";
-
     await gcWebhook.send({
       username: "Dominance",
       avatarURL: config.guild.icon,
@@ -429,109 +421,7 @@ export default async function execute(
       ],
     });
 
-    await createGuildMember(uuid);
-
-    try {
-      const { channel } = db
-        .prepare("SELECT channel FROM waitlist WHERE uuid = ?")
-        .get(uuid) as WaitlistMember;
-      await client.channels.cache.get(channel)?.delete();
-      db.prepare("DELETE FROM waitlist WHERE uuid = ?").run(uuid);
-    } catch (e) {
-      /* empty */
-    }
-    try {
-      const breakData = db
-        .prepare("SELECT * FROM breaks WHERE uuid = ?")
-        .get(uuid) as BreakMember;
-      const member = await textChannels.guildChat.guild.members.fetch(
-        breakData.discord,
-      );
-      const thread = client.channels.cache.get(
-        breakData.thread,
-      ) as ThreadChannel;
-      db.prepare("DELETE FROM breaks WHERE uuid = ?").run(uuid);
-      await member.roles.remove(
-        thread.guild?.roles.cache.get(config.roles.break) as Role,
-      );
-      await member.roles.add(config.roles.slayer);
-      const embed = new EmbedBuilder()
-        .setColor(config.colors.discordGray)
-        .setTitle(`Welcome back, ${name}!`)
-        .setDescription(
-          "This thread has been archived and closed. Enjoy your stay!",
-        );
-      await thread.send({ embeds: [embed] });
-      await thread.setArchived();
-      await thread.setLocked();
-      db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
-        breakData.discord,
-        uuid,
-      );
-      chat(`/gc Welcome back from your break, ${name}! ${funFact}`);
-      await textChannels.guildChat.send(
-        `${config.emojis.aWave} Welcome back from your break, <@${breakData.discord}>! ${funFact}`,
-      );
-      return;
-    } catch (e) {
-      /* empty */
-    }
-
-    const guildMember = fetchGuildMember(uuid);
-    let message: string;
-
-    if (guildMember) {
-      if (guildMember.baseDays === 0) {
-        message = `Welcome back to Dominance, ${name}! Your days in guild have been reset as you are not on a break. ${funFact}`;
-      } else if (guildMember.baseDays > 0) {
-        message = `Welcome back from your break, ${name}! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`;
-      } else {
-        message = `Welcome to Dominance, ${name}! ${funFact}`;
-      }
-    } else {
-      message = `Welcome to Dominance, ${name}! ${funFact}`;
-    }
-
-    chat(`/gc ${message}`);
-
-    const discordId = uuidToDiscord(uuid);
-    let discordMessage: string;
-    if (discordId) {
-      db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
-        discordId,
-        uuid,
-      );
-      if (guildMember) {
-        if (guildMember.baseDays === 0) {
-          discordMessage = `${config.emojis.aWave} Welcome back to Dominance, <@${discordId}>! Your days in guild have been reset as you are not on a break. ${funFact}`;
-        } else if (guildMember.baseDays > 0) {
-          discordMessage = `${config.emojis.aWave} Welcome back from your break, <@${discordId}>! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`;
-        } else {
-          discordMessage = `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFact}`;
-        }
-      } else {
-        discordMessage = `${config.emojis.aWave} Welcome to Dominance, <@${discordId}>! ${funFact}`;
-      }
-
-      await textChannels.guildChat.send(discordMessage);
-      const member =
-        await textChannels.guildChat.guild.members.fetch(discordId);
-      await member.roles.add(config.roles.slayer);
-    } else {
-      if (guildMember) {
-        if (guildMember.baseDays === 0) {
-          discordMessage = `${config.emojis.aWave} Welcome back to Dominance, ${name}! Your days in guild have been reset as you have not applied for a break. ${funFact}`;
-        } else if (guildMember.baseDays > 0) {
-          discordMessage = `${config.emojis.aWave} Welcome back from your break, ${name}! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`;
-        } else {
-          discordMessage = `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFact}`;
-        }
-      } else {
-        discordMessage = `${config.emojis.aWave} Welcome to Dominance, ${name}! ${funFact}`;
-      }
-
-      await textChannels.guildChat.send(discordMessage);
-    }
+    await handleGuildJoin(client, msg);
   }
   if (msg.includes("left the guild!") || msg.includes("was kicked")) {
     let name = msg.split(" ")[msg.split(" ").indexOf("left") - 1];
@@ -553,5 +443,136 @@ export default async function execute(
     }
 
     await archiveGuildMember(member, uuid);
+  }
+}
+
+async function handleGuildJoin(client: Client, msg: string) {
+  const name = msg.split(" ")[msg.split(" ").indexOf("joined") - 1];
+  const uuid = await nameToUuid(name);
+  if (!uuid) return;
+
+  const funFact = await getFunFact();
+
+  await createGuildMember(uuid);
+
+  await handleWaitlist(client, uuid);
+  await handleBreak(client, uuid, name, funFact);
+
+  const guildMember = fetchGuildMember(uuid);
+  const message = buildGuildMessage(name, guildMember, funFact);
+  chat(`/gc ${message}`);
+
+  await handleDiscordMember(uuid, name, guildMember, funFact);
+}
+
+async function getFunFact(): Promise<string> {
+  const funFacts = await (
+    await fetch("https://api.api-ninjas.com/v1/facts", {
+      method: "GET",
+      headers: { "X-Api-Key": config.keys.apiNinjasKey },
+    })
+  ).json();
+  return funFacts[0].fact.length < 150 ? funFacts[0].fact : "";
+}
+
+async function handleWaitlist(client: Client, uuid: string) {
+  try {
+    const { channel } = db
+      .prepare("SELECT channel FROM waitlist WHERE uuid = ?")
+      .get(uuid) as WaitlistMember;
+    await client.channels.cache.get(channel)?.delete();
+    db.prepare("DELETE FROM waitlist WHERE uuid = ?").run(uuid);
+  } catch (e) {
+    /* empty */
+  }
+}
+
+async function handleBreak(
+  client: Client,
+  uuid: string,
+  name: string,
+  funFact: string,
+) {
+  try {
+    const breakData = db
+      .prepare("SELECT * FROM breaks WHERE uuid = ?")
+      .get(uuid) as BreakMember;
+    const member = await textChannels.guildChat.guild.members.fetch(
+      breakData.discord,
+    );
+    const thread = client.channels.cache.get(breakData.thread) as ThreadChannel;
+
+    db.prepare("DELETE FROM breaks WHERE uuid = ?").run(uuid);
+    await member.roles.remove(
+      thread.guild?.roles.cache.get(config.roles.break) as Role,
+    );
+    await member.roles.add(config.roles.slayer);
+
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.discordGray)
+      .setTitle(`Welcome back, ${name}!`)
+      .setDescription(
+        "This thread has been archived and closed. Enjoy your stay!",
+      );
+    await thread.send({ embeds: [embed] });
+    await thread.setArchived();
+    await thread.setLocked();
+
+    db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
+      breakData.discord,
+      uuid,
+    );
+    chat(`/gc Welcome back from your break, ${name}! ${funFact}`);
+    await textChannels.guildChat.send(
+      `${config.emojis.aWave} Welcome back from your break, <@${breakData.discord}>! ${funFact}`,
+    );
+    return;
+  } catch (e) {
+    /* empty */
+  }
+}
+
+function buildGuildMessage(
+  name: string,
+  guildMember: HypixelGuildMember | null,
+  funFact: string,
+): string {
+  if (!guildMember) return `Welcome to Dominance, ${name}! ${funFact}`;
+
+  if (guildMember.baseDays === null) {
+    return `Welcome to Dominance, ${name}! ${funFact}`;
+  }
+  if (guildMember.baseDays === 0) {
+    return `Welcome back to Dominance, ${name}! Your days in guild have been reset as you are not on a break. ${funFact}`;
+  }
+  if (guildMember.baseDays > 0) {
+    return `Welcome back from your break, ${name}! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`;
+  }
+
+  return `Welcome to Dominance, ${name}! ${funFact}`;
+}
+
+async function handleDiscordMember(
+  uuid: string,
+  name: string,
+  guildMember: HypixelGuildMember | null,
+  funFact: string,
+) {
+  const discordId = uuidToDiscord(uuid);
+  let discordMessage: string;
+
+  if (discordId) {
+    db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
+      discordId,
+      uuid,
+    );
+    discordMessage = buildGuildMessage(`<@${discordId}>`, guildMember, funFact);
+    await textChannels.guildChat.send(discordMessage);
+
+    const member = await textChannels.guildChat.guild.members.fetch(discordId);
+    await member.roles.add(config.roles.slayer);
+  } else {
+    discordMessage = buildGuildMessage(name, guildMember, funFact);
+    await textChannels.guildChat.send(discordMessage);
   }
 }

@@ -15,36 +15,12 @@ import type {
   BreakMember,
   GexpHistory,
   GuildMemberArchive,
+  HypixelGuildMember,
   Member,
   StringObject,
 } from "../types/global";
 
 const db = new Database("guild.db");
-
-interface HypixelGuildMember {
-  uuid: string;
-  discord: string | null;
-  messages: number;
-  tag: string;
-  weeklyGexp: number;
-  joined: string;
-  baseDays: number;
-  targetRank: string | null;
-  playtime: number;
-  nameColor: string;
-  reqs: 0 | 1;
-  bwStars: number;
-  bwFkdr: number;
-  duelsWins: number;
-  duelsWlr: number;
-  networth: number;
-  skillAverage: number;
-  swLevel: number;
-  achievementPoints: number;
-  networkLevel: number;
-  sbLevel: number;
-  quests: number;
-}
 
 export function fetchMember(identifier: string): Member | null {
   const member = db
@@ -158,7 +134,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
   if (!member) {
     let messages = 0;
     let playtime = 0;
-    let baseDays = 0;
+    let baseDays = null;
 
     if (
       db.prepare("SELECT * FROM guildMemberArchives WHERE uuid = ?").get(uuid)
@@ -190,20 +166,20 @@ export async function createGuildMember(uuid: string): Promise<void> {
     const guildMember: HypixelGuildMember = {
       uuid: player.uuid,
       discord: discord ?? "",
-      messages,
+      messages: messages,
       tag: "",
       weeklyGexp: 0,
       joined: "0",
-      baseDays,
+      baseDays: baseDays,
       targetRank: null,
-      playtime,
+      playtime: playtime,
       nameColor: rankTagF(player) ?? "",
       reqs: (await checkRequirements(uuid, player)) ? 1 : 0,
       bwStars: player.stats?.bedwars?.level ?? 0,
       bwFkdr: player.stats?.bedwars?.finalKDRatio ?? 0,
       duelsWins: player.stats?.duels?.wins ?? 0,
       duelsWlr: player.stats?.duels?.WLRatio ?? 0,
-      networth,
+      networth: networth,
       skillAverage: sbSkillAverage,
       swLevel: player.stats?.skywars?.level ?? 0,
       achievementPoints: player.achievementPoints ?? 0,

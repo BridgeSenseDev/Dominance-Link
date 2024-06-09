@@ -409,17 +409,18 @@ export function generateHeadUrl(uuid: string, name: string) {
   return `https://heads.discordsrv.com/head.png?uuid=${uuid}&name=${name}&overlay`;
 }
 
-export function getDaysInGuild(joined = "", baseDays = 0) {
-  if (!joined) return baseDays || 0;
+export function getDaysInGuild(
+  joined: string,
+  baseDays: number | null,
+): number {
+  if (!joined) return baseDays ?? 0;
 
   const joinedTimestamp = Number.parseInt(joined, 10);
   if (Number.isNaN(joinedTimestamp) || joinedTimestamp === 0)
-    return baseDays || 0;
+    return baseDays ?? 0;
 
-  const daysSinceJoin =
-    (new Date().getTime() - new Date(joinedTimestamp).getTime()) /
-    (1000 * 3600 * 24);
-  return Math.floor(daysSinceJoin + baseDays);
+  const daysSinceJoin = (Date.now() - joinedTimestamp) / (1000 * 3600 * 24);
+  return Math.floor(daysSinceJoin + (baseDays ?? 0));
 }
 
 export function getMemberRejoinChannel(uuid: string) {

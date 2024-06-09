@@ -19,15 +19,16 @@ interface Member {
 
 export interface HypixelGuildMember {
   uuid: string;
-  discord: string;
+  discord: string | null;
   messages: number;
   tag: string;
   weeklyGexp: number;
   joined: string;
-  baseDays: number;
+  baseDays: number | null;
   targetRank: string | null;
   playtime: number;
   nameColor: string;
+  reqs: 0 | 1;
   bwStars: number;
   bwFkdr: number;
   duelsWins: number;
@@ -35,9 +36,12 @@ export interface HypixelGuildMember {
   networth: number;
   skillAverage: number;
   swLevel: number;
+  achievementPoints: number;
+  networkLevel: number;
+  sbLevel: number;
+  quests: number;
   name?: string | null;
   discordTag?: string | null;
-  [date: string]: number;
 }
 
 interface GuildMemberArchive {

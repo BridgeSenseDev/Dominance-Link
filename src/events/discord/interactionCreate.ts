@@ -692,7 +692,7 @@ export default async function execute(
                   (1000 * 3600 * 24),
               )}\`` +
               `\nPrevious days in guild: \`${abbreviateNumber(
-                guildMember.baseDays,
+                guildMember.baseDays ?? 0,
               )}\`\nTotal days in guild: \`` +
               `${abbreviateNumber(
                 getDaysInGuild(guildMember.joined, guildMember.baseDays),

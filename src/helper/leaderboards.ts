@@ -10,7 +10,7 @@ import {
 import config from "../config.json" with { type: "json" };
 import { textChannels } from "../events/discord/ready.js";
 import { fetchGexpForMember } from "../handlers/databaseHandler.js";
-import type { HypixelGuildMember } from "../types/global";
+import type { HypixelGuildMember as BaseHypixelGuildMember } from "../types/global";
 import {
   abbreviateNumber,
   formatNumber,
@@ -18,6 +18,8 @@ import {
   sleep,
 } from "./clientUtils.js";
 import { rgbaColor } from "./constants.js";
+
+type HypixelGuildMember = BaseHypixelGuildMember & { [key: string]: number };
 
 const db = new Database("guild.db");
 GlobalFonts.registerFromPath("./fonts/Minecraft Regular.ttf", "Minecraft");

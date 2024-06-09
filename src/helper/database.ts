@@ -240,24 +240,35 @@ export async function gsrun(sheets: JWT) {
         .all() as HypixelGuildMember[];
       const guild = await hypixel.getGuild("name", "Dominance", {});
 
+      type HypixelGuildMemberWithExpHistory = HypixelGuildMember & {
+        [key: string]: number;
+      };
+
       const array = await Promise.all(
         data.map(async (member) => {
-          member.name = await uuidToName(member.uuid);
+          const memberWithExpHistory: HypixelGuildMemberWithExpHistory =
+            member as HypixelGuildMemberWithExpHistory;
+
+          memberWithExpHistory.name = await uuidToName(
+            memberWithExpHistory.uuid,
+          );
 
           const memberToUpdate = guild.members.find(
-            (m) => m.uuid === member.uuid,
+            (m) => m.uuid === memberWithExpHistory.uuid,
           );
           if (memberToUpdate) {
             for (const day of memberToUpdate.expHistory) {
-              member[day.day] = day.exp;
+              memberWithExpHistory[day.day] = day.exp;
             }
           }
 
-          const discordTag = member.discord
-            ? (await client.users.fetch(member.discord))?.tag ?? null
+          const discordTag = memberWithExpHistory.discord
+            ? (await client.users.fetch(memberWithExpHistory.discord))?.tag ??
+              null
             : null;
 
-          const { name, discord, nameColor, targetRank, ...rest } = member;
+          const { name, discord, nameColor, targetRank, ...rest } =
+            memberWithExpHistory;
 
           const expHistory = Object.keys(rest).reduce(
             (acc: { [key: string]: unknown }, key) => {
