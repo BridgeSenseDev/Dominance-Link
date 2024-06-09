@@ -7,12 +7,12 @@ async function processPlayerData(
   uuid: string,
   playerData: Player,
 ): Promise<{
-  skyblock: [number, number];
+  skyblock: [number, number, number];
   bedwars: [number, number, number];
   duels: [number, number];
   skywars: [string, number];
 }> {
-  let skyblock: [number, number] | undefined;
+  let skyblock: [number, number, number] | undefined;
   const bedwarsData = playerData.stats?.bedwars;
   const bedwars: [number, number, number] = [
     bedwarsData?.level ?? 0,
@@ -39,9 +39,10 @@ async function processPlayerData(
     skyblock = [
       (await sbMember.getNetworth()).networth,
       sbMember.skills.average,
+      sbMember.level,
     ];
   } else {
-    skyblock = [0, 0];
+    skyblock = [0, 0, 0];
   }
 
   return { skyblock, bedwars, duels, skywars };
@@ -195,9 +196,9 @@ export default async function requirementsEmbed(
 
   if (skyblock[0] >= 3000000000 && skyblock[1] >= 40) {
     meetingReqs = true;
-    requirementEmbed += ":green_circle: **Skyblock**\n";
+    requirementEmbed += ":green_circle: **Skyblock 1**\n";
   } else {
-    requirementEmbed += ":red_circle: **Skyblock**\n";
+    requirementEmbed += ":red_circle: **Skyblock 1**\n";
   }
   if (skyblock[0] >= 3000000000) {
     requirementEmbed += `${
@@ -224,6 +225,26 @@ export default async function requirementsEmbed(
     } **Skyblock Skill Average:** \`${
       Math.round(skyblock[1] * 10) / 10
     } / 40\`\n\n`;
+  }
+
+  if (skyblock[2] >= 250) {
+    meetingReqs = true;
+    requirementEmbed += ":green_circle: **Skyblock 2**\n";
+  } else {
+    requirementEmbed += ":red_circle: **Skyblock 2**\n";
+  }
+  if (skyblock[2] >= 250) {
+    requirementEmbed += `${
+      config.emojis.aTick
+    } **Skyblock Level:** \`${abbreviateNumber(
+      Math.round(skyblock[2] * 100) / 100,
+    )}\`\n`;
+  } else {
+    requirementEmbed += `${
+      config.emojis.aCross
+    } **Skyblock Networth:** \`${abbreviateNumber(
+      Math.round(skyblock[2] * 100) / 100,
+    )} / 250\`\n`;
   }
 
   if (meetingReqs) {

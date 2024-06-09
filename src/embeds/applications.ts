@@ -9,7 +9,39 @@ import {
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
 import { bullet, dividers, invis, sub } from "../helper/constants.js";
-import { formatDate } from "../helper/utils.js";
+
+function formatDate(dateObj: Date) {
+  let suffix: string;
+  const date = dateObj.getDate();
+  switch (date % 10) {
+    case 1:
+      suffix = "st";
+      break;
+    case 2:
+      suffix = "nd";
+      break;
+    case 3:
+      suffix = "rd";
+      break;
+    default:
+      suffix = "th";
+  }
+  const month = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ][dateObj.getMonth()];
+  return `${date + suffix} ${month} ${dateObj.getFullYear()}`;
+}
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
@@ -29,7 +61,8 @@ client.on("ready", async () => {
 				\`5\` FKDR\n${bullet}**Duels 1**\n${invis}${sub} \`10,000\` Wins\n${invis}${sub} \`2\` WLR\n${bullet}**Duels \
 				2**\n${invis}${sub} \`5,000\` Wins\n${invis}${sub} \`3\` WLR\n${bullet}**Skywars 1**\n${invis}${sub} \`15\` \
 				Stars\n${invis}${sub} \`1\` KDR\n${bullet}**Skywars 2**\n${invis}${sub} \`10\` Stars\n${invis}${sub} \`1.5\`\
-				 KDR\n${bullet}**Skyblock (API ON)**\n${invis}${sub} \`3b\` Networth\n${invis}${sub} \`40\` Skill Average`,
+				 KDR\n${bullet}**Skyblock 1 (API ON)**\n${invis}${sub} \`3b\` Networth\n${invis}${sub} \`40\` Skill Average\
+				 \n${bullet}**Skyblock 2**\n${invis}${sub} \`250\` Level`,
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,
