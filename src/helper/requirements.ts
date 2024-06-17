@@ -242,7 +242,7 @@ export default async function requirementsEmbed(
   } else {
     requirementEmbed += `${
       config.emojis.aCross
-    } **Skyblock Networth:** \`${abbreviateNumber(
+    } **Skyblock Level:** \`${abbreviateNumber(
       Math.round(skyblock[2] * 100) / 100,
     )} / 250\`\n`;
   }
