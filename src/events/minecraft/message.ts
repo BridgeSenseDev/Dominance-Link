@@ -540,16 +540,16 @@ function buildGuildMessage(
   if (!guildMember) return `Welcome to Dominance, ${name}! ${funFact}`;
 
   if (guildMember.baseDays === null) {
-    return `Welcome to Dominance, ${name}! ${funFact}`;
+    return `🆕 Welcome to Dominance, ${name}! ${funFact}`;
   }
   if (guildMember.baseDays === 0) {
-    return `Welcome back to Dominance, ${name}! Your days in guild have been reset as you are not on a break. ${funFact}`;
+    return `🏠 Welcome back to Dominance, ${name}! Your days in guild have been reset as you are not on a break. ${funFact}`;
   }
   if (guildMember.baseDays > 0) {
-    return `Welcome back from your break, ${name}! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`;
+    return `💤 Welcome back from your break, ${name}! You have previously been in the guild for ${guildMember.baseDays} days. ${funFact}`;
   }
 
-  return `Welcome to Dominance, ${name}! ${funFact}`;
+  return `🆕 Welcome to Dominance, ${name}! ${funFact}`;
 }
 
 async function handleDiscordMember(
