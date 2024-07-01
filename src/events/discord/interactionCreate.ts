@@ -319,9 +319,9 @@ export default async function execute(
                 inline: true,
               },
               {
-                name: `${config.emojis.clock} Application Made`,
+                name: ":shield: Guild: ",
                 value:
-                  interaction.message.embeds[0].data.fields?.[5].value ?? "",
+                  interaction.message.embeds[0].data.fields?.[2].value ?? "",
                 inline: true,
               },
             );
