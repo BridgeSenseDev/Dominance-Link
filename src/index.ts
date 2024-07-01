@@ -1,7 +1,11 @@
+import { Database } from "bun:sqlite";
 import { Client, GatewayIntentBits } from "discord.js";
 import Hypixel from "hypixel-api-reborn";
 import config from "./config.json" with { type: "json" };
 import ready from "./events/discord/ready.js";
+
+const db = new Database("guild.db");
+db.exec("PRAGMA journal_mode = WAL;");
 
 export const hypixel = new Hypixel.Client(config.keys.hypixelApiKey, {
   cache: true,

@@ -1,5 +1,5 @@
+import Database from "bun:sqlite";
 import { GlobalFonts, createCanvas } from "@napi-rs/canvas";
-import Database from "better-sqlite3";
 import {
   ActionRowBuilder,
   ButtonBuilder,

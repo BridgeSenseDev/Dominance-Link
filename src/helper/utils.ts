@@ -1,12 +1,11 @@
+import Database from "bun:sqlite";
 import { promisify } from "node:util";
-import Database from "better-sqlite3";
 import { google } from "googleapis";
 import config from "../config.json" with { type: "json" };
 import type { NumberObject, StringObject } from "../types/global";
 import { formatDateForDb, updateTable } from "./clientUtils.js";
 
 const db = new Database("guild.db");
-db.defaultSafeIntegers(true);
 
 export function formatDate(dateObj: Date) {
   let suffix: string;

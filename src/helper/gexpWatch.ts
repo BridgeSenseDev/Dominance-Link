@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+import Database from "bun:sqlite";
 import { EmbedBuilder } from "discord.js";
 import { schedule } from "node-cron";
 import config from "../config.json" with { type: "json" };

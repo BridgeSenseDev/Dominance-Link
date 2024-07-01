@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+import { Database } from "bun:sqlite";
 import {
   type Client,
   EmbedBuilder,
@@ -34,7 +34,6 @@ import type {
 import { textChannels } from "../discord/ready.js";
 
 const db = new Database("guild.db");
-db.defaultSafeIntegers(true);
 
 global.playtime = {};
 let logMessages = "";
