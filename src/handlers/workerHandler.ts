@@ -20,8 +20,8 @@ export async function startBot() {
       await event.default(client, msg.string, msg.motd, msg.messagePosition);
     }
 
-    if (msg.type === "login") {
-      const event = await import("../events/minecraft/login.js");
+    if (msg.type === "spawn") {
+      const event = await import("../events/minecraft/spawn.js");
       await event.default();
     }
   });
