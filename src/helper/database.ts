@@ -187,12 +187,16 @@ export async function database() {
     for (const member of guild.members) {
       const data = fetchGuildMember(member.uuid);
       const { joinedAtTimestamp, uuid, rank, expHistory } = member;
-      const weeklyGexp = member.expHistory.reduce(
-        (acc, cur) => acc + cur.exp,
-        0,
-      );
-      const currentDay = expHistory[0].day;
-      const currentDailyExp = expHistory[0].exp;
+
+      let weeklyGexp = 0;
+      let currentDay = null;
+      let currentDailyExp = 0;
+
+      if (Array.isArray(expHistory) && expHistory.length > 0) {
+        weeklyGexp = expHistory.reduce((acc, cur) => acc + cur.exp, 0);
+        currentDay = expHistory[0].day;
+        currentDailyExp = expHistory[0].exp;
+      }
 
       await createGuildMember(uuid);
 
