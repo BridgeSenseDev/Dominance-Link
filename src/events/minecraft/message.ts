@@ -8,24 +8,21 @@ import {
   type ThreadChannel,
   WebhookClient,
 } from "discord.js";
-import type { Player, SkyblockMember } from "hypixel-api-reborn";
 import config from "../../config.json" with { type: "json" };
 import {
   archiveGuildMember,
   createGuildMember,
   fetchGuildMember,
 } from "../../handlers/databaseHandler.js";
+import { handleMinecraftCommands } from "../../handlers/minecraftCommands.ts";
 import { chat, waitForMessage } from "../../handlers/workerHandler.js";
 import {
-  abbreviateNumber,
   addXp,
-  formatNumber,
   nameToUuid,
   timeStringToSeconds,
   uuidToDiscord,
 } from "../../helper/clientUtils.js";
 import messageToImage from "../../helper/messageToImage.js";
-import { hypixel } from "../../index.js";
 import type {
   BreakMember,
   HypixelGuildMember,
@@ -45,9 +42,7 @@ const messageCache: string[] = [];
 export async function logInterval() {
   setInterval(async () => {
     if (logMessages.length === 0) return;
-    if (logMessages.includes("@")) {
-      logMessages.replace("@", "");
-    }
+
     if (logMessages.length > 2000) {
       await logWebhook.send({
         content: logMessages.substring(0, 2000),
@@ -55,63 +50,18 @@ export async function logInterval() {
         avatarURL: config.guild.icon,
       });
       logMessages = logMessages.substring(2000);
+
       return;
     }
+
     await logWebhook.send({
       content: logMessages,
       username: "Dominance",
       avatarURL: config.guild.icon,
     });
+
     logMessages = "";
-  }, 5 * 1000);
-}
-
-function getBedwarsStats(player: Player) {
-  const bedwars = player.stats?.bedwars;
-  const star = bedwars?.level ?? 0;
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const fk = formatNumber(bedwars?.finalKills ?? 0);
-  const fkdr = formatNumber(bedwars?.finalKDRatio ?? 0);
-  const wins = formatNumber(bedwars?.wins ?? 0);
-  const wlr = formatNumber(bedwars?.WLRatio ?? 0);
-  const ws = formatNumber(bedwars?.winstreak ?? 0);
-
-  return `/gc [${star}✫] ${rankTag}${player.nickname} FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`;
-}
-
-function getDuelsStats(player: Player) {
-  const duels = player.stats?.duels;
-  const division = duels?.division ? "" : `[${duels?.division}] `;
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const wins = formatNumber(duels?.wins ?? 0);
-  const wlr = formatNumber(duels?.WLRatio ?? 0);
-  const cws = formatNumber(duels?.winstreak ?? 0);
-  const bws = formatNumber(duels?.bestWinstreak ?? 0);
-
-  return `/gc ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`;
-}
-
-async function getSkyblockStats(player: Player) {
-  let sbMember: SkyblockMember | undefined;
-  try {
-    sbMember = (
-      await hypixel.getSkyblockProfiles(player.uuid).catch(() => null)
-    )?.find((profile) => profile.selected)?.me;
-  } catch (e) {
-    return `/gc Error: ${e}`;
-  }
-
-  if (sbMember) {
-    const { networth } = (await sbMember.getNetworth()) ?? 0;
-    const sbSkillAverage = sbMember.skills.average;
-    const sbLevel = sbMember.level;
-    const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-
-    return `/gc [${Math.floor(sbLevel)}] ${rankTag}${
-      player.nickname
-    } NW: ${abbreviateNumber(networth)} SA: ${formatNumber(sbSkillAverage)}`;
-  }
-  return `/gc Error: No profiles found for ${player.nickname}`;
+  }, 1000);
 }
 
 export default async function execute(
@@ -120,113 +70,60 @@ export default async function execute(
   rawMsg: string,
   messagePosition: string,
 ) {
-  if (messagePosition !== "chat") return;
-  if (msg.trim() === "") return;
+  if (messagePosition !== "chat" || msg.trim() === "") return;
 
   if (msg.includes("@everyone") || msg.includes("@here")) {
     logMessages += `${msg.replace("@", "")}\n`;
   } else {
     logMessages += `${msg}\n`;
   }
+
   if (messageCache.length >= 20) messageCache.shift();
   messageCache.push(msg);
 
-  if (msg.startsWith('{"server":')) {
-    // Limbo check
-    const parsedMessage = JSON.parse(msg);
-    if (parsedMessage.server !== "limbo") {
-      chat("\u00a7");
-      return;
-    }
-  } else if (msg.startsWith("Guild >")) {
-    if (msg.endsWith("joined.") && !msg.includes(":")) {
-      const [name] = msg.replace(/Guild > |:/g, "").split(" ");
-      global.playtime[name] = Math.floor(Date.now() / 1000);
-      return;
-    }
+  if (isLobbyJoinMessage(msg)) {
+    chat("\u00a7");
+  }
 
-    if (msg.endsWith("left.") && !msg.includes(":")) {
-      const [name] = msg.replace(/Guild > |:/g, "").split(" ");
-      const uuid = await nameToUuid(name);
-
-      const time = Math.floor(Date.now() / 1000) - global.playtime[name];
-      if (!Number.isNaN(time)) {
-        delete global.playtime[name];
-
-        if (uuid) {
-          await createGuildMember(uuid);
-        }
-
-        db.prepare(
-          "UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)",
-        ).run(time, uuid);
-      }
-      return;
-    }
+  if (isGuildMessage(msg)) {
+    await gcWebhook.send({
+      username: "Dominance",
+      avatarURL: config.guild.icon,
+      files: [await messageToImage(rawMsg)],
+    });
 
     const author = msg.match(/Guild\s*>\s*(?:\[[^\]]+]\s*)?(\w+)/)?.[1];
-    if (msg.includes(":") && author) {
-      // Guild message
-      await gcWebhook.send({
-        username: "Dominance",
-        avatarURL: config.guild.icon,
-        files: [await messageToImage(rawMsg)],
-      });
+    if (!author) return;
 
-      const authorUuid = await nameToUuid(author);
-      if (authorUuid) {
-        await createGuildMember(authorUuid);
-        await addXp(authorUuid);
-      }
-
-      // In-game commands
-      const command = /!(\w+)/.exec(msg)?.[1];
-      if (command) {
-        let ign = /!\w+\s+(\S+)/.exec(msg)?.[1];
-        if (!ign) {
-          ign = author;
-        }
-
-        const player = await hypixel.getPlayer(ign).catch(async (e) => {
-          chat(`/gc Error: ${e}`);
-        });
-        if (!player) return;
-
-        switch (command) {
-          case "bw":
-          case "bedwars": {
-            chat(getBedwarsStats(player));
-            break;
-          }
-          case "d":
-          case "duels": {
-            chat(getDuelsStats(player));
-            break;
-          }
-          case "sb":
-          case "skyblock": {
-            chat(await getSkyblockStats(player));
-          }
-        }
-      }
+    const authorUuid = await nameToUuid(author);
+    if (authorUuid) {
+      await createGuildMember(authorUuid);
+      await addXp(authorUuid);
     }
-  } else if (msg.startsWith("Officer >")) {
+
+    return handleMinecraftCommands(msg, author);
+  }
+
+  if (isOfficerMessage(msg)) {
+    await ocWebhook.send({
+      username: "Dominance",
+      avatarURL: config.guild.icon,
+      files: [await messageToImage(rawMsg)],
+    });
+
     const author = msg.match(/Officer\s*>\s*(?:\[[^\]]+]\s*)?(\w+)/)?.[1];
-    if (msg.includes(":") && author) {
-      // Officer message
-      await ocWebhook.send({
-        username: "Dominance",
-        avatarURL: config.guild.icon,
-        files: [await messageToImage(rawMsg)],
-      });
+    if (!author) return;
 
-      const authorUuid = await nameToUuid(author);
-      if (authorUuid) {
-        await createGuildMember(authorUuid);
-        await addXp(authorUuid);
-      }
+    const authorUuid = await nameToUuid(author);
+    if (authorUuid) {
+      await createGuildMember(authorUuid);
+      await addXp(authorUuid);
     }
-  } else if (msg.startsWith("From")) {
+
+    return;
+  }
+
+  if (isPrivateMessage(msg)) {
     const author = msg.match(/From (\[.*])? *(.+):/)?.[2];
     if (!author) return;
 
@@ -284,145 +181,68 @@ export default async function execute(
       if (channel) {
         await channel.send({
           content,
-          files: [
-            await messageToImage(
-              `§b-------------------------------------------------------------§r ${receivedMessage.motd} §b-------------------------------------------------------------`,
-            ),
-          ],
+          files: [await generateGuildAnnouncement(receivedMessage.motd, "b")],
         });
       }
     }
-  } else if (msg.includes("The Guild has reached Level")) {
-    const level = msg.split(" ")[msg.split(" ").indexOf("Level") + 1];
-    await gcWebhook.send({
-      username: "Dominance",
-      avatarURL: config.guild.icon,
-      files: [
-        await messageToImage(
-          `§6-------------------------------------------------------------§r§f§l                                                        LEVEL UP!§r                                                       §f                                §6The Guild has reached Level ${level}§6-------------------------------------------------------------`,
-        ),
-      ],
-    });
-    await textChannels.guildLogs.send({
-      files: [
-        await messageToImage(
-          `§6-------------------------------------------------------------§r§f§l                                                        LEVEL UP!§r                                                       §f                                §6The Guild has reached Level ${level}§6-------------------------------------------------------------`,
-        ),
-      ],
-    });
-    await textChannels.publicAnnouncements.send({
-      files: [
-        await messageToImage(
-          `§6-------------------------------------------------------------§r§f§l                                                        LEVEL UP!§r                                                       §f                                §6The Guild has reached Level ${level}§6-------------------------------------------------------------`,
-        ),
-      ],
-    });
-  } else if (msg.includes("Offline Members:")) {
-    let includes = 0;
-    for (let i = messageCache.length - 1; i >= 0; i--) {
-      if (
-        messageCache[i].includes("Guild Name:") ||
-        messageCache[i].includes("Total Members:") ||
-        messageCache[i].includes("Online Members:") ||
-        messageCache[i].includes("Offline Members:")
-      )
-        includes++;
-      if (includes === 4) {
-        global.guildOnline = messageCache.splice(i);
-        break;
+
+    return;
+  }
+
+  if (isLoginMessage(msg)) {
+    const [name] = msg.replace(/Guild > |:/g, "").split(" ");
+    global.playtime[name] = Math.floor(Date.now() / 1000);
+
+    return;
+  }
+
+  if (isLogoutMessage(msg)) {
+    const [name] = msg.replace(/Guild > |:/g, "").split(" ");
+    const uuid = await nameToUuid(name);
+
+    const time = Math.floor(Date.now() / 1000) - global.playtime[name];
+    if (!Number.isNaN(time)) {
+      delete global.playtime[name];
+
+      if (uuid) {
+        await createGuildMember(uuid);
       }
+
+      db.prepare(
+        "UPDATE guildMembers SET playtime = playtime + (?) WHERE uuid = (?)",
+      ).run(time, uuid);
     }
-  } else if (msg.includes("Online Members:")) {
-    global.onlineMembers = Number.parseInt(
-      msg.split("Online Members: ")[1],
-      10,
-    );
-  } else if (msg.includes("cannot say the same message")) {
-    await gcWebhook.send({
-      username: "Dominance",
-      avatarURL: config.guild.icon,
-      files: [
-        await messageToImage(
-          "§6-------------------------------------------------------------§r §cYou cannot say the same message twice!§6-------------------------------------------------------------",
-        ),
-      ],
-    });
-  } else if (msg.includes(" has muted ")) {
-    await textChannels.guildLogs.send({
-      files: [
-        await messageToImage(
-          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-        ),
-      ],
-    });
-    const uuid = await nameToUuid(
-      msg.split(" ")[msg.split(" ").indexOf("for") - 1],
-    );
-    if (!uuid) return;
-    const time = timeStringToSeconds(msg.split(" ")[msg.split(" ").length - 1]);
-    const discordId = uuidToDiscord(uuid);
-    if (!discordId) return;
-    const guild = client.guilds.cache.get("242357942664429568") as Guild;
-    const member = await guild.members.fetch(discordId);
-    await member.timeout(time, "Muted in-game");
-  } else if (msg.includes(" has unmuted ")) {
-    await textChannels.guildLogs.send({
-      files: [
-        await messageToImage(
-          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-        ),
-      ],
-    });
-    const uuid = await nameToUuid(msg.split(" ")[msg.split(" ").length - 1]);
-    if (!uuid) return;
-    const discordId = uuidToDiscord(uuid);
-    if (!discordId) return;
-    const guild = client.guilds.cache.get("242357942664429568") as Guild;
-    const member = await guild.members.fetch(discordId);
-    await member.timeout(null, "Un muted in-game");
-  } else if (
-    msg.includes("left the guild!") ||
-    msg.includes("was promoted") ||
-    msg.includes("was kicked") ||
-    msg.includes("was demoted")
+
+    return;
+  }
+
+  if (
+    isJoinMessage(msg) ||
+    isLeaveMessage(msg) ||
+    isPromotionMessage(msg) ||
+    isDemotionMessage(msg) ||
+    isKickMessage(msg) ||
+    isUserMuteMessage(msg) ||
+    isUserUnmuteMessage(msg) ||
+    isGuildMuteMessage(msg) ||
+    isGuildUnmuteMessage(msg)
   ) {
     await gcWebhook.send({
       username: "Dominance",
       avatarURL: config.guild.icon,
-      files: [
-        await messageToImage(
-          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-        ),
-      ],
-    });
-    await textChannels.guildLogs.send({
-      files: [
-        await messageToImage(
-          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-        ),
-      ],
-    });
-  } else if (msg.includes("joined the guild!")) {
-    await gcWebhook.send({
-      username: "Dominance",
-      avatarURL: config.guild.icon,
-      files: [
-        await messageToImage(
-          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-        ),
-      ],
-    });
-    await textChannels.guildLogs.send({
-      files: [
-        await messageToImage(
-          `§b-------------------------------------------------------------§r ${rawMsg} §b-------------------------------------------------------------`,
-        ),
-      ],
+      files: [await generateGuildAnnouncement(rawMsg, "b")],
     });
 
-    await handleGuildJoin(client, msg);
+    await textChannels.guildLogs.send({
+      files: [await generateGuildAnnouncement(rawMsg, "b")],
+    });
   }
-  if (msg.includes("left the guild!") || msg.includes("was kicked")) {
+
+  if (isJoinMessage(msg)) {
+    return await handleGuildJoin(client, msg);
+  }
+
+  if (isLeaveMessage(msg) || isKickMessage(msg)) {
     let name = msg.split(" ")[msg.split(" ").indexOf("left") - 1];
     if (!name) {
       name = msg.split(" ")[msg.split(" ").indexOf("was") - 1];
@@ -441,7 +261,105 @@ export default async function execute(
       }
     }
 
-    await archiveGuildMember(member, uuid);
+    return await archiveGuildMember(member, uuid);
+  }
+
+  if (isGuildLevelUpMessage(msg)) {
+    const level = msg.split(" ")[msg.split(" ").indexOf("Level") + 1];
+    const image = await generateGuildAnnouncement(
+      `§f§l                                                        LEVEL UP!§r                                                       §f                                §6The Guild has reached Level ${level}`,
+      "6",
+    );
+
+    await gcWebhook.send({
+      username: "Dominance",
+      avatarURL: config.guild.icon,
+      files: [image],
+    });
+    await textChannels.guildLogs.send({
+      files: [image],
+    });
+    await textChannels.publicAnnouncements.send({
+      files: [image],
+    });
+
+    return;
+  }
+
+  if (isUserMuteMessage(msg)) {
+    const uuid = await nameToUuid(
+      msg.split(" ")[msg.split(" ").indexOf("for") - 1],
+    );
+    if (!uuid) return;
+
+    const time = timeStringToSeconds(msg.split(" ")[msg.split(" ").length - 1]);
+
+    const discordId = uuidToDiscord(uuid);
+    if (!discordId) return;
+
+    const guild = client.guilds.cache.get("242357942664429568") as Guild;
+    const member = await guild.members.fetch(discordId);
+
+    return await member.timeout(time, "Muted in-game");
+  }
+
+  if (isUserUnmuteMessage(msg)) {
+    const uuid = await nameToUuid(msg.split(" ")[msg.split(" ").length - 1]);
+    if (!uuid) return;
+
+    const discordId = uuidToDiscord(uuid);
+    if (!discordId) return;
+
+    const guild = client.guilds.cache.get("242357942664429568") as Guild;
+    const member = await guild.members.fetch(discordId);
+
+    return await member.timeout(null, "Un muted in-game");
+  }
+
+  if (isGuildOnlineMessage(msg)) {
+    global.onlineMembers = Number.parseInt(
+      msg.split("Online Members: ")[1],
+      10,
+    );
+
+    return;
+  }
+
+  if (isGuildOfflineMessage(msg)) {
+    let includes = 0;
+
+    for (let i = messageCache.length - 1; i >= 0; i--) {
+      if (
+        messageCache[i].includes("Guild Name:") ||
+        messageCache[i].includes("Total Members:") ||
+        messageCache[i].includes("Online Members:") ||
+        messageCache[i].includes("Offline Members:")
+      ) {
+        includes++;
+      }
+
+      if (includes === 4) {
+        global.guildOnline = messageCache.splice(i);
+        break;
+      }
+    }
+
+    return;
+  }
+
+  if (isRepeatMessage(msg)) {
+    await gcWebhook.send({
+      username: "Dominance",
+      avatarURL: config.guild.icon,
+      files: [
+        await generateGuildAnnouncement(
+          "§cYou cannot say the same message twice!",
+          "6",
+        ),
+      ],
+    });
+
+    return;
   }
 }
 
@@ -574,4 +492,109 @@ async function handleDiscordMember(
     discordMessage = buildGuildMessage(name, guildMember, funFact);
     await textChannels.guildChat.send(discordMessage);
   }
+}
+
+async function generateGuildAnnouncement(message: string, color: string) {
+  return await messageToImage(
+    `§${color}-------------------------------------------------------------§r${message}§${color}-------------------------------------------------------------`,
+  );
+}
+
+function isLobbyJoinMessage(message: string) {
+  return (
+    (message.endsWith(" the lobby!") || message.endsWith(" the lobby! <<<")) &&
+    message.includes("[MVP+")
+  );
+}
+
+function isGuildMessage(message: string) {
+  return message.startsWith("Guild >") && message.includes(":");
+}
+
+function isOfficerMessage(message: string) {
+  return message.startsWith("Officer >") && message.includes(":");
+}
+
+function isPrivateMessage(message: string) {
+  return message.startsWith("From") && message.includes(":");
+}
+
+function isLoginMessage(message: string) {
+  return (
+    message.startsWith("Guild >") &&
+    message.endsWith("joined.") &&
+    !message.includes(":")
+  );
+}
+
+function isLogoutMessage(message: string) {
+  return (
+    message.startsWith("Guild >") &&
+    message.endsWith("left.") &&
+    !message.includes(":")
+  );
+}
+
+function isJoinMessage(message: string) {
+  return message.includes("joined the guild!") && !message.includes(":");
+}
+
+function isLeaveMessage(message: string) {
+  return message.includes("left the guild!") && !message.includes(":");
+}
+
+function isKickMessage(message: string) {
+  return (
+    message.includes("was kicked from the guild by") && !message.includes(":")
+  );
+}
+
+function isGuildLevelUpMessage(message: string) {
+  return (
+    message.includes("The guild has reached Level") && !message.includes(":")
+  );
+}
+
+function isPromotionMessage(message: string) {
+  return message.includes("was promoted from") && !message.includes(":");
+}
+
+function isDemotionMessage(message: string) {
+  return message.includes("was demoted from") && !message.includes(":");
+}
+
+function isUserMuteMessage(message: string) {
+  return (
+    message.includes("has muted") &&
+    message.includes("for") &&
+    !message.includes(":")
+  );
+}
+
+function isUserUnmuteMessage(message: string) {
+  return message.includes("has unmuted") && !message.includes(":");
+}
+
+function isGuildMuteMessage(message: string) {
+  return (
+    message.includes("has muted the guild chat for") && !message.includes(":")
+  );
+}
+
+function isGuildUnmuteMessage(message: string) {
+  return (
+    message.includes("has unmuted the guild chat!") && !message.includes(":")
+  );
+}
+
+function isGuildOnlineMessage(message: string) {
+  return message.includes("Online Members: ");
+}
+
+function isGuildOfflineMessage(message: string) {
+  return message.includes("Offline Members: ");
+}
+
+function isRepeatMessage(message: string) {
+  return message === "You cannot say the same message twice!";
 }

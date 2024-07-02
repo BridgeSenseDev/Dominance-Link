@@ -13,15 +13,8 @@ export default async function execute() {
     console.log(`[MINECRAFT] Logged in as ${config.minecraft.ign}`);
     emittedEvent = true;
 
-    // LIMBO CHECK
-    setTimeout(async () => {
-      chat("/locraw");
-    }, 3000);
     setTimeout(async () => {
       chat("/g online");
     }, 10000);
-    setInterval(async () => {
-      chat("/locraw");
-    }, 1000 * 60);
   }
 }

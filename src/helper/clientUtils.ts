@@ -151,7 +151,7 @@ export function removeSectionSymbols(message: string) {
 }
 
 export function formatNumber(number: number) {
-  if (number === null || isNaN(number)) {
+  if (number === null || Number.isNaN(number)) {
     return 0;
   }
 
