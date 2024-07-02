@@ -1,6 +1,8 @@
 import { EmbedBuilder } from "discord.js";
 import config from "../config.json" with { type: "json" };
 import { textChannels, worker } from "../events/discord/ready.js";
+import { sleep } from "../helper/clientUtils.ts";
+import { generateID } from "../helper/utils.ts";
 import { hypixel } from "../index.js";
 
 interface MessageObject {
@@ -27,8 +29,49 @@ export async function startBot() {
   });
 }
 
-export function chat(message: string) {
+export function chat(message: string, n = 0) {
+  const attemptCount = n;
+
+  const listener = async (msg: MessageObject) => {
+    if (
+      msg.string.includes(
+        "You are sending commands too fast! Please slow down.",
+      )
+    ) {
+      worker.removeListener("message", listener);
+      const newAttemptCount = attemptCount + 1;
+
+      if (newAttemptCount >= 5) {
+        return chat(
+          "/gc Command failed to send message after 5 attempts. Please try again later.",
+        );
+      }
+
+      await sleep(250);
+      return chat(message, newAttemptCount);
+    }
+
+    if (msg.string.includes("You cannot say the same message twice!")) {
+      worker.removeListener("message", listener);
+      const newAttemptCount = attemptCount + 1;
+
+      if (newAttemptCount >= 5) {
+        return chat(
+          "/gc Command failed to send message after 5 attempts. Please try again later.",
+        );
+      }
+
+      await sleep(250);
+      return chat(`${message} - ${generateID(24)}`, newAttemptCount);
+    }
+  };
+
+  worker.once("message", listener);
   worker.postMessage({ type: "send", content: message });
+
+  setTimeout(() => {
+    worker.removeListener("message", listener);
+  }, 500);
 }
 
 export function quit() {
