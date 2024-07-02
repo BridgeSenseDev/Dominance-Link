@@ -185,7 +185,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
       achievementPoints: player.achievementPoints ?? 0,
       networkLevel: player.level ?? 0,
       sbLevel: sbLevel ?? 0,
-      quests: (player.achievements.generalQuestMaster as number) ?? 0,
+      quests: (player.achievements["generalQuestMaster"] as number) ?? 0,
     };
 
     db.query(
@@ -352,7 +352,7 @@ export function fetchGexpForMember(uuid: string): GexpResult {
   const lifetimeGexp = db
     .prepare(
       `SELECT ${tableInfo
-        .map((column) => column.name)
+        .map((column) => column["name"])
         .filter((name) => name !== "uuid")
         .map((name) => `IFNULL(SUM("${name}"), 0)`)
         .join(" + ")} FROM gexpHistory WHERE uuid =?`,

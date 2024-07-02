@@ -3,6 +3,11 @@ import { promisify } from "node:util";
 import { google } from "googleapis";
 import config from "../config.json" with { type: "json" };
 import type { NumberObject, StringObject } from "../types/global";
+import type {
+  ICommentsAnalyzeRequest,
+  ICommentsAnalyzeResponse,
+  ICommentsApi,
+} from "../types/perspective.ts";
 import { formatDateForDb, updateTable } from "./clientUtils.js";
 
 const db = new Database("guild.db");
@@ -45,7 +50,7 @@ export function ensureDayExists(day: Date) {
     .prepare("PRAGMA table_info(gexpHistory)")
     .all() as StringObject[];
   const columnExists = tableInfo.some(
-    (column) => column.name === formatDateForDb(day),
+    (column) => column["name"] === formatDateForDb(day),
   );
 
   if (!columnExists) {
@@ -74,7 +79,7 @@ export async function getProfanityScores(message: string) {
       await google.discoverAPI(
         "https://commentanalyzer.googleapis.com/$discovery/rest?version=v1alpha1",
       )
-    ).comments as ICommentsApi;
+    )["comments"] as ICommentsApi;
 
   const analyzeRequest: ICommentsAnalyzeRequest = {
     comment: {

@@ -39,7 +39,7 @@ export async function unverifiedUpdate() {
       .setColor(config.colors.discordGray)
       .setTitle("Unlinked Members")
       .setDescription(escapeMarkdown(description));
-    await messages.unverified.edit({ content: "", embeds: [embed] });
+    await messages["unverified"].edit({ content: "", embeds: [embed] });
   }, 60 * 1000);
 }
 
@@ -65,7 +65,7 @@ export async function reqsUpdate() {
       .setColor(config.colors.discordGray)
       .setTitle("Guild Requirements")
       .setDescription(escapeMarkdown(description));
-    await messages.requirements.edit({ content: "", embeds: [embed] });
+    await messages["requirements"].edit({ content: "", embeds: [embed] });
   }, 60 * 1000);
 }
 
@@ -102,6 +102,6 @@ export async function breakUpdate() {
         .setStyle(ButtonStyle.Success)
         .setEmoji(config.emojis.moon),
     );
-    await messages.break.edit({ embeds: [embed], components: [row] });
+    await messages["break"].edit({ embeds: [embed], components: [row] });
   }, 60 * 1000);
 }

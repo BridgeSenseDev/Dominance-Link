@@ -70,9 +70,9 @@ function fetchData(order: keyof HypixelGuildMember): HypixelGuildMember[] {
       .all() as HypixelGuildMember[];
     for (const member of data) {
       const gexpHistory = fetchGexpForMember(member.uuid);
-      member.lifetimeGexp = gexpHistory.lifetimeGexp;
+      member["lifetimeGexp"] = gexpHistory.lifetimeGexp;
     }
-    data.sort((a, b) => a.lifetimeGexp - b.lifetimeGexp);
+    data.sort((a, b) => a["lifetimeGexp"] - b["lifetimeGexp"]);
     return data;
   }
 
@@ -82,9 +82,9 @@ function fetchData(order: keyof HypixelGuildMember): HypixelGuildMember[] {
       .all() as HypixelGuildMember[];
     for (const member of data) {
       const gexpHistory = fetchGexpForMember(member.uuid);
-      member.dailyGexp = gexpHistory.dailyGexp;
+      member["dailyGexp"] = gexpHistory.dailyGexp;
     }
-    data.sort((a, b) => a.dailyGexp - b.dailyGexp);
+    data.sort((a, b) => a["dailyGexp"] - b["dailyGexp"]);
     return data;
   }
   if (order === "daysInGuild") {
@@ -92,9 +92,9 @@ function fetchData(order: keyof HypixelGuildMember): HypixelGuildMember[] {
       .prepare("SELECT * FROM guildMembers")
       .all() as HypixelGuildMember[];
     for (const member of data) {
-      member.daysInGuild = getDaysInGuild(member.joined, member.baseDays);
+      member["daysInGuild"] = getDaysInGuild(member.joined, member.baseDays);
     }
-    data.sort((a, b) => a.daysInGuild - b.daysInGuild);
+    data.sort((a, b) => a["daysInGuild"] - b["daysInGuild"]);
     return data;
   }
 
@@ -209,23 +209,23 @@ async function generateLeaderboard(
 
 export default async function leaderboards() {
   const leaderboardChannels = [
-    { channel: textChannels.daysInGuild, name: "daysInGuild" },
-    { channel: textChannels.weeklyGexp, name: "weeklyGexp" },
-    { channel: textChannels.dailyGexp, name: "dailyGexp" },
-    { channel: textChannels.playtime, name: "playtime" },
-    { channel: textChannels.guildMessages, name: "messages" },
-    { channel: textChannels.bwStars, name: "bwStars" },
-    { channel: textChannels.bwFkdr, name: "bwFkdr" },
-    { channel: textChannels.duelsWins, name: "duelsWins" },
-    { channel: textChannels.duelsWlr, name: "duelsWlr" },
-    { channel: textChannels.networth, name: "networth" },
-    { channel: textChannels.skillAverage, name: "skillAverage" },
-    { channel: textChannels.lifetimeGexp, name: "lifetimeGexp" },
-    { channel: textChannels.achievementPoints, name: "achievementPoints" },
-    { channel: textChannels.networkLevel, name: "networkLevel" },
-    { channel: textChannels.swLevel, name: "swLevel" },
-    { channel: textChannels.sbLevel, name: "sbLevel" },
-    { channel: textChannels.quests, name: "quests" },
+    { channel: textChannels["daysInGuild"], name: "daysInGuild" },
+    { channel: textChannels["weeklyGexp"], name: "weeklyGexp" },
+    { channel: textChannels["dailyGexp"], name: "dailyGexp" },
+    { channel: textChannels["playtime"], name: "playtime" },
+    { channel: textChannels["guildMessages"], name: "messages" },
+    { channel: textChannels["bwStars"], name: "bwStars" },
+    { channel: textChannels["bwFkdr"], name: "bwFkdr" },
+    { channel: textChannels["duelsWins"], name: "duelsWins" },
+    { channel: textChannels["duelsWlr"], name: "duelsWlr" },
+    { channel: textChannels["networth"], name: "networth" },
+    { channel: textChannels["skillAverage"], name: "skillAverage" },
+    { channel: textChannels["lifetimeGexp"], name: "lifetimeGexp" },
+    { channel: textChannels["achievementPoints"], name: "achievementPoints" },
+    { channel: textChannels["networkLevel"], name: "networkLevel" },
+    { channel: textChannels["swLevel"], name: "swLevel" },
+    { channel: textChannels["sbLevel"], name: "sbLevel" },
+    { channel: textChannels["quests"], name: "quests" },
   ];
 
   setInterval(

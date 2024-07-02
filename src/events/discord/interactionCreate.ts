@@ -325,7 +325,7 @@ export default async function execute(
                 inline: true,
               },
             );
-          await textChannels.applicationLogs.send({
+          await textChannels["applicationLogs"].send({
             embeds: [applicationEmbed],
           });
           await interaction.deleteReply();
@@ -421,7 +421,7 @@ export default async function execute(
                 inline: true,
               },
             );
-          await textChannels.applicationLogs.send({
+          await textChannels["applicationLogs"].send({
             embeds: [applicationEmbed],
           });
           await interaction.deleteReply();
@@ -600,7 +600,7 @@ export default async function execute(
       }
 
       try {
-        await textChannels.minecraftLink.permissionOverwrites.delete(
+        await textChannels["minecraftLink"].permissionOverwrites.delete(
           timeoutMember,
         );
       } catch (e) {
@@ -608,7 +608,7 @@ export default async function execute(
       }
 
       try {
-        await textChannels.officerChat.permissionOverwrites.delete(
+        await textChannels["officerChat"].permissionOverwrites.delete(
           timeoutMember,
         );
       } catch (e) {
@@ -627,7 +627,7 @@ export default async function execute(
       embed = new EmbedBuilder()
         .setColor(config.colors.red)
         .setTitle(
-          `AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`,
+          `AutoMod has blocked a message in <#${textChannels["minecraftLink"].id}>`,
         )
         .setDescription(
           `**<@${timeoutMember.id}> timeout has been removed by ${
@@ -938,7 +938,7 @@ export default async function execute(
             .setLabel("Deny")
             .setEmoji(config.emojis.aCross),
         );
-      await textChannels.applications.send({
+      await textChannels["applications"].send({
         components: [row],
         embeds: [applicationEmbed],
       });
@@ -1054,7 +1054,7 @@ export default async function execute(
         interaction.guild?.roles.cache.get(config.roles.break) as Role,
       );
 
-      await textChannels.break.send({ embeds: [embed] });
+      await textChannels["break"].send({ embeds: [embed] });
     }
   }
 }

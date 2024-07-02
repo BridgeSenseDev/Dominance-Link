@@ -150,12 +150,13 @@ export function removeSectionSymbols(message: string) {
   return modifiedMessage;
 }
 
-export function formatNumber(number: number) {
-  if (number === null || Number.isNaN(number)) {
-    return 0;
+export function formatNumber(inputNumber: number): string {
+  if (inputNumber === null || Number.isNaN(Number(inputNumber))) {
+    return "0";
   }
 
   let formattedNumber: string;
+  const number = Number(inputNumber);
 
   if (number % 1 !== 0) {
     const roundedNumber = Number.parseFloat(number.toPrecision(3));
@@ -369,7 +370,7 @@ export function updateTable(startDate: string, endDate: string) {
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
   for (const column of columns) {
-    const date = column.name;
+    const date = column["name"];
     if (date === "uuid") continue;
     if (!dateRegex.test(date)) {
       db.exec(`ALTER TABLE gexpHistory DROP COLUMN ${date}`);
@@ -382,7 +383,7 @@ export function updateTable(startDate: string, endDate: string) {
     currentDate.setDate(currentDate.getDate() + 1)
   ) {
     const date = `"${currentDate.toISOString().split("T")[0]}"`;
-    if (!columns.some((column) => `"${column.name}"` === date)) {
+    if (!columns.some((column) => `"${column["name"]}"` === date)) {
       db.exec(`ALTER TABLE gexpHistory ADD COLUMN ${date} INTEGER`);
       db.exec(`ALTER TABLE gexpHistoryArchives ADD COLUMN ${date} INTEGER`);
     }

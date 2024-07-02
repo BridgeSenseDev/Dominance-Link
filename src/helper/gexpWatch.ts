@@ -104,7 +104,7 @@ export default async function gexpWatch() {
       // Dominance
       ensureDataForDate(previous, "dominance");
       let gained =
-        guildGexp.dominance -
+        guildGexp["dominance"] -
         (
           db
             .prepare("SELECT gexp FROM dominanceWatch WHERE date = ?")
@@ -112,7 +112,7 @@ export default async function gexpWatch() {
         ).gexp;
       db.prepare(
         "INSERT OR IGNORE INTO dominanceWatch (date, gexp, gained) VALUES (?, ?, ?)",
-      ).run(today, guildGexp.dominance, gained);
+      ).run(today, guildGexp["dominance"], gained);
 
       for (const guildName in guildGexp) {
         if (guildName === "dominance") {
@@ -140,7 +140,7 @@ export default async function gexpWatch() {
             .get(prevMonth) as GuildWatch
         ).separation;
 
-        const difference = guildGexp.dominance - guildGexp[guildName];
+        const difference = guildGexp["dominance"] - guildGexp[guildName];
         gained = difference - daily;
         db.prepare(
           `INSERT OR IGNORE INTO ${guildName}Watch (date, gexp, separation, gained) VALUES (?, ?, ?, ?)`,
@@ -180,7 +180,7 @@ export default async function gexpWatch() {
             .setThumbnail(guildThumbnails[guildName]),
         );
       }
-      await textChannels.guildWatch.send({ embeds });
+      await textChannels["guildWatch"].send({ embeds });
     },
     {
       timezone: "Asia/Hong_Kong",

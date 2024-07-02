@@ -33,11 +33,11 @@ export default async function execute(client: Client, message: Message) {
     await message.react(":dominance:1060579574347472946");
   }
 
-  if (channel.id === textChannels.chatLogs.id) {
+  if (channel.id === textChannels["chatLogs"].id) {
     chat(message.content);
   }
 
-  if (channel.id === textChannels.counting.id) {
+  if (channel.id === textChannels["counting"].id) {
     const expression = content.split(" ")[0];
     try {
       const count = new Mex().eval(expression, [], {});
@@ -64,9 +64,10 @@ export default async function execute(client: Client, message: Message) {
   }
 
   if (
-    ![textChannels.minecraftLink.id, textChannels.officerChat.id].includes(
-      channel.id,
-    )
+    ![
+      textChannels["minecraftLink"].id,
+      textChannels["officerChat"].id,
+    ].includes(channel.id)
   )
     return;
 
@@ -124,10 +125,10 @@ export default async function execute(client: Client, message: Message) {
     let embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle(
-        `AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`,
+        `AutoMod has blocked a message in <#${textChannels["minecraftLink"].id}>`,
       )
       .setDescription(
-        `<@${author.id}> has been muted from <#${textChannels.minecraftLink.id}>.\nThis mute will be reviewed by staff ASAP.`,
+        `<@${author.id}> has been muted from <#${textChannels["minecraftLink"].id}>.\nThis mute will be reviewed by staff ASAP.`,
       );
 
     await message.reply({ embeds: [embed] });
@@ -135,10 +136,10 @@ export default async function execute(client: Client, message: Message) {
     embed = new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle(
-        `AutoMod has blocked a message in <#${textChannels.minecraftLink.id}>`,
+        `AutoMod has blocked a message in <#${textChannels["minecraftLink"].id}>`,
       )
       .setDescription(
-        `**<@${author.id}> has been muted from <#${textChannels.minecraftLink.id}>.**\n**Message: **${content}`,
+        `**<@${author.id}> has been muted from <#${textChannels["minecraftLink"].id}>.**\n**Message: **${content}`,
       );
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
@@ -148,7 +149,7 @@ export default async function execute(client: Client, message: Message) {
         .setEmoji(config.emojis.clock),
     );
 
-    await textChannels.automod.send({ embeds: [embed], components: [row] });
+    await textChannels["automod"].send({ embeds: [embed], components: [row] });
     return;
   }
 
@@ -157,9 +158,9 @@ export default async function execute(client: Client, message: Message) {
     return;
   }
 
-  if (channel.id === textChannels.minecraftLink.id) {
+  if (channel.id === textChannels["minecraftLink"].id) {
     chat(`/gc ${name} ${tag}: ${messageContent}`);
-  } else if (channel.id === textChannels.officerChat.id) {
+  } else if (channel.id === textChannels["officerChat"].id) {
     chat(`/oc ${name} ${tag}: ${messageContent}`);
   }
 

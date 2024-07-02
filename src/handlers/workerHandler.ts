@@ -93,7 +93,7 @@ export function autoRejoin() {
           name: `${config.emojis.clock} Time`,
           value: `<t:${Math.floor(Date.now() / 1000)}:R>`,
         });
-      await textChannels.botStatus.send({ embeds: [embed] });
+      await textChannels["botStatus"].send({ embeds: [embed] });
       try {
         quit();
       } catch (err) {

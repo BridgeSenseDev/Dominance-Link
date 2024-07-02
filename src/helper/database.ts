@@ -167,7 +167,7 @@ export async function weekly() {
         )
         .setImage(config.guild.banner);
 
-      await textChannels.announcements.send({
+      await textChannels["announcements"].send({
         content: "<@&1031926129822539786>",
         embeds: [embed],
       });
@@ -547,7 +547,7 @@ export async function players() {
 
     const swLevel = player.stats?.skywars?.level ?? 0;
     const { achievementPoints, level } = player;
-    const quests = player.achievements.generalQuestMaster;
+    const quests = player.achievements["generalQuestMaster"];
 
     db.prepare(
       "UPDATE guildMembers SET (nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?",

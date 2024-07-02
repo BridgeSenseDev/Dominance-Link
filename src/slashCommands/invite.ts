@@ -1,4 +1,3 @@
-import Database from "bun:sqlite";
 import {
   type ChatInputCommandInteraction,
   EmbedBuilder,
@@ -15,8 +14,6 @@ import {
   nameToUuid,
 } from "../helper/clientUtils.js";
 import messageToImage from "../helper/messageToImage.js";
-
-const db = new Database("guild.db");
 
 export const data = new SlashCommandBuilder()
   .setName("invite")

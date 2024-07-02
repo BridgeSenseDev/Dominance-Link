@@ -233,7 +233,7 @@ export default async function execute(
       files: [await generateGuildAnnouncement(rawMsg, "b")],
     });
 
-    await textChannels.guildLogs.send({
+    await textChannels["guildLogs"].send({
       files: [await generateGuildAnnouncement(rawMsg, "b")],
     });
   }
@@ -255,7 +255,7 @@ export default async function execute(
     const discordId = uuidToDiscord(uuid);
     if (discordId) {
       try {
-        member = await textChannels.guildChat.guild.members.fetch(discordId);
+        member = await textChannels["guildChat"].guild.members.fetch(discordId);
       } catch (e) {
         /* empty */
       }
@@ -276,10 +276,10 @@ export default async function execute(
       avatarURL: config.guild.icon,
       files: [image],
     });
-    await textChannels.guildLogs.send({
+    await textChannels["guildLogs"].send({
       files: [image],
     });
-    await textChannels.publicAnnouncements.send({
+    await textChannels["publicAnnouncements"].send({
       files: [image],
     });
 
@@ -414,7 +414,7 @@ async function handleBreak(
     const breakData = db
       .prepare("SELECT * FROM breaks WHERE uuid = ?")
       .get(uuid) as BreakMember;
-    const member = await textChannels.guildChat.guild.members.fetch(
+    const member = await textChannels["guildChat"].guild.members.fetch(
       breakData.discord,
     );
     const thread = client.channels.cache.get(breakData.thread) as ThreadChannel;
@@ -440,7 +440,7 @@ async function handleBreak(
       uuid,
     );
     chat(`/gc Welcome back from your break, ${name}! ${funFact}`);
-    await textChannels.guildChat.send(
+    await textChannels["guildChat"].send(
       `${config.emojis.aWave} Welcome back from your break, <@${breakData.discord}>! ${funFact}`,
     );
     return;
@@ -484,13 +484,14 @@ async function handleDiscordMember(
       uuid,
     );
     discordMessage = buildGuildMessage(`<@${discordId}>`, guildMember, funFact);
-    await textChannels.guildChat.send(discordMessage);
+    await textChannels["guildChat"].send(discordMessage);
 
-    const member = await textChannels.guildChat.guild.members.fetch(discordId);
+    const member =
+      await textChannels["guildChat"].guild.members.fetch(discordId);
     await member.roles.add(config.roles.slayer);
   } else {
     discordMessage = buildGuildMessage(name, guildMember, funFact);
-    await textChannels.guildChat.send(discordMessage);
+    await textChannels["guildChat"].send(discordMessage);
   }
 }
 

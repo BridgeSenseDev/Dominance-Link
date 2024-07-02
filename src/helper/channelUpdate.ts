@@ -21,19 +21,19 @@ async function channelUpdate(client: Client) {
       });
 
       // Total members
-      await voiceChannels.members.setName(
-        `🧑│All members: ${voiceChannels.members.guild.memberCount}`,
+      await voiceChannels["members"].setName(
+        `🧑│All members: ${voiceChannels["members"].guild.memberCount}`,
       );
 
       // Guild level
       const guild = await hypixel.getGuild("name", "Dominance", {});
       if (guild) {
-        await voiceChannels.level.setName(`📈│Guild Level: ${guild.level}`);
+        await voiceChannels["level"].setName(`📈│Guild Level: ${guild.level}`);
       }
 
       // Online members
       await sleep(10000);
-      await voiceChannels.online.setName(
+      await voiceChannels["online"].setName(
         `🎮│Online Members: ${global.onlineMembers}`,
       );
     },

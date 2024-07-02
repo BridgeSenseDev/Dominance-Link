@@ -1,7 +1,7 @@
 /**
  * Note: this interface does not include all data returned
  */
-interface ICommentsAnalyzeResponse {
+export interface ICommentsAnalyzeResponse {
   data: {
     attributeScores: {
       TOXICITY: {
@@ -44,7 +44,7 @@ interface ICommentsAnalyzeResponse {
 /**
  * Note: This interface does not include all possible parameters
  */
-interface ICommentsAnalyzeRequest {
+export interface ICommentsAnalyzeRequest {
   comment: {
     text: string;
   };
@@ -64,7 +64,7 @@ interface ICommentsAnalyzeArgs {
   resource: ICommentsAnalyzeRequest;
 }
 
-interface ICommentsApi {
+export interface ICommentsApi {
   analyze: (
     arg1: ICommentsAnalyzeArgs,
     callback: (err: unknown, result: ICommentsAnalyzeResponse) => void,
