@@ -182,6 +182,28 @@ export function doubleDigits(number: number) {
   return number;
 }
 
+async function checkLevelUp(
+  identifier: string,
+  isUUID: boolean,
+  key: string,
+  xp: number,
+  channel: Channel | undefined = undefined,
+) {
+  const member = db
+    .prepare(`SELECT * FROM members WHERE ${key} = ?`)
+    .get(identifier) as Member | null;
+  if (member && getLevelDetails(member.xp).xpTillNextLevel < xp) {
+    const msg = isUUID
+      ? `/gc ${await uuidToName(member.uuid)} has reached level ${getLevelDetails(member.xp).currentLevel + 1}. GG!`
+      : `<@${member.discord}> has reached level **${getLevelDetails(member.xp).currentLevel + 1}**. GG!`;
+    if (isUUID) {
+      chat(msg);
+    } else if (channel?.isTextBased()) {
+      await channel.send(msg);
+    }
+  }
+}
+
 export async function addXp(
   identifier: string,
   channel: Channel | undefined = undefined,
@@ -189,54 +211,18 @@ export async function addXp(
   const isUUID = isValidUUID(identifier);
   const key = isUUID ? "uuid" : "discord";
   const xp = Math.floor(Math.random() * 11 + 15);
-  const member = db
-    .prepare(`SELECT * FROM members WHERE ${key} = ?`)
-    .get(identifier) as Member | null;
 
-  if (member) {
-    const levelDetails = getLevelDetails(member.xp);
-    if (levelDetails.xpTillNextLevel < xp) {
-      if (isUUID) {
-        chat(
-          `/gc ${await uuidToName(member.uuid)} has reached level ${
-            levelDetails.currentLevel + 1
-          }. GG!`,
-        );
-      } else if (channel?.isTextBased()) {
-        await channel.send(
-          `<@${member.discord}> has reached level **${
-            levelDetails.currentLevel + 1
-          }**. GG!`,
-        );
-      }
-    }
-  }
+  db.prepare(`UPDATE members SET xp = xp + ? WHERE ${key} = ?`).run(
+    xp,
+    identifier,
+  );
+  global.lastMessage[identifier] = Math.floor(Date.now() / 1000).toString();
 
-  if (identifier in global.lastMessage) {
-    if (Date.now() / 1000 - Number(global.lastMessage[identifier]) >= 60) {
-      db.prepare(`UPDATE members SET xp = xp + ? WHERE ${key} = ?`).run(
-        xp,
-        identifier,
-      );
-      global.lastMessage[identifier] = Math.floor(Date.now() / 1000).toString();
-    }
-  } else {
-    db.prepare(`UPDATE members SET xp = xp + ? WHERE ${key} = ?`).run(
-      xp,
-      identifier,
-    );
-    global.lastMessage[identifier] = Math.floor(Date.now() / 1000).toString();
-  }
+  await checkLevelUp(identifier, isUUID, key, xp, channel);
 
-  if (isUUID) {
-    db.prepare(
-      "UPDATE guildMembers SET messages = messages + 1 WHERE uuid = (?)",
-    ).run(identifier);
-  } else {
-    db.prepare(
-      "UPDATE members SET (messages) = messages + 1 WHERE discord = (?)",
-    ).run(identifier);
-  }
+  db.prepare(
+    `UPDATE ${isUUID ? "guildMembers" : "members"} SET messages = messages + 1 WHERE ${key} = ?`,
+  ).run(identifier);
 }
 
 export function timeStringToSeconds(time: string) {
