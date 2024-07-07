@@ -41,7 +41,7 @@ export function chat(message: string, n = 0) {
       worker.removeListener("message", listener);
       const newAttemptCount = attemptCount + 1;
 
-      if (newAttemptCount >= 5) {
+      if (newAttemptCount >= 2) {
         return chat(
           "/gc Command failed to send message after 5 attempts. Please try again later.",
         );
@@ -55,7 +55,7 @@ export function chat(message: string, n = 0) {
       worker.removeListener("message", listener);
       const newAttemptCount = attemptCount + 1;
 
-      if (newAttemptCount >= 5) {
+      if (newAttemptCount >= 2) {
         return chat(
           "/gc Command failed to send message after 5 attempts. Please try again later.",
         );
@@ -71,7 +71,7 @@ export function chat(message: string, n = 0) {
 
   setTimeout(() => {
     worker.removeListener("message", listener);
-  }, 500);
+  }, 5000);
 }
 
 export function quit() {
