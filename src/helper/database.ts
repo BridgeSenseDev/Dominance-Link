@@ -56,40 +56,64 @@ function getHighestDaysRole(days: number) {
   );
 }
 
-async function removeHigherRoles(
+async function setDiscordNicknames(member: GuildMember, ign: string) {
+  const { displayName } = member;
+
+  if (!displayName.toUpperCase().includes(ign.toUpperCase())) {
+    if (/\(.*?\)/.test(displayName.split(" ")[1])) {
+      await member.setNickname(
+        displayName.replace(displayName.split(" ")[0], ign),
+      );
+    } else {
+      await member.setNickname(ign);
+    }
+  } else if (!displayName.includes(ign)) {
+    await member.setNickname(displayName.replace(new RegExp(ign, "gi"), ign));
+  }
+}
+
+async function assignMemberRoles(
   member: GuildMember,
   currentRole: string,
   roles: { [key: string]: Role },
 ) {
-  const currentRoleIndex = roleOrder.indexOf(currentRole);
-  for (let i = currentRoleIndex + 1; i < roleOrder.length; i++) {
-    const roleKey = roleOrder[i];
-    if (member.roles.cache.has(roles[roleKey].id)) {
-      await member.roles.remove(roles[roleKey]);
-    }
-  }
-
-  // Remove elite role from hero members
-  if (member.roles.cache.has(config.roles.hero)) {
-    if (member.roles.cache.has(config.roles.elite)) {
-      await member.roles.remove(config.roles.elite);
-    }
-  }
-
-  // Remove member roles from staff
-  if (
-    member.roles.cache.has(config.roles.eventStaff) ||
-    member.roles.cache.has(config.roles.recruitmentStaff)
-  ) {
-    for (let i = currentRoleIndex + 1; i < roleOrder.length; i++) {
-      const roleKey = roleOrder[i];
-      if (
-        member.roles.cache.has(roles[roleKey].id) &&
-        roles[roleKey].name !== "slayer" &&
-        roleKey !== currentRole
-      ) {
-        await member.roles.remove(roles[roleKey]);
+  for (const role of roleOrder) {
+    if (role === currentRole) {
+      if (!member.roles.cache.has(roles[role].id)) {
+        await member.roles.add(roles[role].id);
       }
+    } else if (member.roles.cache.has(roles[role].id)) {
+      await member.roles.remove(roles[role].id);
+    }
+  }
+}
+
+async function assignDaysRoles(member: GuildMember, daysInGuild: number) {
+  const dayRoles = Object.keys(config.roles.days).map(Number);
+  let highestRole = 0;
+
+  for (const day of dayRoles) {
+    if (daysInGuild >= day) {
+      highestRole = day;
+    }
+  }
+
+  if (highestRole) {
+    await member.roles.add(
+      (config.roles.days as { [key: string]: string })[highestRole.toString()],
+    );
+  }
+
+  for (const day of dayRoles) {
+    if (
+      day !== highestRole &&
+      member.roles.cache.has(
+        (config.roles.days as { [key: string]: string })[day.toString()],
+      )
+    ) {
+      await member.roles.remove(
+        (config.roles.days as { [key: string]: string })[day.toString()],
+      );
     }
   }
 }
@@ -444,105 +468,24 @@ export async function players() {
       }
 
       if (!["[Owner]", "[GUILDMASTER]"].includes(data.tag)) {
-        // Set member discord nicknames
-        const ign = player.nickname;
-        const { displayName } = member;
-        if (!displayName.toUpperCase().includes(ign.toUpperCase())) {
-          if (/\(.*?\)/.test(displayName.split(" ")[1])) {
-            await member.setNickname(
-              displayName.replace(displayName.split(" ")[0], ign),
-            );
-          } else {
-            await member.setNickname(ign);
-          }
-        } else if (!displayName.includes(ign)) {
-          await member.setNickname(
-            displayName.replace(new RegExp(ign, "gi"), ign),
-          );
-        }
-
-        // Manage member roles
-        const memberRoles = member.roles.cache.map((role) => role.id);
-
-        // Add default member role
-        if (!memberRoles.includes(config.roles.slayer)) {
-          await member.roles.add(roles.slayer);
-        }
-
-        // Remove unverified role
-        if (!memberRoles.includes(config.roles.unverified)) {
-          await member.roles.remove(roles.unverified);
-        }
-
-        // Add in-game role
-        if (inGameRole !== "Staff") {
-          const role = roles[inGameRole.toLowerCase() as HypixelRoleKeys];
-          if (!memberRoles.includes(role.id)) {
-            await member.roles.add(role);
-          }
-        }
-
-        if (
-          inGameRole === "Hero" &&
-          data.targetRank &&
-          ["[Supreme]", "[Dominator]", "[Goat]"].includes(data.targetRank)
-        ) {
-          // Add higher role
-          const role = roles[targetRole.toLowerCase() as HypixelRoleKeys];
-          if (!memberRoles.includes(role.id)) {
-            await member.roles.add(role);
-          }
-        }
-
-        // Remove higher roles
-        if (["Slayer", "Elite"].includes(inGameRole)) {
-          await removeHigherRoles(member, inGameRole.toLowerCase(), roles);
-        } else if (inGameRole === "Hero" && targetRole) {
-          await removeHigherRoles(member, targetRole.toLowerCase(), roles);
-        } else if (inGameRole === "Staff") {
-          if (targetRole) {
-            // Add weekly role
-            await removeHigherRoles(member, targetRole.toLowerCase(), roles);
-          } else {
-            // Remove weekly roles
-            await removeHigherRoles(member, "slayer", roles);
-          }
-        }
+        await setDiscordNicknames(member, player.nickname);
       }
 
-      // Days in guild roles
-      const days = getDaysInGuild(data.joined, data.baseDays);
+      const memberRoles = member.roles.cache.map((role) => role.id);
 
-      const dayRoles = Object.keys(config.roles.days).map(Number);
-
-      let highestRole = 0;
-
-      for (const day of dayRoles) {
-        if (days >= day) {
-          highestRole = day;
-        }
+      if (!memberRoles.includes(config.roles.slayer)) {
+        await member.roles.add(roles.slayer);
       }
 
-      if (highestRole) {
-        await member.roles.add(
-          (config.roles.days as { [key: string]: string })[
-            highestRole.toString()
-          ],
-        );
+      if (!memberRoles.includes(config.roles.unverified)) {
+        await member.roles.remove(roles.unverified);
       }
 
-      for (const day of dayRoles) {
-        if (
-          day !== highestRole &&
-          member.roles.cache.has(
-            (config.roles.days as { [key: string]: string })[day.toString()],
-          )
-        ) {
-          await member.roles.remove(
-            (config.roles.days as { [key: string]: string })[day.toString()],
-          );
-        }
+      if (targetRole) {
+        await assignMemberRoles(member, targetRole.toLowerCase(), roles);
       }
+
+      await assignDaysRoles(member, getDaysInGuild(data.joined, data.baseDays));
     }
 
     const swLevel = player.stats?.skywars?.level ?? 0;
