@@ -78,7 +78,7 @@ async function assignMemberRoles(
   roles: { [key: string]: Role },
 ) {
   for (const role of roleOrder) {
-    if (role === currentRole) {
+    if (role === "slayer" || role === currentRole) {
       if (!member.roles.cache.has(roles[role].id)) {
         await member.roles.add(roles[role].id);
       }
