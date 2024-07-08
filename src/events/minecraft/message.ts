@@ -1,4 +1,5 @@
 import { Database } from "bun:sqlite";
+import { Mutex } from "async-mutex";
 import {
   type Client,
   EmbedBuilder,
@@ -38,29 +39,31 @@ const logWebhook = new WebhookClient({ url: config.keys.logWebhookUrl });
 const gcWebhook = new WebhookClient({ url: config.keys.gcWebhookUrl });
 const ocWebhook = new WebhookClient({ url: config.keys.ocWebhookUrl });
 const messageCache: string[] = [];
+const mutex = new Mutex();
 
 export async function logInterval() {
   setInterval(async () => {
-    if (logMessages.length === 0) return;
+    await mutex.runExclusive(async () => {
+      if (logMessages.length === 0) return;
 
-    if (logMessages.length > 2000) {
+      if (logMessages.length > 2000) {
+        await logWebhook.send({
+          content: logMessages.substring(0, 2000),
+          username: "Dominance",
+          avatarURL: config.guild.icon,
+        });
+        logMessages = logMessages.substring(2000);
+        return;
+      }
+
       await logWebhook.send({
-        content: logMessages.substring(0, 2000),
+        content: logMessages,
         username: "Dominance",
         avatarURL: config.guild.icon,
       });
-      logMessages = logMessages.substring(2000);
 
-      return;
-    }
-
-    await logWebhook.send({
-      content: logMessages,
-      username: "Dominance",
-      avatarURL: config.guild.icon,
+      logMessages = "";
     });
-
-    logMessages = "";
   }, 1000);
 }
 
@@ -72,11 +75,13 @@ export default async function execute(
 ) {
   if (messagePosition !== "chat" || msg.trim() === "") return;
 
-  if (msg.includes("@everyone") || msg.includes("@here")) {
-    logMessages += `${msg.replace("@", "")}\n`;
-  } else {
-    logMessages += `${msg}\n`;
-  }
+  await mutex.runExclusive(() => {
+    if (msg.includes("@everyone") || msg.includes("@here")) {
+      logMessages += `${msg.replace("@", "")}\n`;
+    } else {
+      logMessages += `${msg}\n`;
+    }
+  });
 
   if (messageCache.length >= 20) messageCache.shift();
   messageCache.push(msg);
