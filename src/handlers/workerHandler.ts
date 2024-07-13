@@ -118,6 +118,7 @@ export async function waitForMessage(
     new Promise<MessageObject>((resolve) => {
       const messageListener = (msg: MessageObject) => {
         if (
+          msg &&
           msg.type === "message" &&
           inputStrings.some((str) => msg.string.includes(str))
         ) {
