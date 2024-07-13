@@ -87,7 +87,11 @@ export default async function execute(
   messageCache.push(msg);
 
   if (isLobbyJoinMessage(msg)) {
-    chat("\u00a7");
+    chat("/limb");
+    return;
+  }
+  if (isLimboMessage(msg)) {
+    chat("/limb");
   }
 
   if (isGuildMessage(msg)) {
@@ -603,4 +607,8 @@ function isGuildOfflineMessage(message: string) {
 
 function isRepeatMessage(message: string) {
   return message === "You cannot say the same message twice!";
+}
+
+function isLimboMessage(message: string) {
+  return message === "Unknown command. Type \"/help\" for help. ('limb')";
 }
