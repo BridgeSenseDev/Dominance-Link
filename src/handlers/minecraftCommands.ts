@@ -27,6 +27,26 @@ export async function handleMinecraftCommands(message: string, author: string) {
         chat(getDuelsStats(player));
         break;
       }
+      case "mm":
+      case "murder": {
+        chat(getMurderMysteryStats(player));
+        break;
+      }
+      case "b":
+      case "bridge": {
+        chat(getBridgeStats(player));
+        break;
+      }
+      case "vz":
+      case "vampirez": {
+        chat(getVampStats(player));
+        break;
+      }
+      case "sw":
+      case "skywars": {
+        chat(getSkyWarsStats(player));
+        break;
+      }
       case "sb":
       case "skyblock": {
         chat(await getSkyblockStats(player));
@@ -50,7 +70,7 @@ export function getBedwarsStats(player: Player) {
 
 export function getDuelsStats(player: Player) {
   const duels = player.stats?.duels;
-  const division = duels?.division ? "" : `[${duels?.division}] `;
+  const division = duels?.division ? `[${duels?.division}] ` : "";
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
   const wins = formatNumber(duels?.wins ?? 0);
   const wlr = formatNumber(duels?.WLRatio ?? 0);
@@ -58,6 +78,55 @@ export function getDuelsStats(player: Player) {
   const bws = formatNumber(duels?.bestWinstreak ?? 0);
 
   return `/gc ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`;
+}
+
+export function getMurderMysteryStats(player: Player) {
+  const murderMystery = player.stats?.murdermystery;
+  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+  const wins = murderMystery?.wins ?? 0;
+  const kills = murderMystery?.kills ?? 0;
+  const kdr = formatNumber(
+    (murderMystery?.kills ?? 0) / (murderMystery?.deaths ?? 0),
+  );
+
+  return `/gc ${rankTag}${player.nickname} W: ${wins} K: ${kills} KDR: ${kdr}`;
+}
+
+export function getBridgeStats(player: Player) {
+  const bridge = player.stats?.duels?.bridge.overall;
+  const division = bridge?.division ? `[${bridge?.division}] ` : "";
+  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+  const wins = formatNumber(bridge?.wins ?? 0);
+  const wlr = formatNumber(bridge?.WLRatio ?? 0);
+  const goals = formatNumber(bridge?.goals ?? 0);
+  const cws = formatNumber(bridge?.winstreak ?? 0);
+  const bws = formatNumber(bridge?.bestWinstreak ?? 0);
+
+  return `/gc ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} G: ${goals} CWS: ${cws} BWS: ${bws}`;
+}
+
+export function getVampStats(player: Player) {
+  const vamp = player.stats?.vampirez;
+  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+  const humanWins = formatNumber(vamp?.human.wins ?? 0);
+  const humanKills = formatNumber(vamp?.vampire.kills ?? 0);
+  const humanKdr = formatNumber(
+    (vamp?.vampire.kills ?? 0) / (vamp?.human.deaths ?? 0),
+  );
+
+  return `/gc ${rankTag}${player.nickname} HW: ${humanWins} HK: ${humanKills} HKDR: ${humanKdr}`;
+}
+
+export function getSkyWarsStats(player: Player) {
+  const skywars = player.stats?.skywars;
+  const level = skywars?.levelFormatted ?? "1⋆";
+  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+  const wins = formatNumber(skywars?.wins ?? 0);
+  const wlr = formatNumber(skywars?.WLRatio ?? 0);
+  const kills = formatNumber(skywars?.kills ?? 0);
+  const kdr = formatNumber((skywars?.kills ?? 0) / (skywars?.deaths ?? 0));
+
+  return `/gc [${level}] ${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} K: ${kills} KDR: ${kdr}`;
 }
 
 export async function getSkyblockStats(player: Player) {
