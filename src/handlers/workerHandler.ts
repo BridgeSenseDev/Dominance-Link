@@ -32,9 +32,9 @@ export async function startBot() {
 export function chat(message: string, n = 0) {
   const attemptCount = n;
 
-  const listener = async (msg: MessageObject) => {
+  const listener = async (msg?: MessageObject) => {
     if (
-      msg.string.includes(
+      msg?.string?.includes(
         "You are sending commands too fast! Please slow down.",
       )
     ) {
@@ -51,7 +51,7 @@ export function chat(message: string, n = 0) {
       return chat(message, newAttemptCount);
     }
 
-    if (msg.string.includes("You cannot say the same message twice!")) {
+    if (msg?.string?.includes("You cannot say the same message twice!")) {
       worker.removeListener("message", listener);
       const newAttemptCount = attemptCount + 1;
 
