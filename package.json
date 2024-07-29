@@ -17,7 +17,7 @@
     "async-mutex": "^0.5.0",
     "discord-emoji-converter": "^1.2.10",
     "discord.js": "^14.15.3",
-    "google-auth-library": "^9.11.0",
+    "google-auth-library": "^9.12.0",
     "googleapis": "^140.0.1",
     "hypixel-api-reborn": "github:Hypixel-API-Reborn/hypixel-api-reborn",
     "math-expression-evaluator": "^2.0.5",
