@@ -3,6 +3,7 @@
   "extends": [
     "config:recommended"
   ],
+  "rangeStrategy":"bump",
   "lockFileMaintenance": {
     "enabled": true,
     "automerge": true
@@ -11,8 +12,7 @@
     {
       "matchUpdateTypes": ["minor", "patch"],
       "matchCurrentVersion": "!/^0/",
-      "automerge": true,
-      "rangeStrategy": "bump"
+      "automerge": true
     }
   ]
 }
