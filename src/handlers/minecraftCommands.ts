@@ -1,4 +1,4 @@
-import type { Player, SkyblockMember } from "hypixel-api-reborn";
+import type { Player } from "hypixel-api-reborn";
 import { abbreviateNumber, formatNumber } from "../helper/clientUtils.ts";
 import { hypixel } from "../index.ts";
 import { chat } from "./workerHandler.ts";
@@ -12,7 +12,7 @@ export async function handleMinecraftCommands(message: string, author: string) {
     }
 
     const player = await hypixel.getPlayer(ign).catch(async (e) => {
-      chat(`/gc Error: ${e}`);
+      chat(`/gc Error: ${e.message}`);
     });
     if (!player) return;
 
@@ -70,7 +70,7 @@ export function getBedwarsStats(player: Player) {
 
 export function getDuelsStats(player: Player) {
   const duels = player.stats?.duels;
-  const division = duels?.division ? `[${duels?.division}] ` : "";
+  const division = duels?.title ? `[${duels?.title}] ` : "";
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
   const wins = formatNumber(duels?.wins ?? 0);
   const wlr = formatNumber(duels?.WLRatio ?? 0);
@@ -93,8 +93,8 @@ export function getMurderMysteryStats(player: Player) {
 }
 
 export function getBridgeStats(player: Player) {
-  const bridge = player.stats?.duels?.bridge.overall;
-  const division = bridge?.division ? `[${bridge?.division}] ` : "";
+  const bridge = player.stats?.duels?.bridge;
+  const division = bridge?.title ? `[${bridge?.title}] ` : "";
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
   const wins = formatNumber(bridge?.wins ?? 0);
   const wlr = formatNumber(bridge?.WLRatio ?? 0);
@@ -130,24 +130,25 @@ export function getSkyWarsStats(player: Player) {
 }
 
 export async function getSkyblockStats(player: Player) {
-  let sbMember: SkyblockMember | undefined;
-  try {
-    sbMember = (
-      await hypixel.getSkyblockProfiles(player.uuid).catch(() => null)
-    )?.find((profile) => profile.selected)?.me;
-  } catch (e) {
-    return `/gc Error: ${e}`;
+  const sbProfiles = await hypixel
+    .getSkyblockProfiles(player.uuid)
+    .catch((e) => {
+      return `/gc Error: ${e.message}`;
+    });
+  if (typeof sbProfiles === "string") {
+    return sbProfiles;
   }
 
+  const sbMember = sbProfiles?.find((profile) => profile.selected)?.me;
+
   if (sbMember) {
-    const { networth } = (await sbMember.getNetworth()) ?? 0;
+    const { networth } = (await sbMember.getNetworth()) ?? { networth: 0 };
     const sbSkillAverage = sbMember.skills.average;
     const sbLevel = sbMember.level;
     const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
 
-    return `/gc [${Math.floor(sbLevel)}] ${rankTag}${
-      player.nickname
-    } NW: ${abbreviateNumber(networth)} SA: ${formatNumber(sbSkillAverage)}`;
+    return `/gc [${Math.floor(sbLevel)}] ${rankTag}${player.nickname} NW: ${abbreviateNumber(networth)} SA: ${formatNumber(sbSkillAverage)}`;
   }
+
   return `/gc Error: No profiles found for ${player.nickname}`;
 }

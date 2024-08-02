@@ -260,7 +260,7 @@ export function discordToUuid(discordId: string): string | null {
   return null;
 }
 
-export function hypixelApiError(cause: string) {
+export function hypixelApiErrorEmbed(cause: string) {
   return {
     embeds: [
       new EmbedBuilder()

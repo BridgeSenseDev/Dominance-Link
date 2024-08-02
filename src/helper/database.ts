@@ -204,7 +204,8 @@ export async function weekly() {
 
 export async function database() {
   setInterval(async () => {
-    const guild = await hypixel.getGuild("name", "Dominance", {});
+    const guild = await hypixel.getGuild("name", "Dominance").catch(() => null);
+    if (!guild) return;
 
     ensureDayExists(getESTDate());
 
@@ -266,7 +267,10 @@ export async function gsrun(sheets: JWT) {
       const data = db
         .prepare("SELECT * FROM guildMembers")
         .all() as HypixelGuildMember[];
-      const guild = await hypixel.getGuild("name", "Dominance", {});
+      const guild = await hypixel
+        .getGuild("name", "Dominance")
+        .catch(() => null);
+      if (!guild) return;
 
       type HypixelGuildMemberWithExpHistory = HypixelGuildMember & {
         [key: string]: number;
@@ -404,7 +408,8 @@ export async function players() {
     const inGameRole = data.tag.replace(/[\[\]]/g, "");
     const targetRole = data.targetRank?.slice(1, -1) ?? "";
 
-    const player = await hypixel.getPlayer(data.uuid);
+    const player = await hypixel.getPlayer(data.uuid).catch(() => null);
+    if (!player) return;
 
     const bwFkdr = +(player.stats?.bedwars?.finalKDRatio.toFixed(1) ?? 0);
     const bwStars = player.stats?.bedwars?.level ?? 0;

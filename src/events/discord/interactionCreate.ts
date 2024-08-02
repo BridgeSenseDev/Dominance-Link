@@ -25,7 +25,7 @@ import {
   fetchGuildMember,
   fetchMember,
 } from "../../handlers/databaseHandler.js";
-import { hypixelApiError } from "../../helper/clientUtils.js";
+import { hypixelApiErrorEmbed } from "../../helper/clientUtils.js";
 import {
   abbreviateNumber,
   discordToUuid,
@@ -64,10 +64,12 @@ export default async function execute(
       });
     }
   } else if (interaction.isAutocomplete()) {
-    const nameColorArray = db
+    const rows = db
       .prepare("SELECT nameColor FROM guildMembers ORDER BY weeklyGexp DESC")
-      .pluck()
-      .all() as Array<string>;
+      .all() as { nameColor: string }[];
+
+    const nameColorArray = rows.map((row) => row.nameColor);
+
     const choices: string[] = nameColorArray
       .filter(Boolean)
       .map(
@@ -150,7 +152,7 @@ export default async function execute(
       }
 
       const playerResponse = await hypixel.getPlayer(uuid).catch(async (e) => {
-        await interaction.editReply(hypixelApiError(e.message));
+        await interaction.editReply(hypixelApiErrorEmbed(e.message));
       });
 
       if (!playerResponse) return;
@@ -781,14 +783,16 @@ export default async function execute(
         return;
       }
 
-      const playerResponse = await hypixel.getPlayer(uuid).catch(async (e) => {
-        await interaction.editReply(hypixelApiError(e.message));
-      });
+      const player = await hypixel
+        .getPlayer(uuid, { guild: true })
+        .catch(async (e) => {
+          await interaction.editReply(hypixelApiErrorEmbed(e.message));
+        });
 
-      if (!playerResponse) return;
+      if (!player) return;
 
-      name = playerResponse.nickname;
-      const discord = playerResponse.socialMedia.find(
+      name = player.nickname;
+      const discord = player.socialMedia.find(
         (media) => media.name === "Discord",
       )?.link;
 
@@ -822,8 +826,7 @@ export default async function execute(
           );
         }
 
-        const guild = await hypixel.getGuild("player", uuid, {});
-        if (!guild || guild.name.toLowerCase() !== "dominance") {
+        if (!player.guild || player.guild.name.toLowerCase() !== "dominance") {
           const embed = new EmbedBuilder()
             .setColor(config.colors.green)
             .setTitle("Verification Successful")
@@ -872,7 +875,7 @@ export default async function execute(
       const playerResponse = await hypixel
         .getPlayer(uuid, { guild: true })
         .catch(async (e) => {
-          await interaction.editReply(hypixelApiError(e.message));
+          await interaction.editReply(hypixelApiErrorEmbed(e.message));
         });
       if (!playerResponse) return;
 

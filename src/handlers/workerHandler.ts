@@ -80,7 +80,11 @@ export function quit() {
 
 export function autoRejoin() {
   setInterval(async () => {
-    const status = await hypixel.getStatus(config.minecraft.ign);
+    const status = await hypixel
+      .getStatus(config.minecraft.ign)
+      .catch(() => null);
+    if (!status) return;
+
     if (!status.online) {
       console.log("[MINECRAFT] Restarting bot");
       const embed = new EmbedBuilder()

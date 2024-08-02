@@ -7,20 +7,23 @@ import {
 } from "discord.js";
 import type { Guild } from "hypixel-api-reborn";
 import config from "../../config.json" with { type: "json" };
-import { fetchMember } from "../../handlers/databaseHandler.js";
+import { archiveMember, fetchMember } from "../../handlers/databaseHandler.js";
 import { invis } from "../../helper/constants.js";
 import { hypixel } from "../../index.js";
 import { textChannels } from "./ready.js";
 
 const db = new Database("guild.db");
 
-export default async function execute(client: Client, member: GuildMember) {
+export default async function execute(_client: Client, member: GuildMember) {
   if (member.guild.id !== "242357942664429568") return;
 
   const memberData = fetchMember(member.id);
   if (memberData) {
     const { uuid } = memberData;
-    const player = await hypixel.getPlayer(uuid);
+    const player = await hypixel.getPlayer(uuid).catch(() => null);
+    if (!player) {
+      return await archiveMember(member);
+    }
 
     const discord = player.socialMedia.find(
       (media) => media.name === "Discord",

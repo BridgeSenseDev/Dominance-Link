@@ -3,9 +3,11 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import type { Player } from "hypixel-api-reborn";
 import config from "../config.json" with { type: "json" };
-import { generateHeadUrl } from "../helper/clientUtils.js";
+import {
+  generateHeadUrl,
+  hypixelApiErrorEmbed,
+} from "../helper/clientUtils.js";
 import requirementsEmbed from "../helper/requirements.js";
 import { hypixel } from "../index.js";
 
@@ -22,17 +24,12 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   await interaction.deferReply();
   const ign = interaction.options.getString("ign");
 
-  let player: Player | undefined;
-  try {
-    player = await hypixel.getPlayer(ign ?? "");
-  } catch (e) {
-    const embed = new EmbedBuilder()
-      .setColor(config.colors.red)
-      .setTitle("Error")
-      .setDescription(`${config.emojis.aCross} ${e}`);
-    await interaction.editReply({ embeds: [embed] });
+  const player = await hypixel.getPlayer(ign ?? "").catch(async (e) => {
+    await interaction.editReply(hypixelApiErrorEmbed(e.message));
     return;
-  }
+  });
+
+  if (!player) return;
 
   const requirementData = await requirementsEmbed(player.uuid, player);
 

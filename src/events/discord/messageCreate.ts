@@ -24,7 +24,7 @@ import { textChannels } from "./ready.js";
 
 const db = new Database("guild.db");
 
-export default async function execute(client: Client, message: Message) {
+export default async function execute(_client: Client, message: Message) {
   const { guildId, author, content, channel, member } = message;
   if (guildId !== "242357942664429568" || author.bot) return;
   await addXp(author.id, message.channel);

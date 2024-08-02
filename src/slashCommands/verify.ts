@@ -62,17 +62,19 @@ async function verify(
     return;
   }
 
-  const player = await hypixel.getPlayer(uuid);
-  const name = player.nickname;
+  const player = await hypixel
+    .getPlayer(uuid, { guild: true })
+    .catch(() => null);
   if (!player) {
     return new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle("Caution")
       .setDescription(
-        `${config.emojis.warning3d} Hypixel API request for **\`${name}\`**'s discord tag failed\n\nAre you **CERTAIN\
-        ** \`${name}\`'s discord account is ${discordUser}?`,
+        `${config.emojis.warning3d} Hypixel API request for **\`${ign}\`** failed\n\nAre you **CERTAIN\
+        ** \`${ign}\`'s discord account is ${discordUser}?`,
       );
   }
+  const name = player.nickname;
 
   let member = fetchMember(uuid);
   if (member) {
@@ -128,9 +130,7 @@ async function verify(
       );
     }
 
-    const guild = await hypixel.getGuild("player", uuid, {});
-
-    if (!guild || guild.name.toLowerCase() !== "dominance") {
+    if (!player.guild || player.guild.name.toLowerCase() !== "dominance") {
       const embed = new EmbedBuilder()
         .setColor(config.colors.green)
         .setTitle("Verification Successful")
