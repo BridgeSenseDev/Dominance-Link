@@ -210,6 +210,20 @@ export async function addXp(
 ) {
   const isUUID = isValidUUID(identifier);
   const key = isUUID ? "uuid" : "discord";
+
+  db.prepare(
+    `UPDATE ${isUUID ? "guildMembers" : "members"} SET messages = messages + 1 WHERE ${key} = ?`,
+  ).run(identifier);
+
+  if (
+    global.lastMessage[identifier] &&
+    Math.floor(Date.now() / 1000) -
+      Number.parseInt(global.lastMessage[identifier], 10) <
+      60
+  ) {
+    return;
+  }
+
   const xp = Math.floor(Math.random() * 11 + 15);
 
   db.prepare(`UPDATE members SET xp = xp + ? WHERE ${key} = ?`).run(
@@ -219,10 +233,6 @@ export async function addXp(
   global.lastMessage[identifier] = Math.floor(Date.now() / 1000).toString();
 
   await checkLevelUp(identifier, isUUID, key, xp, channel);
-
-  db.prepare(
-    `UPDATE ${isUUID ? "guildMembers" : "members"} SET messages = messages + 1 WHERE ${key} = ?`,
-  ).run(identifier);
 }
 
 export function timeStringToSeconds(time: string) {
