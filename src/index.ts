@@ -28,6 +28,10 @@ client.on("ready", () => {
 
 client.login(config.keys.discordBotToken);
 
-setInterval(() => fetch(config.keys.uptimeKuma), 60000);
+setInterval(() => {
+  fetch(config.keys.uptimeKuma).catch((error) =>
+    console.error("Uptime Kuma fetch failed:", error),
+  );
+}, 60000);
 
 export default client;

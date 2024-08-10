@@ -5,8 +5,8 @@ import {
   type GuildMember,
   type Role,
 } from "discord.js";
-import type { JWT } from "google-auth-library";
 import { google } from "googleapis";
+import type { JWT } from "googleapis-common";
 import { schedule } from "node-cron";
 import config from "../config.json" with { type: "json" };
 import { textChannels } from "../events/discord/ready.js";
@@ -212,6 +212,8 @@ export async function database() {
     for (const member of guild.members) {
       const data = fetchGuildMember(member.uuid);
       const { joinedAtTimestamp, uuid, rank, expHistory } = member;
+
+      if (!uuid) continue;
 
       let weeklyGexp = 0;
       let currentDay = null;
@@ -495,12 +497,12 @@ export async function players() {
 
     const swLevel = player.stats?.skywars?.level ?? 0;
     const { achievementPoints, level } = player;
-    const quests = player.achievements["generalQuestMaster"];
+    const quests = player.achievements["generalQuestMaster"] as number;
 
     db.prepare(
       "UPDATE guildMembers SET (nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?",
     ).run(
-      rankTagF(player),
+      rankTagF(player) ?? "",
       (await checkRequirements(data.uuid, player)) ? 1 : 0,
       bwStars,
       bwFkdr,

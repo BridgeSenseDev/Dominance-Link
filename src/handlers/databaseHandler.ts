@@ -189,7 +189,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
     };
 
     db.query(
-      "INSERT INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, baseDays, targetRank, playtime, nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)",
+      "INSERT OR IGNORE INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, baseDays, targetRank, playtime, nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)",
     ).run(
       guildMember.uuid,
       guildMember.discord,
@@ -241,7 +241,7 @@ export async function archiveGuildMember(
   const guildMemberData = fetchGuildMember(identifier);
   const breaks = db
     .prepare("SELECT discord, thread FROM breaks WHERE uuid = ?")
-    .get(guildMemberData?.uuid) as BreakMember | null;
+    .get(guildMemberData?.uuid ?? "") as BreakMember | null;
 
   if (guildMemberData) {
     db.prepare(
@@ -323,11 +323,13 @@ export function fetchGexpForMember(uuid: string): GexpResult {
     today.getDate() - 29,
   );
 
-  const dailyGexp = db
-    .prepare(
-      `SELECT "${formatDateForDb(today)}" FROM gexpHistory WHERE uuid = ?`,
-    )
-    .get(uuid) as GexpHistory[0] as number;
+  const dailyGexp = (
+    db
+      .prepare(
+        `SELECT "${formatDateForDb(today)}" AS r FROM gexpHistory WHERE uuid = ?`,
+      )
+      .get(uuid) as { r: number }
+  ).r;
 
   const weeklyDates = getDatesBetween(sevenDaysAgo, today);
   const monthlyDates = getDatesBetween(thirtyDaysAgo, today);
@@ -338,26 +340,28 @@ export function fetchGexpForMember(uuid: string): GexpResult {
   let weeklyGexp = 0;
   const weeklyColumnsArray = weeklyColumns.split(", ");
   for (const column of weeklyColumnsArray) {
-    const query = `SELECT IFNULL(SUM(${column}), 0) FROM gexpHistory WHERE uuid = ?`;
-    weeklyGexp += db.prepare(query).get(uuid) as GexpHistory[0] as number;
+    const query = `SELECT IFNULL(SUM(${column}), 0) AS r FROM gexpHistory WHERE uuid = ?`;
+    weeklyGexp += (db.prepare(query).get(uuid) as { r: number }).r;
   }
 
   let monthlyGexp = 0;
   const monthlyColumnsArray = monthlyColumns.split(", ");
   for (const column of monthlyColumnsArray) {
-    const query = `SELECT IFNULL(SUM(${column}), 0) FROM gexpHistory WHERE uuid =?`;
-    monthlyGexp += db.prepare(query).get(uuid) as GexpHistory[0] as number;
+    const query = `SELECT IFNULL(SUM(${column}), 0) AS r FROM gexpHistory WHERE uuid =?`;
+    monthlyGexp += (db.prepare(query).get(uuid) as { r: number }).r;
   }
 
-  const lifetimeGexp = db
-    .prepare(
-      `SELECT ${tableInfo
-        .map((column) => column["name"])
-        .filter((name) => name !== "uuid")
-        .map((name) => `IFNULL(SUM("${name}"), 0)`)
-        .join(" + ")} FROM gexpHistory WHERE uuid =?`,
-    )
-    .get(uuid) as GexpHistory[0] as number;
+  const lifetimeGexp = (
+    db
+      .prepare(
+        `SELECT ${tableInfo
+          .map((column) => column["name"])
+          .filter((name) => name !== "uuid")
+          .map((name) => `IFNULL(SUM("${name}"), 0)`)
+          .join(" + ")} AS r FROM gexpHistory WHERE uuid =?`,
+      )
+      .get(uuid) as { r: number }
+  ).r;
 
   return {
     dailyGexp: dailyGexp || 0,
