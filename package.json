@@ -15,13 +15,15 @@
   "dependencies": {
     "@napi-rs/canvas": "^0.1.53",
     "async-mutex": "^0.5.0",
+    "cheerio": "^1.0.0",
     "discord-emoji-converter": "^1.2.10",
     "discord.js": "^14.15.3",
     "googleapis": "^140.0.1",
     "hypixel-api-reborn": "^11.3.4",
     "math-expression-evaluator": "^2.0.5",
     "mineflayer": "^4.20.1",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "rss-parser": "^3.13.0"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",
