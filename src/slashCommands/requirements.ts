@@ -32,11 +32,19 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   if (!player) return;
 
   const requirementData = await requirementsEmbed(player.uuid, player);
+  let color: number;
+  if (requirementData.reqs === 2) {
+    color = config.colors.green;
+  } else if (requirementData.reqs === 1) {
+    color = config.colors.yellow;
+  } else {
+    color = config.colors.red;
+  }
 
   const embed = new EmbedBuilder()
-    .setColor(requirementData.color)
+    .setColor(color)
     .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
-    .setDescription(requirementData.requirementEmbed)
+    .setDescription(requirementData.embed)
     .setThumbnail(generateHeadUrl(player.uuid, player.nickname));
   await interaction.editReply({ embeds: [embed] });
 }
