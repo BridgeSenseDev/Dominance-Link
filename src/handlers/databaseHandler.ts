@@ -226,7 +226,9 @@ export async function createGuildMember(uuid: string): Promise<void> {
       ).run(uuid);
       db.prepare("DELETE FROM gexpHistoryArchives WHERE uuid = ?").run(uuid);
     } else {
-      db.prepare("INSERT INTO gexpHistory (uuid) VALUES (?)").run(uuid);
+      db.prepare("INSERT OR IGNORE INTO gexpHistory (uuid) VALUES (?)").run(
+        uuid,
+      );
     }
   }
 }
