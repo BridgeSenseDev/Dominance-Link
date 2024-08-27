@@ -18,7 +18,7 @@
     "cheerio": "^1.0.0",
     "discord-emoji-converter": "^1.2.10",
     "discord.js": "^14.15.3",
-    "googleapis": "^140.0.1",
+    "googleapis": "^142.0.0",
     "hypixel-api-reborn": "^11.3.5",
     "math-expression-evaluator": "^2.0.5",
     "mineflayer": "^4.20.1",
