@@ -158,10 +158,19 @@ export default async function execute(
       if (!playerResponse) return;
 
       const requirementData = await requirementsEmbed(uuid, playerResponse);
+      let color: number;
+      if (requirementData.reqs === 2) {
+        color = config.colors.green;
+      } else if (requirementData.reqs === 1) {
+        color = config.colors.yellow;
+      } else {
+        color = config.colors.red;
+      }
+
       const embed = new EmbedBuilder()
-        .setColor(requirementData.color)
+        .setColor(color)
         .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
-        .setDescription(requirementData.requirementEmbed)
+        .setDescription(requirementData.embed)
         .setThumbnail(generateHeadUrl(uuid, playerResponse.nickname));
       await interaction.editReply({ embeds: [embed] });
     } else if (interaction.customId === "verify") {
@@ -881,16 +890,28 @@ export default async function execute(
 
       const requirementData = await requirementsEmbed(uuid, playerResponse);
       const name = (await uuidToName(uuid)) ?? "";
+      let color: number;
+      let meetingReqs: string;
+      if (requirementData.reqs === 2) {
+        color = config.colors.green;
+        meetingReqs = "Primary";
+      } else if (requirementData.reqs === 1) {
+        color = config.colors.yellow;
+        meetingReqs = "Secondary";
+      } else {
+        color = config.colors.red;
+        meetingReqs = "False";
+      }
 
       const applicationEmbed = new EmbedBuilder()
-        .setColor(requirementData.color)
+        .setColor(color)
         .setTitle(`${interaction.user.tag}'s Application`)
         .setThumbnail(generateHeadUrl(uuid, name))
         .setDescription(
           `${config.emojis.keycap1_3d} **What games do you mainly play?**\n${q1}\n\n${config.emojis.keycap2_3d} ` +
             `**Why should we accept you?**\n${q2}\n\n${config.emojis.keycap3_3d} **Do you know anyone from the guild?**\n${q3}` +
             `\n\n${dividers(21)}\n\n**Requirements:**\n\n${
-              requirementData.requirementEmbed
+              requirementData.embed
             }`,
         )
         .addFields(
@@ -901,7 +922,7 @@ export default async function execute(
           },
           {
             name: `${config.emojis.page} Meeting Requirements: `,
-            value: requirementData.reqs,
+            value: meetingReqs,
             inline: true,
           },
           {
@@ -946,7 +967,7 @@ export default async function execute(
         embeds: [applicationEmbed],
       });
       const replyEmbed = new EmbedBuilder()
-        .setColor(requirementData.color)
+        .setColor(color)
         .setTitle(`${interaction.user.tag}'s application has been received`)
         .setThumbnail(generateHeadUrl(uuid, name))
         .setDescription(

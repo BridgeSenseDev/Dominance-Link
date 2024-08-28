@@ -53,16 +53,22 @@ client.on("ready", async () => {
     .setColor(config.colors.discordGray)
     .setAuthor({ name: "Guild Requirements", iconURL: config.guild.icon })
     .setDescription(
-      `**We have NO GEXP requirements\nClick the button below to check if you meet our requirements**\n\n${dividers(
+      `**We have 2 categories of requirements\nClick the button below to check if you meet a category of requirements**\n\n${dividers(
         23,
-      )}\n\n**Requirements: **\n\n**You can join if you meet at least one of these requirements:**\n${bullet}**\
+      )}\n\n**Primary requirements: **\n\n**You need \`65k\` GEXP per week if you meet any of these requirements:**\n${bullet}**\
 				Achievement Points**\n${invis}${sub} \`9,000\` Achievement Points\n${bullet}**Bedwars 1**\n${invis}${sub} \
-				\`500\` Stars\n${invis}${sub} \`3\` FKDR\n${bullet}**Bedwars 2**\n${invis}${sub} \`150\` Stars\n${invis}${sub}\
-				\`5\` FKDR\n${bullet}**Duels 1**\n${invis}${sub} \`10,000\` Wins\n${invis}${sub} \`2\` WLR\n${bullet}**Duels \
-				2**\n${invis}${sub} \`5,000\` Wins\n${invis}${sub} \`3\` WLR\n${bullet}**Skywars 1**\n${invis}${sub} \`15\` \
-				Stars\n${invis}${sub} \`1\` KDR\n${bullet}**Skywars 2**\n${invis}${sub} \`10\` Stars\n${invis}${sub} \`1.5\`\
-				 KDR\n${bullet}**Skyblock 1 (API ON)**\n${invis}${sub} \`3b\` Networth\n${invis}${sub} \`40\` Skill Average\
-				 \n${bullet}**Skyblock 2**\n${invis}${sub} \`250\` Level`,
+				\`500\` Stars & \`3\` FKDR\n${bullet}**Bedwars 2**\n${invis}${sub} \`150\` Stars & \
+				\`5\` FKDR\n${bullet}**Duels 1**\n${invis}${sub} \`10,000\` Wins & \`2\` WLR\n${bullet}**Duels \
+				2**\n${invis}${sub} \`5,000\` Wins & \`3\` WLR\n${bullet}**Skywars 1**\n${invis}${sub} \`15\` \
+				Stars & \`1\` KDR\n${bullet}**Skywars 2**\n${invis}${sub} \`10\` Stars & \`1.5\`\
+				 KDR\n${bullet}**Skyblock 1 (API ON)**\n${invis}${sub} \`3b\` Networth & \`40\` Skill Average\
+				 \n${bullet}**Skyblock 2**\n${invis}${sub} \`250\` Level\n\n${dividers(
+           23,
+         )}\n\n**Secondary requirements: **\n\n**You need \`200k\` GEXP per week if you meet any of these requirements:**\n${bullet}**\
+				Achievement Points**\n${invis}${sub} \`3,000\` Achievement Points\n${bullet}**Bedwars**\n${invis}${sub} \
+				\`200\` Stars\n${bullet}**Duels**\n${invis}${sub} \`4,000\` Wins\n${bullet}**Skywars**\n${invis}${sub} \`10\` \
+				Stars\n${bullet}**Skyblock 1 (API ON)**\n${invis}${sub} \`1b\` Networth & \`25\` Skill Average\
+				 \n${bullet}**Skyblock 2**\n${invis}${sub} \`200\` Level`,
     )
     .setFooter({
       text: `Updated ${formatDate(new Date())}`,
