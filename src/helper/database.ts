@@ -236,7 +236,7 @@ export async function database() {
 
       db.prepare(
         "UPDATE guildMembers SET (tag, weeklyGexp) = (?, ?) WHERE uuid = ?",
-      ).run(`[${rank}]`, weeklyGexp, uuid);
+      ).run(`[${rank ?? ""}]`, weeklyGexp ?? 0, uuid);
 
       db.prepare(
         `UPDATE gexpHistory SET ("${currentDay}") = (?) WHERE uuid = ?`,
