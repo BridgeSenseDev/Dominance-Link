@@ -234,9 +234,13 @@ export async function database() {
         );
       }
 
+      if (!rank || !weeklyGexp || !currentDailyExp) {
+        return;
+      }
+
       db.prepare(
         "UPDATE guildMembers SET (tag, weeklyGexp) = (?, ?) WHERE uuid = ?",
-      ).run(`[${rank ?? ""}]`, weeklyGexp ?? 0, uuid);
+      ).run(`[${rank}]`, weeklyGexp, uuid);
 
       db.prepare(
         `UPDATE gexpHistory SET ("${currentDay}") = (?) WHERE uuid = ?`,

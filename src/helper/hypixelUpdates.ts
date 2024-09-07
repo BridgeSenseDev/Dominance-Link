@@ -1,18 +1,14 @@
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
 import Parser from "rss-parser";
 import { chat } from "../handlers/workerHandler.ts";
 
 const parser = new Parser();
 
-setInterval(checkForHypixelUpdates, 10000);
-setInterval(checkForIncidents, 10000);
-setInterval(checkForSkyblockVersion, 10000);
-
 const hypixelIncidents: Record<
   string,
   { notified?: boolean; updates?: string[] }
 > = {};
-async function checkForIncidents() {
+export async function checkForIncidents() {
   try {
     const { items: status } = await parser.parseURL(
       "https://status.hypixel.net/history.rss",
@@ -57,7 +53,7 @@ async function checkForIncidents() {
 }
 
 const hypixelUpdates: string[] = [];
-async function checkForHypixelUpdates(firstTime = false) {
+export async function checkForHypixelUpdates(firstTime = false) {
   try {
     const [{ items: news }, { items: skyblockNews }] = await Promise.all([
       parser.parseURL(
@@ -106,10 +102,8 @@ async function checkForHypixelUpdates(firstTime = false) {
   }
 }
 
-checkForHypixelUpdates(true);
-
 let skyblockVersion: string | undefined;
-async function checkForSkyblockVersion() {
+export async function checkForSkyblockVersion() {
   try {
     const response = await fetch(
       "https://api.hypixel.net/v2/resources/skyblock/skills",

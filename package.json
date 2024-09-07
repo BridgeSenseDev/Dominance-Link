@@ -7,7 +7,7 @@
   "scripts": {
     "start": "cd ./src && bun run index.ts",
     "build": "tsc -p tsconfig.json",
-    "check": "npx @biomejs/biome check --write ."
+    "check": "biome check --write ."
   },
   "keywords": [],
   "author": "",

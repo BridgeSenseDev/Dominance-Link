@@ -20,6 +20,11 @@ import {
   weekly,
 } from "../../helper/database.js";
 import gexpWatch from "../../helper/gexpWatch.js";
+import {
+  checkForHypixelUpdates,
+  checkForIncidents,
+  checkForSkyblockVersion,
+} from "../../helper/hypixelUpdates.ts";
 import leaderboards from "../../helper/leaderboards.js";
 import {
   breakUpdate,
@@ -105,6 +110,10 @@ export default async function execute(client: Client) {
   await logInterval();
   await weekly();
   await reqsUpdate();
+
+  setInterval(checkForHypixelUpdates, 10000);
+  setInterval(checkForIncidents, 10000);
+  setInterval(checkForSkyblockVersion, 10000);
 
   console.log(`[DISCORD] Logged in as ${client.user?.tag}`);
 }
