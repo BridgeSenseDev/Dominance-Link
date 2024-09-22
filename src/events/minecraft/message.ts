@@ -87,11 +87,11 @@ export default async function execute(
   messageCache.push(msg);
 
   if (isLobbyJoinMessage(msg)) {
-    chat("/limb");
+    chat("/limbo");
     return;
   }
   if (isLimboMessage(msg)) {
-    chat("/limb");
+    chat("/limbo");
   }
 
   if (isGuildMessage(msg)) {

@@ -235,7 +235,7 @@ export async function database() {
       }
 
       if (!rank || !weeklyGexp || !currentDailyExp) {
-        return;
+        continue;
       }
 
       db.prepare(
