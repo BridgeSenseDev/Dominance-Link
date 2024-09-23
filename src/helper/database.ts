@@ -234,17 +234,13 @@ export async function database() {
         );
       }
 
-      if (!rank || !weeklyGexp || !currentDailyExp) {
-        continue;
-      }
-
       db.prepare(
         "UPDATE guildMembers SET (tag, weeklyGexp) = (?, ?) WHERE uuid = ?",
-      ).run(`[${rank}]`, weeklyGexp, uuid);
+      ).run(`[${rank ?? 0}]`, weeklyGexp ?? 0, uuid);
 
       db.prepare(
         `UPDATE gexpHistory SET ("${currentDay}") = (?) WHERE uuid = ?`,
-      ).run(currentDailyExp, uuid);
+      ).run(currentDailyExp ?? 0, uuid);
     }
 
     const hypixelMemberUuids = guild.members.map((member) => member.uuid);
