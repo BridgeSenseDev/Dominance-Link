@@ -297,8 +297,8 @@ export async function gsrun(sheets: JWT) {
           }
 
           const discordTag = memberWithExpHistory.discord
-            ? (await client.users.fetch(memberWithExpHistory.discord))?.tag ??
-              null
+            ? ((await client.users.fetch(memberWithExpHistory.discord))?.tag ??
+              null)
             : null;
 
           const { name, discord, nameColor, targetRank, ...rest } =

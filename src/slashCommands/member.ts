@@ -268,8 +268,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     {
       header: "§bWeekly Guild Contribution",
       text: `§b${(
-        (guildMember.weeklyGexp / fetchTotalWeeklyGexp()) *
-        100
+        (guildMember.weeklyGexp / fetchTotalWeeklyGexp()) * 100
       ).toFixed(1)}%`,
       font: "20px Minecraft",
       textY: [19, 9],
@@ -287,8 +286,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     {
       header: "§bLifetime Guild Contribution",
       text: `§b${(
-        (gexpHistory.lifetimeGexp / fetchTotalLifetimeGexp()) *
-        100
+        (gexpHistory.lifetimeGexp / fetchTotalLifetimeGexp()) * 100
       ).toFixed(1)}%`,
       font: "20px Minecraft",
       textY: [19, 9],

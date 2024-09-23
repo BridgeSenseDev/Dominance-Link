@@ -266,7 +266,7 @@ export async function archiveGuildMember(
   const gexpHistoryData = db
     .query("SELECT * FROM gexpHistory WHERE uuid = ?1")
     .get(
-      guildMemberData?.uuid ? guildMemberData.uuid : uuid ?? "",
+      guildMemberData?.uuid ? guildMemberData.uuid : (uuid ?? ""),
     ) as GexpHistory;
   if (gexpHistoryData) {
     db.prepare(
