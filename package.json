@@ -19,7 +19,7 @@
     "discord-emoji-converter": "^1.2.10",
     "discord.js": "^14.16.3",
     "googleapis": "^143.0.0",
-    "hypixel-api-reborn": "^11.3.6",
+    "hypixel-api-reborn": "^11.3.7",
     "math-expression-evaluator": "^2.0.5",
     "mineflayer": "^4.20.1",
     "node-cron": "^3.0.3",
