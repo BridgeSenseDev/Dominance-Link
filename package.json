@@ -29,7 +29,7 @@
     "@biomejs/biome": "1.9.3",
     "@types/bun": "^1.1.10",
     "@types/node-cron": "^3.0.11",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   },
   "overrides": {
     "prismarine-auth": "github:PrismarineJS/prismarine-auth"
