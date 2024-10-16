@@ -5,7 +5,7 @@ import config from "../config.json" with { type: "json" };
 import { textChannels } from "../events/discord/ready.js";
 import { hypixel } from "../index.js";
 import type { NumberObject, StringObject } from "../types/global";
-import { doubleDigits, toCamelCase } from "./clientUtils.js";
+import { doubleDigits } from "./clientUtils.js";
 
 const db = new Database("guild.db");
 
@@ -58,7 +58,7 @@ export default async function gexpWatch() {
       const guildThumbnails: StringObject = {
         rebel:
           "https://cdn.discordapp.com/attachments/986281342457237624/1001705614264778803/a_96a019775f60ebe70d0e5ea3d762ff57.webp",
-        sailorMoon:
+        theater:
           "https://cdn.discordapp.com/attachments/986281342457237624/1001839326033879080/ezgif-1-9402e80289.png",
         dawns:
           "https://cdn.discordapp.com/icons/406305465341837313/bdabc7a8bd14a701e104ec9800c12fd1.webp?size=4096&width=656&height=656",
@@ -70,7 +70,7 @@ export default async function gexpWatch() {
       const guildNames: StringObject = {
         dominance: "Dominance",
         rebel: "Rebel",
-        sailorMoon: "Sailor Moon",
+        theater: "Theater",
         dawns: "The Dawns Awakening",
         lucid: "Lucid",
         leman: "Leman",
@@ -152,9 +152,7 @@ export default async function gexpWatch() {
           new EmbedBuilder()
             .setColor(gexpGained(gained)[1])
             .setTitle(
-              `We are ${difference.toLocaleString()} GEXP ahead of ${toCamelCase(
-                guildName,
-              )}`,
+              `We are ${difference.toLocaleString()} GEXP ahead of ${guildNames[guildName]}`,
             )
             .setDescription(
               `${gexpGained(gained)[0]} **${Math.abs(

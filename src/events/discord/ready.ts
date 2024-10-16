@@ -111,9 +111,17 @@ export default async function execute(client: Client) {
   await weekly();
   await reqsUpdate();
 
-  setInterval(checkForHypixelUpdates, 10000);
-  setInterval(checkForIncidents, 10000);
-  setInterval(checkForSkyblockVersion, 10000);
+  let firstTime = true;
+
+  async function startChecking() {
+    await checkForHypixelUpdates(firstTime);
+    await checkForIncidents(firstTime);
+    await checkForSkyblockVersion();
+
+    firstTime = false;
+  }
+
+  setInterval(startChecking, 10000);
 
   console.log(`[DISCORD] Logged in as ${client.user?.tag}`);
 }

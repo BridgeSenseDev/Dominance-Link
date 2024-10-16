@@ -283,14 +283,6 @@ export function hypixelApiErrorEmbed(cause: string) {
   };
 }
 
-export function toCamelCase(str: string): string {
-  return str
-    .replace(/^\w|[A-Z]|\b\w/g, (word, index) =>
-      index === 0 ? word.toLowerCase() : word.toUpperCase(),
-    )
-    .replace(/\s+/g, "");
-}
-
 export function getLevelDetails(totalXP: number) {
   let level = 0;
   let currentXP = totalXP;

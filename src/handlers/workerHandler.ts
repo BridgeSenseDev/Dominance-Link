@@ -5,7 +5,7 @@ import { sleep } from "../helper/clientUtils.ts";
 import { generateID } from "../helper/utils.ts";
 import { hypixel } from "../index.js";
 
-interface MessageObject {
+export interface MessageObject {
   type: string;
   string: string;
   motd: string;
@@ -74,10 +74,6 @@ export function chat(message: string, n = 0) {
   }, 5000);
 }
 
-export function quit() {
-  worker.postMessage({ type: "quit" });
-}
-
 export function autoRejoin() {
   setInterval(async () => {
     const status = await hypixel
@@ -99,7 +95,7 @@ export function autoRejoin() {
         });
       await textChannels["botStatus"].send({ embeds: [embed] });
       try {
-        quit();
+        worker.postMessage({ type: "quit" });
       } catch (err) {
         /* empty */
       }

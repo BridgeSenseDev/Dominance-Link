@@ -8,27 +8,41 @@ const hypixelIncidents: Record<
   string,
   { notified?: boolean; updates?: string[] }
 > = {};
-export async function checkForIncidents() {
+
+export async function checkForIncidents(firstTime = false) {
   try {
     const { items: status } = await parser.parseURL(
       "https://status.hypixel.net/history.rss",
     );
 
-    const latestIcidents = status.filter(
+    const latestIncidents = status.filter(
       (data) =>
         new Date(data.pubDate ?? 0).getTime() / 1000 + 43200 >
         Date.now() / 1000,
     );
 
-    for (const incident of latestIcidents) {
+    for (const incident of latestIncidents) {
       const { title, link } = incident;
 
       if (!title) {
         continue;
       }
 
+      if (firstTime) {
+        hypixelIncidents[title] = { notified: true, updates: [] };
+        const updates = JSON.stringify(incident.contentSnippet)
+          .split("\\n")
+          .filter((_, index) => index % 2 !== 0);
+
+        for (const update of updates) {
+          hypixelIncidents[title].updates?.push(update);
+        }
+
+        continue;
+      }
+
       if (hypixelIncidents[title]?.notified !== true) {
-        hypixelIncidents[title] = { notified: true };
+        hypixelIncidents[title].notified = true;
         chat(`/gc [HYPIXEL STATUS] ${title} | ${link}`);
         await new Promise((resolve) => setTimeout(resolve, 1500));
       }
@@ -38,8 +52,7 @@ export async function checkForIncidents() {
         .filter((_, index) => index % 2 !== 0);
 
       for (const update of updates) {
-        if (hypixelIncidents[title]?.updates?.includes(update) === true)
-          continue;
+        if (hypixelIncidents[title]?.updates?.includes(update)) continue;
 
         hypixelIncidents[title].updates ??= [];
         hypixelIncidents[title].updates.push(update);
