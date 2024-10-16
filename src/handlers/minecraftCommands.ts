@@ -1,5 +1,7 @@
 import type { Player } from "hypixel-api-reborn";
+import config from "../config.json" with { type: "json" };
 import { abbreviateNumber, formatNumber } from "../helper/clientUtils.ts";
+import { timeAgo } from "../helper/utils.ts";
 import { hypixel } from "../index.ts";
 import { chat } from "./workerHandler.ts";
 
@@ -50,6 +52,11 @@ export async function handleMinecraftCommands(message: string, author: string) {
       case "sb":
       case "skyblock": {
         chat(await getSkyblockStats(player));
+        break;
+      }
+      case "p":
+      case "ping": {
+        chat(await getHypixelPing(player));
       }
     }
   }
@@ -151,4 +158,26 @@ export async function getSkyblockStats(player: Player) {
   }
 
   return `/gc Error: No profiles found for ${player.nickname}`;
+}
+
+export async function getHypixelPing(player: Player) {
+  const ping = await (
+    await fetch(`https://api.polsu.xyz/polsu/ping?uuid=${player.uuid}`, {
+      headers: {
+        "Api-Key": config.keys.polsuApiKey,
+      },
+    })
+  ).json();
+
+  if (!ping.success) {
+    return `/gc Error: ${ping.cause}`;
+  }
+
+  const avg = ping.data.stats.avg;
+  const min = ping.data.stats.min;
+  const max = ping.data.stats.max;
+  const recent = `Ping ${timeAgo(ping.data.history[0].timestamp * 1000)}: ${ping.data.history[0].avg}ms`;
+  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+
+  return `/gc ${rankTag}${player.nickname} MAX: ${max}ms MIN: ${min}ms AVG: ${avg}ms ${recent}`;
 }

@@ -41,6 +41,7 @@
 
 ## Credits
 
+[Polsu API](https://api.polsu.xyz/)<br>
 [Skyhelper Networth](https://github.com/Altpapier/SkyHelper-Networth)<br>
 [Unborn Hypixel](https://github.com/lilithmod/unborn-hypixel)<br>
 [PlayerDB API](https://playerdb.co/)<br>
