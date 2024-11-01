@@ -434,7 +434,7 @@ export async function players() {
 
     if (
       data.targetRank &&
-      !["[Moderator]", "[Owner]", "[GM]"].includes(data.tag) &&
+      !["[Moderator]", "[Owner]", "[GUILDMASTER]"].includes(data.tag) &&
       data.targetRank !== data.tag
     ) {
       const ign = await uuidToName(data.uuid);
