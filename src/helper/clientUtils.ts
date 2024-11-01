@@ -391,7 +391,7 @@ export async function isStaff(identifier: string) {
   if (!uuid) return false;
   const guildMember = fetchGuildMember(uuid);
   if (!guildMember) return false;
-  return ["[GUILDMASTER]", "[Owner]", "[Staff]"].includes(guildMember.tag);
+  return ["[GUILDMASTER]", "[Owner]", "[Moderator]"].includes(guildMember.tag);
 }
 
 export function generateHeadUrl(uuid: string, name: string) {

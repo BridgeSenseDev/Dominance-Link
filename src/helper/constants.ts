@@ -2,8 +2,9 @@ import config from "../config.json" with { type: "json" };
 import type { StringObject } from "../types/global";
 
 export const guildMemberRoles = [
-  config.roles.seniorStaff,
-  config.roles.eventStaff,
+  config.roles.headModerator,
+  config.roles.moderator,
+  config.roles.jrModerator,
   config.roles.goat,
   config.roles.dominator,
   config.roles.supreme,

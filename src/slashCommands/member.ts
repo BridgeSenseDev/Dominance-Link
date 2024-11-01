@@ -28,7 +28,7 @@ const tagColorCodes: StringObject = {
   "[Slayer]": "§2[Slayer]",
   "[Hero]": "§6[Hero]",
   "[Elite]": "§5[Elite]",
-  "[Staff]": "§c[Staff]",
+  "[Moderator]": "§c[Moderator]",
   "[Owner]": "§4[Owner]",
   "[GM]": "§4[GM]",
 };

@@ -365,7 +365,9 @@ export async function players() {
     supreme: getRole(config.roles.supreme),
     dominator: getRole(config.roles.dominator),
     goat: getRole(config.roles.goat),
-    eventStaff: getRole(config.roles.eventStaff),
+    jrModerator: getRole(config.roles.jrModerator),
+    moderator: getRole(config.roles.moderator),
+    headModerator: getRole(config.roles.headModerator),
   };
 
   setInterval(
@@ -380,7 +382,9 @@ export async function players() {
         Array.from(roles.supreme.members),
         Array.from(roles.dominator.members),
         Array.from(roles.goat.members),
-        Array.from(roles.eventStaff.members),
+        Array.from(roles.jrModerator.members),
+        Array.from(roles.moderator.members),
+        Array.from(roles.headModerator.members),
       );
       for (const member of members) {
         if (!discordId.includes(member[0])) {
@@ -430,7 +434,7 @@ export async function players() {
 
     if (
       data.targetRank &&
-      !["[Staff]", "[Owner]", "[GM]"].includes(data.tag) &&
+      !["[Moderator]", "[Owner]", "[GM]"].includes(data.tag) &&
       data.targetRank !== data.tag
     ) {
       const ign = await uuidToName(data.uuid);
