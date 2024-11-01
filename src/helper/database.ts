@@ -366,7 +366,6 @@ export async function players() {
     dominator: getRole(config.roles.dominator),
     goat: getRole(config.roles.goat),
     eventStaff: getRole(config.roles.eventStaff),
-    recruitmentStaff: getRole(config.roles.recruitmentStaff),
   };
 
   setInterval(
@@ -381,7 +380,6 @@ export async function players() {
         Array.from(roles.supreme.members),
         Array.from(roles.dominator.members),
         Array.from(roles.goat.members),
-        Array.from(roles.recruitmentStaff.members),
         Array.from(roles.eventStaff.members),
       );
       for (const member of members) {

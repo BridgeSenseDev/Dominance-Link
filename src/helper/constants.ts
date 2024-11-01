@@ -3,7 +3,6 @@ import type { StringObject } from "../types/global";
 
 export const guildMemberRoles = [
   config.roles.seniorStaff,
-  config.roles.recruitmentStaff,
   config.roles.eventStaff,
   config.roles.goat,
   config.roles.dominator,
