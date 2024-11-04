@@ -15,7 +15,10 @@ import {
   createGuildMember,
   fetchGuildMember,
 } from "../../handlers/databaseHandler.js";
-import { handleMinecraftCommands } from "../../handlers/minecraftCommands.ts";
+import {
+  getReqs,
+  handleMinecraftCommands,
+} from "../../handlers/minecraftCommands.ts";
 import { chat, waitForMessage } from "../../handlers/workerHandler.js";
 import {
   addXp,
@@ -24,6 +27,7 @@ import {
   uuidToDiscord,
 } from "../../helper/clientUtils.js";
 import messageToImage from "../../helper/messageToImage.js";
+import { hypixel } from "../../index.ts";
 import type {
   BreakMember,
   HypixelGuildMember,
@@ -90,9 +94,8 @@ export default async function execute(
     chat("/limbo");
     return;
   }
-  if (isLimboMessage(msg)) {
-    chat("/limbo");
-  }
+
+  console.log(isGuildJoinRequestMessage(msg));
 
   if (isGuildMessage(msg)) {
     await gcWebhook.send({
@@ -110,7 +113,7 @@ export default async function execute(
       await addXp(authorUuid);
     }
 
-    return handleMinecraftCommands(msg, author);
+    return handleMinecraftCommands("gc", msg, author);
   }
 
   if (isOfficerMessage(msg)) {
@@ -129,7 +132,7 @@ export default async function execute(
       await addXp(authorUuid);
     }
 
-    return;
+    return handleMinecraftCommands("oc", msg, author);
   }
 
   if (isPrivateMessage(msg)) {
@@ -370,6 +373,24 @@ export default async function execute(
 
     return;
   }
+
+  if (isGuildJoinRequestMessage(msg)) {
+    console.log(msg);
+    const ign = /(\S+)\s+has requested/.exec(msg)?.[1];
+    console.log(ign);
+    if (!ign) {
+      return;
+    }
+
+    const player = await hypixel.getPlayer(ign).catch(() => null);
+    console.log(player);
+
+    if (!player) {
+      return;
+    }
+
+    chat(await getReqs("oc", player));
+  }
 }
 
 async function handleGuildJoin(client: Client, msg: string) {
@@ -609,6 +630,6 @@ function isRepeatMessage(message: string) {
   return message === "You cannot say the same message twice!";
 }
 
-function isLimboMessage(message: string) {
-  return message === "Unknown command. Type \"/help\" for help. ('limb')";
+function isGuildJoinRequestMessage(message: string) {
+  return message.includes("has requested to join the Guild!");
 }
