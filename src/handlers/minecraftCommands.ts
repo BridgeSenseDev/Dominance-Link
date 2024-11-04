@@ -6,7 +6,11 @@ import { formatTime, timeAgo } from "../helper/utils.ts";
 import { hypixel } from "../index.ts";
 import { chat } from "./workerHandler.ts";
 
-export async function handleMinecraftCommands(message: string, author: string) {
+export async function handleMinecraftCommands(
+  channel: string,
+  message: string,
+  author: string,
+) {
   const command = /!(\w+)/.exec(message)?.[1];
   if (command) {
     let ign = /!\w+\s+(\S+)/.exec(message)?.[1];
@@ -15,71 +19,71 @@ export async function handleMinecraftCommands(message: string, author: string) {
     }
 
     const player = await hypixel.getPlayer(ign).catch(async (e) => {
-      chat(`/gc Error: ${e.message}`);
+      chat(`/{channel} Error: ${e.message}`);
     });
     if (!player) return;
 
     switch (command) {
       case "bw":
       case "bedwars": {
-        chat(getBedwarsStats(player));
+        chat(getBedwarsStats(channel, player));
         break;
       }
       case "d":
       case "duels": {
-        chat(getDuelsStats(player));
+        chat(getDuelsStats(channel, player));
         break;
       }
       case "mm":
       case "murder": {
-        chat(getMurderMysteryStats(player));
+        chat(getMurderMysteryStats(channel, player));
         break;
       }
       case "b":
       case "bridge": {
-        chat(getBridgeStats(player));
+        chat(getBridgeStats(channel, player));
         break;
       }
       case "vz":
       case "vampirez": {
-        chat(getVampStats(player));
+        chat(getVampStats(channel, player));
         break;
       }
       case "sw":
       case "skywars": {
-        chat(getSkyWarsStats(player));
+        chat(getSkyWarsStats(channel, player));
         break;
       }
       case "sb":
       case "skyblock": {
-        chat(await getSkyblockStats(player));
+        chat(await getSkyblockStats(channel, player));
         break;
       }
       case "p":
       case "ping": {
-        chat(await getHypixelPing(player));
+        chat(await getHypixelPing(channel, player));
         break;
       }
       case "h":
       case "hypixel": {
-        chat(await getHypixelStats(player));
+        chat(await getHypixelStats(channel, player));
         break;
       }
       case "z":
       case "zombies": {
-        chat(await getZombiesStats(player));
+        chat(await getZombiesStats(channel, player));
         break;
       }
       case "r":
       case "reqs": {
-        chat(await getReqs(player));
+        chat(await getReqs(channel, player));
         break;
       }
     }
   }
 }
 
-export function getBedwarsStats(player: Player) {
+export function getBedwarsStats(channel: string, player: Player) {
   const bedwars = player.stats?.bedwars;
   const star = bedwars?.level ?? 0;
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
@@ -89,10 +93,10 @@ export function getBedwarsStats(player: Player) {
   const wlr = formatNumber(bedwars?.WLRatio ?? 0);
   const ws = formatNumber(bedwars?.winstreak ?? 0);
 
-  return `/gc [${star}✫] ${rankTag}${player.nickname} FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`;
+  return `/${channel} [${star}✫] ${rankTag}${player.nickname} FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`;
 }
 
-export function getDuelsStats(player: Player) {
+export function getDuelsStats(channel: string, player: Player) {
   const duels = player.stats?.duels;
   const division = duels?.title ? `[${duels?.title}] ` : "";
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
@@ -101,10 +105,10 @@ export function getDuelsStats(player: Player) {
   const cws = formatNumber(duels?.winstreak ?? 0);
   const bws = formatNumber(duels?.bestWinstreak ?? 0);
 
-  return `/gc ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`;
+  return `/${channel} ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`;
 }
 
-export function getMurderMysteryStats(player: Player) {
+export function getMurderMysteryStats(channel: string, player: Player) {
   const murderMystery = player.stats?.murdermystery;
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
   const wins = murderMystery?.wins ?? 0;
@@ -113,10 +117,10 @@ export function getMurderMysteryStats(player: Player) {
     (murderMystery?.kills ?? 0) / (murderMystery?.deaths ?? 0),
   );
 
-  return `/gc ${rankTag}${player.nickname} W: ${wins} K: ${kills} KDR: ${kdr}`;
+  return `/${channel} ${rankTag}${player.nickname} W: ${wins} K: ${kills} KDR: ${kdr}`;
 }
 
-export function getBridgeStats(player: Player) {
+export function getBridgeStats(channel: string, player: Player) {
   const bridge = player.stats?.duels?.bridge;
   const division = bridge?.title ? `[${bridge?.title}] ` : "";
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
@@ -126,10 +130,10 @@ export function getBridgeStats(player: Player) {
   const cws = formatNumber(bridge?.winstreak ?? 0);
   const bws = formatNumber(bridge?.bestWinstreak ?? 0);
 
-  return `/gc ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} G: ${goals} CWS: ${cws} BWS: ${bws}`;
+  return `/${channel} ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} G: ${goals} CWS: ${cws} BWS: ${bws}`;
 }
 
-export function getVampStats(player: Player) {
+export function getVampStats(channel: string, player: Player) {
   const vamp = player.stats?.vampirez;
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
   const humanWins = formatNumber(vamp?.human.wins ?? 0);
@@ -138,10 +142,10 @@ export function getVampStats(player: Player) {
     (vamp?.vampire.kills ?? 0) / (vamp?.human.deaths ?? 0),
   );
 
-  return `/gc ${rankTag}${player.nickname} HW: ${humanWins} HK: ${humanKills} HKDR: ${humanKdr}`;
+  return `/${channel} ${rankTag}${player.nickname} HW: ${humanWins} HK: ${humanKills} HKDR: ${humanKdr}`;
 }
 
-export function getSkyWarsStats(player: Player) {
+export function getSkyWarsStats(channel: string, player: Player) {
   const skywars = player.stats?.skywars;
   const level = skywars?.levelFormatted ?? "1⋆";
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
@@ -150,14 +154,14 @@ export function getSkyWarsStats(player: Player) {
   const kills = formatNumber(skywars?.kills ?? 0);
   const kdr = formatNumber((skywars?.kills ?? 0) / (skywars?.deaths ?? 0));
 
-  return `/gc [${level}] ${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} K: ${kills} KDR: ${kdr}`;
+  return `/${channel} [${level}] ${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} K: ${kills} KDR: ${kdr}`;
 }
 
-export async function getSkyblockStats(player: Player) {
+export async function getSkyblockStats(channel: string, player: Player) {
   const sbProfiles = await hypixel
     .getSkyblockProfiles(player.uuid)
     .catch((e) => {
-      return `/gc Error: ${e.message}`;
+      return `/${channel} Error: ${e.message}`;
     });
   if (typeof sbProfiles === "string") {
     return sbProfiles;
@@ -171,13 +175,13 @@ export async function getSkyblockStats(player: Player) {
     const sbLevel = sbMember.level;
     const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
 
-    return `/gc [${Math.floor(sbLevel)}] ${rankTag}${player.nickname} NW: ${abbreviateNumber(networth)} SA: ${formatNumber(sbSkillAverage)}`;
+    return `/${channel} [${Math.floor(sbLevel)}] ${rankTag}${player.nickname} NW: ${abbreviateNumber(networth)} SA: ${formatNumber(sbSkillAverage)}`;
   }
 
-  return `/gc Error: No profiles found for ${player.nickname}`;
+  return `/${channel} Error: No profiles found for ${player.nickname}`;
 }
 
-export async function getHypixelPing(player: Player) {
+export async function getHypixelPing(channel: string, player: Player) {
   const ping = await (
     await fetch(`https://api.polsu.xyz/polsu/ping?uuid=${player.uuid}`, {
       headers: {
@@ -187,7 +191,7 @@ export async function getHypixelPing(player: Player) {
   ).json();
 
   if (!ping.success) {
-    return `/gc Error: ${ping.cause}`;
+    return `/${channel} Error: ${ping.cause}`;
   }
 
   const avg = ping.data.stats.avg;
@@ -196,10 +200,10 @@ export async function getHypixelPing(player: Player) {
   const recent = `Ping ${timeAgo(ping.data.history[0].timestamp * 1000)}: ${ping.data.history[0].avg}ms`;
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
 
-  return `/gc ${rankTag}${player.nickname} MAX: ${max}ms MIN: ${min}ms AVG: ${avg}ms ${recent}`;
+  return `/${channel} ${rankTag}${player.nickname} MAX: ${max}ms MIN: ${min}ms AVG: ${avg}ms ${recent}`;
 }
 
-export async function getHypixelStats(player: Player) {
+export async function getHypixelStats(channel: string, player: Player) {
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
   const level = Math.floor(player.level ?? 0);
   const achievementPoints = formatNumber(player.achievementPoints ?? 0);
@@ -207,10 +211,10 @@ export async function getHypixelStats(player: Player) {
   const karma = abbreviateNumber(player.karma ?? 0);
   const lastLogin = player.lastLogin ? timeAgo(player.lastLogin) : "N/A";
 
-  return `/gc [${level}] ${rankTag}${player.nickname} AP: ${achievementPoints} Karma: ${karma} Reward Streak: ${rewardStreak} Last Login: ${lastLogin}`;
+  return `/${channel} [${level}] ${rankTag}${player.nickname} AP: ${achievementPoints} Karma: ${karma} Reward Streak: ${rewardStreak} Last Login: ${lastLogin}`;
 }
 
-export async function getZombiesStats(player: Player) {
+export async function getZombiesStats(channel: string, player: Player) {
   const zombies = player.stats?.arcade?.zombies;
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
   const wins = formatNumber(zombies?.overall?.wins ?? 0);
@@ -229,22 +233,22 @@ export async function getZombiesStats(player: Player) {
     ? formatTime(zombies.prison.fastestRound30)
     : `Round ${zombies?.prison.bestRound ?? 0}`;
 
-  return `/gc ${rankTag}${player.nickname} W: ${wins} K: ${kills} D: ${deaths} DE: ${DE} AA: ${AA} BB: ${BB} P: ${P}`;
+  return `/${channel} ${rankTag}${player.nickname} W: ${wins} K: ${kills} D: ${deaths} DE: ${DE} AA: ${AA} BB: ${BB} P: ${P}`;
 }
 
-export async function getReqs(player: Player) {
+export async function getReqs(channel: string, player: Player) {
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
   const reqs = await checkRequirements(player.uuid, player);
 
   if (reqs === 0) {
-    return `/gc ${rankTag}${player.nickname} does not meet requirements!`;
+    return `/${channel} ${rankTag}${player.nickname} does not meet requirements!`;
   }
   if (reqs === 1) {
-    return `/gc ${rankTag}${player.nickname} meets secondary requirements! (65k GEXP/week)`;
+    return `/${channel} ${rankTag}${player.nickname} meets secondary requirements! (200k GEXP/week)`;
   }
   if (reqs === 2) {
-    return `/gc ${rankTag}${player.nickname} meets primary requirements! (200k GEXP/week)`;
+    return `/${channel} ${rankTag}${player.nickname} meets primary requirements! (65k GEXP/week)`;
   }
 
-  return `/gc ${rankTag}${player.nickname} requirements check failed!`;
+  return `/${channel} ${rankTag}${player.nickname} requirements check failed!`;
 }
