@@ -11,7 +11,8 @@ import config from "../config.json" with { type: "json" };
 
 export default async function pagination(
   interaction: ChatInputCommandInteraction,
-  embeds: EmbedBuilder[],
+  getEmbedForPage: (page: number) => Promise<EmbedBuilder>,
+  totalPages: number,
   actionsRows?: ActionRowBuilder<MessageActionRowComponentBuilder>[],
 ) {
   const paginatorRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -29,11 +30,15 @@ export default async function pagination(
   let components = actionsRows
     ? [...actionsRows.flat(), paginatorRow]
     : [paginatorRow];
+
+  let page = 0;
+
+  const initialEmbed = await getEmbedForPage(page);
+
   const message = await interaction.editReply({
-    embeds: [embeds[0]],
+    embeds: [initialEmbed],
     components,
   });
-  let page = 0;
 
   const collector = message.createMessageComponentCollector({
     componentType: ComponentType.Button,
@@ -47,24 +52,22 @@ export default async function pagination(
       page++;
     }
 
-    if (page === embeds.length - 1) {
-      paginatorRow.components[1].setDisabled(true);
-    } else {
-      paginatorRow.components[1].setDisabled(false);
-    }
-    if (page === 0) {
-      paginatorRow.components[0].setDisabled(true);
-    } else {
-      paginatorRow.components[0].setDisabled(false);
-    }
+    paginatorRow.components[0].setDisabled(page === 0);
+    paginatorRow.components[1].setDisabled(page === totalPages - 1);
+
+    const currentEmbed = await getEmbedForPage(page);
 
     components = actionsRows
       ? [...actionsRows.flat(), paginatorRow]
       : [paginatorRow];
-    await collectorInteraction.update({ embeds: [embeds[page]], components });
+
+    await collectorInteraction.update({ embeds: [currentEmbed], components });
   });
 
   collector.on("end", async () => {
-    await interaction.editReply({ embeds: [embeds[page]], components: [] });
+    await interaction.editReply({
+      embeds: [await getEmbedForPage(page)],
+      components: [],
+    });
   });
 }

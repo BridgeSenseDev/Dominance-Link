@@ -31,26 +31,24 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     .map(([discord, count]: [string, number]) => ({ discord, count }))
     .sort((a: Count, b: Count) => b.count - a.count);
 
-  const pages = Array.from(
-    { length: Math.ceil(userCountsArray.length / 12) },
-    (_, i) => userCountsArray.slice(i * 12, i * 12 + 12),
-  );
+  const totalPages = Math.ceil(userCountsArray.length / 12);
 
-  const embeds: EmbedBuilder[] = [];
-
-  for (const [i, page] of pages.entries()) {
+  const getEmbedForPage = async (page: number): Promise<EmbedBuilder> => {
     const embed = new EmbedBuilder()
       .setColor(config.colors.discordGray)
       .setTitle("Counting Leaderboards")
       .setFooter({
-        text: `Page ${i + 1} of ${pages.length} | Current count: ${
-          currentCount.count + 1
-        }`,
+        text: `Page ${page + 1} of ${totalPages} | Current count: ${currentCount.count + 1}`,
       });
 
-    for (const [j, { discord, count }] of page.entries()) {
-      const place = i * 10 + j + 1;
+    const startIndex = page * 12;
+
+    for (const [j, { discord, count }] of userCountsArray
+      .slice(startIndex, startIndex + 12)
+      .entries()) {
+      const place = startIndex + j + 1;
       let customEmoji: string | undefined;
+
       if (place === 1) {
         customEmoji = config.emojis.gold;
       } else if (place === 2) {
@@ -60,6 +58,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       } else {
         customEmoji = config.emojis.bullet;
       }
+
       embed.addFields({
         name: `#${place} - ${await uuidToName(discordToUuid(discord) ?? "")}`,
         value: `${customEmoji} ${count}`,
@@ -67,8 +66,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       });
     }
 
-    embeds.push(embed);
-  }
+    return embed;
+  };
 
-  await pagination(interaction, embeds);
+  await pagination(interaction, getEmbedForPage, totalPages);
 }
