@@ -95,8 +95,6 @@ export default async function execute(
     return;
   }
 
-  console.log(isGuildJoinRequestMessage(msg));
-
   if (isGuildMessage(msg)) {
     await gcWebhook.send({
       username: "Dominance",
@@ -375,15 +373,12 @@ export default async function execute(
   }
 
   if (isGuildJoinRequestMessage(msg)) {
-    console.log(msg);
     const ign = /(\S+)\s+has requested/.exec(msg)?.[1];
-    console.log(ign);
     if (!ign) {
       return;
     }
 
     const player = await hypixel.getPlayer(ign).catch(() => null);
-    console.log(player);
 
     if (!player) {
       return;
