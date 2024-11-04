@@ -47,7 +47,7 @@ export function chat(message: string, n = 0) {
         );
       }
 
-      await sleep(250);
+      await sleep(2500);
       return chat(message, newAttemptCount);
     }
 
@@ -61,7 +61,7 @@ export function chat(message: string, n = 0) {
         );
       }
 
-      await sleep(250);
+      await sleep(2500);
       return chat(`${message} - ${generateID(24)}`, newAttemptCount);
     }
   };

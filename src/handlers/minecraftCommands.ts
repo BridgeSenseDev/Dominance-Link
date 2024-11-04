@@ -1,7 +1,8 @@
 import type { Player } from "hypixel-api-reborn";
 import config from "../config.json" with { type: "json" };
 import { abbreviateNumber, formatNumber } from "../helper/clientUtils.ts";
-import { timeAgo } from "../helper/utils.ts";
+import { checkRequirements } from "../helper/requirements.ts";
+import { formatTime, timeAgo } from "../helper/utils.ts";
 import { hypixel } from "../index.ts";
 import { chat } from "./workerHandler.ts";
 
@@ -57,6 +58,22 @@ export async function handleMinecraftCommands(message: string, author: string) {
       case "p":
       case "ping": {
         chat(await getHypixelPing(player));
+        break;
+      }
+      case "h":
+      case "hypixel": {
+        chat(await getHypixelStats(player));
+        break;
+      }
+      case "z":
+      case "zombies": {
+        chat(await getZombiesStats(player));
+        break;
+      }
+      case "r":
+      case "reqs": {
+        chat(await getReqs(player));
+        break;
       }
     }
   }
@@ -180,4 +197,54 @@ export async function getHypixelPing(player: Player) {
   const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
 
   return `/gc ${rankTag}${player.nickname} MAX: ${max}ms MIN: ${min}ms AVG: ${avg}ms ${recent}`;
+}
+
+export async function getHypixelStats(player: Player) {
+  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+  const level = Math.floor(player.level ?? 0);
+  const achievementPoints = formatNumber(player.achievementPoints ?? 0);
+  const rewardStreak = formatNumber(player.rewardStreak ?? 0);
+  const karma = abbreviateNumber(player.karma ?? 0);
+  const lastLogin = player.lastLogin ? timeAgo(player.lastLogin) : "N/A";
+
+  return `/gc [${level}] ${rankTag}${player.nickname} AP: ${achievementPoints} Karma: ${karma} Reward Streak: ${rewardStreak} Last Login: ${lastLogin}`;
+}
+
+export async function getZombiesStats(player: Player) {
+  const zombies = player.stats?.arcade?.zombies;
+  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+  const wins = formatNumber(zombies?.overall?.wins ?? 0);
+  const kills = formatNumber(zombies?.overall?.zombieKills ?? 0);
+  const deaths = formatNumber(zombies?.overall?.deaths ?? 0);
+  const DE = zombies?.deadEnd.fastestRound30
+    ? formatTime(zombies.deadEnd.fastestRound30)
+    : `Round ${zombies?.deadEnd.bestRound ?? 0}`;
+  const AA = zombies?.alienArcadium.fastestRound30
+    ? formatTime(zombies.alienArcadium.fastestRound30)
+    : `Round ${zombies?.alienArcadium.bestRound ?? 0}`;
+  const BB = zombies?.badBlood.fastestRound30
+    ? formatTime(zombies.badBlood.fastestRound30)
+    : `Round ${zombies?.badBlood.bestRound ?? 0}`;
+  const P = zombies?.prison.fastestRound30
+    ? formatTime(zombies.prison.fastestRound30)
+    : `Round ${zombies?.prison.bestRound ?? 0}`;
+
+  return `/gc ${rankTag}${player.nickname} W: ${wins} K: ${kills} D: ${deaths} DE: ${DE} AA: ${AA} BB: ${BB} P: ${P}`;
+}
+
+export async function getReqs(player: Player) {
+  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+  const reqs = await checkRequirements(player.uuid, player);
+
+  if (reqs === 0) {
+    return `/gc ${rankTag}${player.nickname} does not meet requirements!`;
+  }
+  if (reqs === 1) {
+    return `/gc ${rankTag}${player.nickname} meets secondary requirements! (65k GEXP/week)`;
+  }
+  if (reqs === 2) {
+    return `/gc ${rankTag}${player.nickname} meets primary requirements! (200k GEXP/week)`;
+  }
+
+  return `/gc ${rankTag}${player.nickname} requirements check failed!`;
 }
