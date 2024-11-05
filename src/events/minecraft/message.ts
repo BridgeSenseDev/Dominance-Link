@@ -5,7 +5,6 @@ import {
   EmbedBuilder,
   type Guild,
   type Role,
-  type TextChannel,
   type ThreadChannel,
   WebhookClient,
 } from "discord.js";
@@ -19,7 +18,7 @@ import {
   getReqs,
   handleMinecraftCommands,
 } from "../../handlers/minecraftCommands.ts";
-import { chat, waitForMessage } from "../../handlers/workerHandler.js";
+import { chat } from "../../handlers/workerHandler.js";
 import {
   addXp,
   nameToUuid,
@@ -27,6 +26,7 @@ import {
   uuidToDiscord,
 } from "../../helper/clientUtils.js";
 import messageToImage from "../../helper/messageToImage.js";
+import { generateGuildAnnouncement } from "../../helper/utils.ts";
 import { hypixel } from "../../index.ts";
 import type {
   BreakMember,
@@ -134,68 +134,6 @@ export default async function execute(
   }
 
   if (isPrivateMessage(msg)) {
-    const author = msg.match(/From (\[.*])? *(.+):/)?.[2];
-    if (!author) return;
-
-    const authorUuid = await nameToUuid(author);
-    if (!authorUuid) return;
-
-    const waitlist = db
-      .prepare("SELECT discord, channel FROM waitlist WHERE uuid = ?")
-      .get(authorUuid) as WaitlistMember;
-    const breaks = db
-      .prepare("SELECT discord, thread FROM breaks WHERE uuid = ?")
-      .get(authorUuid) as BreakMember;
-
-    if (waitlist || breaks) {
-      chat(`/g invite ${author}`);
-
-      const receivedMessage = await waitForMessage(
-        [
-          "to your guild. They have 5 minutes to accept.",
-          "You cannot invite this player to your guild!",
-          "They will have 5 minutes to accept once they come online!",
-          "is already in another guild!",
-          "is already in your guild!",
-          "to your guild! Wait for them to accept!",
-        ],
-        5000,
-      );
-
-      let channel: TextChannel | ThreadChannel | undefined;
-      let content: string | undefined;
-
-      if (waitlist) {
-        channel = client.channels.cache.get(waitlist.channel) as TextChannel;
-        content = `<@${waitlist.discord}>`;
-      } else if (breaks) {
-        channel = client.channels.cache.get(breaks.thread) as ThreadChannel;
-        content = `<@${breaks.discord}>`;
-      }
-
-      if (!receivedMessage) {
-        chat(`/msg ${author} Guild invite failed.`);
-
-        if (channel) {
-          const embed = new EmbedBuilder()
-            .setColor(config.colors.red)
-            .setTitle("Caution")
-            .setDescription(`${config.emojis.aCross} Guild invite timed out.`);
-          await channel.send({ content, embeds: [embed] });
-        }
-        return;
-      }
-
-      chat(`/msg ${author} ${receivedMessage.string}`);
-
-      if (channel) {
-        await channel.send({
-          content,
-          files: [await generateGuildAnnouncement(receivedMessage.motd, "b")],
-        });
-      }
-    }
-
     return;
   }
 
@@ -378,13 +316,28 @@ export default async function execute(
       return;
     }
 
-    const player = await hypixel.getPlayer(ign).catch(() => null);
+    const authorUuid = await nameToUuid(ign);
+    if (!authorUuid) return;
 
-    if (!player) {
-      return;
+    const waitlist = db
+      .prepare("SELECT discord, channel FROM waitlist WHERE uuid = ?")
+      .get(authorUuid) as WaitlistMember;
+    const breaks = db
+      .prepare("SELECT discord, thread FROM breaks WHERE uuid = ?")
+      .get(authorUuid) as BreakMember;
+
+    if (waitlist || breaks) {
+      chat(`/g accept ${ign}`);
+    } else {
+      const player = await hypixel.getPlayer(ign).catch(() => null);
+      if (!player) {
+        return;
+      }
+
+      chat(await getReqs("oc", player));
     }
 
-    chat(await getReqs("oc", player));
+    return;
   }
 }
 
@@ -518,12 +471,6 @@ async function handleDiscordMember(
     discordMessage = buildGuildMessage(name, guildMember, funFact);
     await textChannels["guildChat"].send(discordMessage);
   }
-}
-
-async function generateGuildAnnouncement(message: string, color: string) {
-  return await messageToImage(
-    `§${color}-------------------------------------------------------------§r${message}§${color}-------------------------------------------------------------`,
-  );
 }
 
 function isLobbyJoinMessage(message: string) {

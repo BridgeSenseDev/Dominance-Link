@@ -25,6 +25,7 @@ import {
   fetchGuildMember,
   fetchMember,
 } from "../../handlers/databaseHandler.js";
+import { chat, waitForMessage } from "../../handlers/workerHandler.ts";
 import { hypixelApiErrorEmbed } from "../../helper/clientUtils.js";
 import {
   abbreviateNumber,
@@ -38,6 +39,7 @@ import {
 } from "../../helper/clientUtils.js";
 import { bullet, dividers } from "../../helper/constants.js";
 import requirementsEmbed from "../../helper/requirements.js";
+import { generateGuildAnnouncement } from "../../helper/utils.ts";
 import { hypixel } from "../../index.js";
 import type { BreakMember } from "../../types/global";
 import { textChannels } from "./ready.js";
@@ -290,10 +292,13 @@ export default async function execute(
             .setColor(config.colors.green)
             .setTitle(`Congrats ${name}, your application has been accepted!`)
             .setDescription(
-              `**How to get started:**\n\n${bullet} **Join The Guild**\nYou can be invited to the guild anytime \
-							without staff. Just type \`/msg ${config.minecraft.ign} .\` in-game or if you are muted, type \`/immuted \
-							${config.minecraft.ign}\`\n\nYou won't be able to see guild channels until you have joined in-game\n\n\
-							${bullet} **Confused?**\nFeel free to ask any questions here, only ping staff if needed!`,
+              `${bullet} **Accept your invite!**\nIf you are not currently in a guild and have your guild invites \
+                enabled, you should have already received an invite.\n\n${bullet} **Didn't receive an invite?**\nYou \
+                can request another invite by sending \`/g join ${config.minecraft.ign}\` in-game. Your join request \
+                will be automatically accepted.\n\n${bullet} **Note**\nYou will not have access to Discord member \
+                channels until you have accepted the in-game invite.n\nThis application will be closed. \
+                <t:${Math.floor(Date.now() / 1000) + 5 * 24 * 60 * 60}:R> if you don't join the guild by then\n\n\
+                ${bullet} **Confused?**\nFeel free to ask questions here!`,
             )
             .setThumbnail(generateHeadUrl(uuid ?? "", name));
           const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -341,6 +346,41 @@ export default async function execute(
           });
           await interaction.deleteReply();
           await interaction.message.delete();
+
+          chat(`/g invite ${name}`);
+
+          const receivedMessage = await waitForMessage(
+            [
+              "to your guild. They have 5 minutes to accept.",
+              "You cannot invite this player to your guild!",
+              "They will have 5 minutes to accept once they come online!",
+              "is already in another guild!",
+              "is already in your guild!",
+              "to your guild! Wait for them to accept!",
+            ],
+            5000,
+          );
+
+          if (!receivedMessage) {
+            chat(`/msg ${name} Guild invite failed.`);
+
+            const embed = new EmbedBuilder()
+              .setColor(config.colors.red)
+              .setTitle("Caution")
+              .setDescription(
+                `${config.emojis.aCross} Guild invite timed out.`,
+              );
+            await channel.send({ content: user.toString(), embeds: [embed] });
+
+            return;
+          }
+
+          chat(`/msg ${name} ${receivedMessage.string}`);
+
+          await channel.send({
+            content: user.toString(),
+            files: [await generateGuildAnnouncement(receivedMessage.motd, "b")],
+          });
         });
     } else if (interaction.customId === "deny") {
       const discordId =

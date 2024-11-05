@@ -9,6 +9,7 @@ import type {
   ICommentsApi,
 } from "../types/perspective.ts";
 import { formatDateForDb, updateTable } from "./clientUtils.js";
+import messageToImage from "./messageToImage.ts";
 
 const db = new Database("guild.db");
 
@@ -190,4 +191,13 @@ export function formatTime(seconds: number) {
   const remainingSeconds = seconds % 60;
 
   return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
+
+export async function generateGuildAnnouncement(
+  message: string,
+  color: string,
+) {
+  return await messageToImage(
+    `§${color}-------------------------------------------------------------§r${message}§${color}-------------------------------------------------------------`,
+  );
 }

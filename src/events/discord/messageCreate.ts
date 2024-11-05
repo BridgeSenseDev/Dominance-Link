@@ -29,7 +29,10 @@ export default async function execute(_client: Client, message: Message) {
   if (guildId !== "242357942664429568") return;
 
   if (author.bot) {
-    if (message.webhookId && message.embeds[0]?.author?.name.includes("[bot]")) {
+    if (
+      message.webhookId &&
+      message.embeds[0]?.author?.name.includes("[bot]")
+    ) {
       await message.delete();
     }
 
