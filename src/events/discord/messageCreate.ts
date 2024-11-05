@@ -26,7 +26,16 @@ const db = new Database("guild.db");
 
 export default async function execute(_client: Client, message: Message) {
   const { guildId, author, content, channel, member } = message;
-  if (guildId !== "242357942664429568" || author.bot) return;
+  if (guildId !== "242357942664429568") return;
+
+  if (author.bot) {
+    if (message.webhookId && message.embeds[0]?.author?.name.includes("[bot]")) {
+      await message.delete();
+    }
+
+    return;
+  }
+
   await addXp(author.id, message.channel);
 
   if (content.toLowerCase().includes("dominance")) {
