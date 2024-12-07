@@ -159,7 +159,7 @@ export function getSkyWarsStats(channel: string, player: Player) {
 
 export async function getSkyblockStats(channel: string, player: Player) {
   const sbProfiles = await hypixel
-    .getSkyblockProfiles(player.uuid, {getMuseum: true})
+    .getSkyblockProfiles(player.uuid, { getMuseum: true })
     .catch((e) => {
       return `/${channel} Error: ${e.message}`;
     });

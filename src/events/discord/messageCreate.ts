@@ -119,6 +119,10 @@ export default async function execute(_client: Client, message: Message) {
     tag = user.tag;
   }
 
+  if (tag === "[Moderator]") {
+    tag = "[MOD]";
+  }
+
   const name = await uuidToName(uuid ?? "");
   const messageLength = `/gc ${name} ${user?.tag}: ${messageContent}`.length;
 
