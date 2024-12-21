@@ -166,22 +166,13 @@ export default async function execute(
     } else if (interaction.customId.endsWith("LbSearch")) {
       const lbName = interaction.customId.split("LbSearch")[0];
 
-      const uuid = discordToUuid(interaction.user.id);
-      if (!uuid) {
-        await member.roles.add(
-          interaction.guild?.roles.cache.get(config.roles.unverified) as Role,
-        );
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle("Error")
-          .setDescription("Please verify first in <#1031568019522072677>");
-        await interaction.editReply({ embeds: [embed] });
-        return;
-      }
+      let username = ""
+      const usernameQuery = db.prepare("SELECT nameColor FROM guildMembers WHERE discord = ?").get(interaction.user.id) as {nameColor: string | null};
 
-      let username = "";
-      if (db.prepare("SELECT * FROM guildMembers WHERE uuid = ?").get(uuid)) {
-        username = (await uuidToName(uuid)) ?? "";
+      if (usernameQuery?.nameColor) {
+        username = removeSectionSymbols(usernameQuery.nameColor)
+        const words = username.split(' ');
+        username = words.length === 2 ? words[1] : username;
       }
 
       const modal = new ModalBuilder()
@@ -190,7 +181,7 @@ export default async function execute(
       const name = new TextInputBuilder()
         .setCustomId("name")
         .setLabel("THE MINECRAFT USERNAME OF A GUILD MEMBER")
-        .setValue(username ?? "")
+        .setValue(username)
         .setStyle(TextInputStyle.Short);
       const firstActionRow =
         new ActionRowBuilder<TextInputBuilder>().addComponents(name);
