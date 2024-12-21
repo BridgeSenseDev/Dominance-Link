@@ -57,7 +57,7 @@ client.on("ready", async () => {
       {
         name: `${config.emojis.staff} Guild Member Roles`,
         value:
-          `${bullet} <@&${config.roles.recruitmentStaff}>\n${bullet} <@&${config.roles.eventStaff}>\n` +
+          `${bullet} <@&${config.roles.moderator}>\n` +
           `${bullet} <@&${config.roles.goat}>\n${bullet} <@&${config.roles.dominator}>\n` +
           `${bullet} <@&${config.roles.supreme}>\n${bullet} <@&${config.roles.hero}>\n` +
           `${bullet} <@&${config.roles.elite}>\n${bullet} <@&${config.roles.slayer}>\n` +
@@ -83,7 +83,7 @@ client.on("ready", async () => {
       .setStyle(ButtonStyle.Secondary)
       .setEmoji(config.emojis.aConfetti),
     new ButtonBuilder()
-      .setCustomId("bot_updates")
+      .setCustomId("botUpdates")
       .setLabel("Bot Updates")
       .setStyle(ButtonStyle.Primary)
       .setEmoji(config.emojis.aDiscordbot),
