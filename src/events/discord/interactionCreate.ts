@@ -38,8 +38,16 @@ import {
   uuidToName,
 } from "../../helper/clientUtils.js";
 import { bullet, dividers } from "../../helper/constants.js";
+import {
+  getLbEmbedForPage,
+  getMemberLeaderboardPage,
+} from "../../helper/leaderboards.ts";
+import pagination from "../../helper/pagination.ts";
 import requirementsEmbed from "../../helper/requirements.js";
-import { generateGuildAnnouncement } from "../../helper/utils.ts";
+import {
+  camelCaseToWords,
+  generateGuildAnnouncement,
+} from "../../helper/utils.ts";
 import { hypixel } from "../../index.js";
 import type { BreakMember } from "../../types/global";
 import { textChannels } from "./ready.js";
@@ -120,6 +128,69 @@ export default async function execute(
       const name = new TextInputBuilder()
         .setCustomId("baseDaysInput")
         .setLabel("Previous amount of days in guild")
+        .setStyle(TextInputStyle.Short);
+      const firstActionRow =
+        new ActionRowBuilder<TextInputBuilder>().addComponents(name);
+      modal.addComponents(firstActionRow);
+      await interaction.showModal(modal);
+    } else if (interaction.customId.endsWith("LbLeftPage")) {
+      await interaction.deferReply({ ephemeral: true });
+      const lbName = interaction.customId.split("LbLeftPage")[0];
+      const totalPages =
+        Math.floor(
+          (
+            db.prepare("SELECT COUNT(*) AS total FROM guildMembers").get() as {
+              total: number;
+            }
+          ).total / 10,
+        ) + 1;
+      await pagination(
+        totalPages - 1,
+        lbName,
+        interaction,
+        getLbEmbedForPage,
+        totalPages,
+      );
+    } else if (interaction.customId.endsWith("LbRightPage")) {
+      await interaction.deferReply({ ephemeral: true });
+      const lbName = interaction.customId.split("LbRightPage")[0];
+      const totalPages =
+        Math.floor(
+          (
+            db.prepare("SELECT COUNT(*) AS total FROM guildMembers").get() as {
+              total: number;
+            }
+          ).total / 10,
+        ) + 1;
+      await pagination(1, lbName, interaction, getLbEmbedForPage, totalPages);
+    } else if (interaction.customId.endsWith("LbSearch")) {
+      const lbName = interaction.customId.split("LbSearch")[0];
+
+      const uuid = discordToUuid(interaction.user.id);
+      if (!uuid) {
+        await member.roles.add(
+          interaction.guild?.roles.cache.get(config.roles.unverified) as Role,
+        );
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle("Error")
+          .setDescription("Please verify first in <#1031568019522072677>");
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      let username = "";
+      if (db.prepare("SELECT * FROM guildMembers WHERE uuid = ?").get(uuid)) {
+        username = (await uuidToName(uuid)) ?? "";
+      }
+
+      const modal = new ModalBuilder()
+        .setCustomId(`${lbName}LbSearchModal`)
+        .setTitle(`${camelCaseToWords(lbName)} LB Search`);
+      const name = new TextInputBuilder()
+        .setCustomId("name")
+        .setLabel("THE MINECRAFT USERNAME OF A GUILD MEMBER")
+        .setValue(username ?? "")
         .setStyle(TextInputStyle.Short);
       const firstActionRow =
         new ActionRowBuilder<TextInputBuilder>().addComponents(name);
@@ -1119,6 +1190,50 @@ export default async function execute(
       );
 
       await textChannels["break"].send({ embeds: [embed] });
+    } else if (interaction.customId.endsWith("LbSearchModal")) {
+      await interaction.deferReply({ ephemeral: true });
+
+      const lbName = interaction.customId.split("LbSearchModal")[0];
+      const name = interaction.fields.getTextInputValue("name");
+      const uuid = await nameToUuid(name);
+
+      if (!uuid) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle("Error")
+          .setDescription("Invalid username");
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      const totalPages =
+        Math.floor(
+          (
+            db.prepare("SELECT COUNT(*) AS total FROM guildMembers").get() as {
+              total: number;
+            }
+          ).total / 10,
+        ) + 1;
+      const page = getMemberLeaderboardPage(uuid, lbName);
+
+      if (page === null) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle("Error")
+          .setDescription(
+            `${name} not found in ${camelCaseToWords(lbName)} leaderboard`,
+          );
+        await interaction.editReply({ embeds: [embed] });
+        return;
+      }
+
+      await pagination(
+        page,
+        lbName,
+        interaction,
+        getLbEmbedForPage,
+        totalPages,
+      );
     }
   }
 }

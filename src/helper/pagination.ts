@@ -1,17 +1,28 @@
 import {
   ActionRowBuilder,
+  type AttachmentBuilder,
   ButtonBuilder,
+  type ButtonInteraction,
   ButtonStyle,
   type ChatInputCommandInteraction,
   ComponentType,
   type EmbedBuilder,
   type MessageActionRowComponentBuilder,
+  type ModalSubmitInteraction,
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
 
 export default async function pagination(
-  interaction: ChatInputCommandInteraction,
-  getEmbedForPage: (page: number) => Promise<EmbedBuilder>,
+  initialPage: number,
+  lb: string,
+  interaction:
+    | ChatInputCommandInteraction
+    | ButtonInteraction
+    | ModalSubmitInteraction,
+  getEmbedForPage: (
+    page: number,
+    lb: string,
+  ) => Promise<[EmbedBuilder, AttachmentBuilder | null]>,
   totalPages: number,
   actionsRows?: ActionRowBuilder<MessageActionRowComponentBuilder>[],
 ) {
@@ -30,13 +41,14 @@ export default async function pagination(
     ? [...actionsRows.flat(), paginatorRow]
     : [paginatorRow];
 
-  let page = 0;
+  let page = initialPage;
 
-  const initialEmbed = await getEmbedForPage(page);
+  const initialEmbed = await getEmbedForPage(page, lb);
 
   const message = await interaction.editReply({
-    embeds: [initialEmbed],
+    embeds: [initialEmbed[0]],
     components,
+    ...(initialEmbed[1] ? { files: [initialEmbed[1]] } : {}),
   });
 
   const collector = message.createMessageComponentCollector({
@@ -45,34 +57,39 @@ export default async function pagination(
   });
 
   collector.on("collect", async (collectorInteraction) => {
-    await collectorInteraction.deferUpdate()
+    await collectorInteraction.deferUpdate();
     if (collectorInteraction.customId === "tempLeftPage") {
-      if (page === 0) {
+      if (page <= 0) {
         page = totalPages - 1;
       } else {
         page--;
       }
     } else if (collectorInteraction.customId === "tempRightPage") {
-      if (page === totalPages - 1) {
-        page = 0
+      if (page >= totalPages - 1) {
+        page = 0;
       } else {
         page++;
       }
     }
 
-    const currentEmbed = await getEmbedForPage(page);
-
     components = actionsRows
       ? [...actionsRows.flat(), paginatorRow]
       : [paginatorRow];
 
-    await collectorInteraction.editReply({ embeds: [currentEmbed], components });
+    const embed = await getEmbedForPage(page, lb);
+    await interaction.editReply({
+      embeds: [embed[0]],
+      components: components,
+      ...(embed[1] ? { files: [embed[1]] } : {}),
+    });
   });
 
   collector.on("end", async () => {
+    const embed = await getEmbedForPage(page, lb);
     await interaction.editReply({
-      embeds: [await getEmbedForPage(page)],
+      embeds: [embed[0]],
       components: [],
+      ...(embed[1] ? { files: [embed[1]] } : {}),
     });
   });
 }

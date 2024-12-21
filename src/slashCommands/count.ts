@@ -1,11 +1,16 @@
 import Database from "bun:sqlite";
 import {
+  type AttachmentBuilder,
   type ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
-import { discordToUuid, uuidToName } from "../helper/clientUtils.js";
+import {
+  discordToUuid,
+  formatNumber,
+  uuidToName,
+} from "../helper/clientUtils.js";
 import pagination from "../helper/pagination.js";
 import type { Count } from "../types/global";
 
@@ -33,13 +38,20 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   const totalPages = Math.ceil(userCountsArray.length / 12);
 
-  const getEmbedForPage = async (page: number): Promise<EmbedBuilder> => {
+  const getEmbedForPage = async (
+    page: number,
+    lb: string,
+  ): Promise<[EmbedBuilder, AttachmentBuilder | null]> => {
     const embed = new EmbedBuilder()
       .setColor(config.colors.discordGray)
       .setTitle("Counting Leaderboards")
       .setFooter({
-        text: `Page ${page + 1} of ${totalPages} | Current count: ${currentCount.count + 1}`,
+        text: `Page ${page + 1} of ${totalPages} | Current count: ${formatNumber(currentCount.count + 1)}`,
       });
+
+    if (lb !== "count") {
+      return [embed, null];
+    }
 
     const startIndex = page * 12;
 
@@ -66,8 +78,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       });
     }
 
-    return embed;
+    return [embed, null];
   };
 
-  await pagination(interaction, getEmbedForPage, totalPages);
+  await pagination(0, "count", interaction, getEmbedForPage, totalPages);
 }
