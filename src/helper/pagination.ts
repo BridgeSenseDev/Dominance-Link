@@ -17,12 +17,11 @@ export default async function pagination(
 ) {
   const paginatorRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setCustomId("leftPage")
+      .setCustomId("tempLeftPage")
       .setEmoji(config.emojis.leftArrow)
-      .setStyle(ButtonStyle.Danger)
-      .setDisabled(true),
+      .setStyle(ButtonStyle.Danger),
     new ButtonBuilder()
-      .setCustomId("rightPage")
+      .setCustomId("tempRightPage")
       .setEmoji(config.emojis.rightArrow)
       .setStyle(ButtonStyle.Success),
   );
@@ -46,14 +45,20 @@ export default async function pagination(
   });
 
   collector.on("collect", async (collectorInteraction) => {
-    if (collectorInteraction.customId === "leftPage") {
-      page--;
-    } else if (collectorInteraction.customId === "rightPage") {
-      page++;
+    await collectorInteraction.deferUpdate()
+    if (collectorInteraction.customId === "tempLeftPage") {
+      if (page === 0) {
+        page = totalPages - 1;
+      } else {
+        page--;
+      }
+    } else if (collectorInteraction.customId === "tempRightPage") {
+      if (page === totalPages - 1) {
+        page = 0
+      } else {
+        page++;
+      }
     }
-
-    paginatorRow.components[0].setDisabled(page === 0);
-    paginatorRow.components[1].setDisabled(page === totalPages - 1);
 
     const currentEmbed = await getEmbedForPage(page);
 
@@ -61,7 +66,7 @@ export default async function pagination(
       ? [...actionsRows.flat(), paginatorRow]
       : [paginatorRow];
 
-    await collectorInteraction.update({ embeds: [currentEmbed], components });
+    await collectorInteraction.editReply({ embeds: [currentEmbed], components });
   });
 
   collector.on("end", async () => {
