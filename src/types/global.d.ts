@@ -40,6 +40,10 @@ export interface HypixelGuildMember {
   networkLevel: number;
   sbLevel: number;
   quests: number;
+  bridgeWins: number;
+  bridgeWlr: number;
+  mmWins: number;
+  pitPrestige: number;
   name?: string | null;
   discordTag?: string | null;
 }

@@ -27,12 +27,16 @@ const db = new Database("guild.db");
 GlobalFonts.registerFromPath("./fonts/Minecraft Regular.ttf", "Minecraft");
 
 const sortOrder = [
+  "pitPrestige",
+  "mmWins",
   "networth",
   "weeklyGexp",
   "playtime",
   "messages",
   "bwStars",
   "bwFkdr",
+  "bridgeWins",
+  "bridgeWlr",
   "duelsWins",
   "duelsWlr",
   "skillAverage",
@@ -422,12 +426,11 @@ export default async function leaderboards() {
     { channel: textChannels["swLevel"], name: "swLevel" },
     { channel: textChannels["sbLevel"], name: "sbLevel" },
     { channel: textChannels["quests"], name: "quests" },
+    { channel: textChannels["bridgeWins"], name: "bridgeWins" },
+    { channel: textChannels["bridgeWlr"], name: "bridgeWlr" },
+    { channel: textChannels["mmWins"], name: "mmWins" },
+    { channel: textChannels["pitPrestige"], name: "pitPrestige" },
   ];
-
-  for (const { channel, name } of leaderboardChannels) {
-    await generateLeaderboard(channel, name);
-    await sleep(3000);
-  }
 
   setInterval(
     async () => {

@@ -186,10 +186,14 @@ export async function createGuildMember(uuid: string): Promise<void> {
       networkLevel: player.level ?? 0,
       sbLevel: sbLevel ?? 0,
       quests: (player.achievements["generalQuestMaster"] as number) ?? 0,
+      bridgeWins: player.stats?.duels?.bridge.wins ?? 0,
+      bridgeWlr: ((player.stats?.duels?.bridge.wins ?? 0) / (player.stats?.duels?.bridge.losses ?? 0)),
+      mmWins: player.stats?.murdermystery?.wins ?? 0,
+      pitPrestige: player.stats?.pit?.prestige ?? 0,
     };
 
     db.query(
-      "INSERT OR IGNORE INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, baseDays, targetRank, playtime, nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)",
+      "INSERT OR IGNORE INTO guildMembers (uuid, discord, messages, tag, weeklyGexp, joined, baseDays, targetRank, playtime, nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests, bridgeWins, bridgeWlr, mmWins, pitPrestige) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, ?26)",
     ).run(
       guildMember.uuid,
       guildMember.discord,
@@ -213,6 +217,10 @@ export async function createGuildMember(uuid: string): Promise<void> {
       guildMember.networkLevel,
       guildMember.sbLevel,
       guildMember.quests,
+      guildMember.bridgeWins,
+      guildMember.bridgeWlr,
+      guildMember.mmWins,
+      guildMember.pitPrestige,
     );
   }
 
