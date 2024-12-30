@@ -320,26 +320,31 @@ export default async function execute(
       const discordId =
         interaction.message.embeds[0].data.fields?.[3].value.slice(2, -1);
 
-      if (!name) {
+      if (!discordId || !interaction.guild || !name) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle("Error")
-          .setDescription(`${config.emojis.aCross} Failed to fetch uuid`);
-        return interaction.editReply({ embeds: [embed] });
-      }
-
-      if (!discordId) {
-        const embed = new EmbedBuilder()
-          .setColor(config.colors.red)
-          .setTitle("Error")
-          .setDescription(
-            `${config.emojis.aCross} Failed to extract discord ID`,
-          );
+          .setDescription(`${config.emojis.aCross} Failed to extract details`);
         return interaction.editReply({ embeds: [embed] });
       }
 
       const uuid = await nameToUuid(name);
-      const user = await client.users.fetch(discordId);
+      const member = await interaction.guild.members
+        .fetch(discordId)
+        .catch(() => {
+          return null;
+        });
+
+      if (!member) {
+        const embed = new EmbedBuilder()
+          .setColor(config.colors.red)
+          .setTitle("Error")
+          .setDescription(
+            `${config.emojis.aCross} <@${discordId}> is not in the discord server. Tell them to rejoin or delete the application.`,
+          );
+        return interaction.editReply({ embeds: [embed] });
+      }
+
       (interaction.guild as Guild).channels
         .create({
           name: `⌛┃${name}`,
@@ -347,7 +352,7 @@ export default async function execute(
           parent: "1020948893204217856",
         })
         .then(async (channel) => {
-          await channel.permissionOverwrites.edit(user, {
+          await channel.permissionOverwrites.edit(member, {
             ViewChannel: true,
             SendMessages: true,
             ReadMessageHistory: true,
@@ -376,7 +381,7 @@ export default async function execute(
             "INSERT INTO waitlist (uuid, discord, time, channel) VALUES (?, ?, ?, ?)",
           ).run(uuid, discordId, Math.floor(Date.now() / 1000), channel.id);
           await channel.send({
-            content: user.toString(),
+            content: member.toString(),
             embeds: [embed],
             components: [row],
           });
@@ -434,7 +439,7 @@ export default async function execute(
               .setDescription(
                 `${config.emojis.aCross} Guild invite timed out.`,
               );
-            await channel.send({ content: user.toString(), embeds: [embed] });
+            await channel.send({ content: member.toString(), embeds: [embed] });
 
             return;
           }
@@ -442,7 +447,7 @@ export default async function execute(
           chat(`/msg ${name} ${receivedMessage.string}`);
 
           await channel.send({
-            content: user.toString(),
+            content: member.toString(),
             files: [await generateGuildAnnouncement(receivedMessage.motd, "b")],
           });
         });
