@@ -501,9 +501,11 @@ export async function players() {
     const { achievementPoints, level } = player;
     const quests = player.achievements["generalQuestMaster"] as number;
     const bridgeWins = player.stats?.duels?.bridge.wins ?? 0;
-    const bridgeWlr = (player.stats?.duels?.bridge.wins ?? 0) / (player.stats?.duels?.bridge.losses ?? 0);
+    const bridgeWlr =
+      (player.stats?.duels?.bridge.wins ?? 0) /
+      (player.stats?.duels?.bridge.losses ?? 0);
     const mmWins = player.stats?.murdermystery?.wins ?? 0;
-    const pitPrestige = player.stats?.pit?.prestige ?? 0
+    const pitPrestige = player.stats?.pit?.prestige ?? 0;
 
     db.prepare(
       "UPDATE guildMembers SET (nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests, bridgeWins, bridgeWlr, mmWins, pitPrestige) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?",

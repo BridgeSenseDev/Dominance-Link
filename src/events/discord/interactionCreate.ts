@@ -166,12 +166,14 @@ export default async function execute(
     } else if (interaction.customId.endsWith("LbSearch")) {
       const lbName = interaction.customId.split("LbSearch")[0];
 
-      let username = ""
-      const usernameQuery = db.prepare("SELECT nameColor FROM guildMembers WHERE discord = ?").get(interaction.user.id) as {nameColor: string | null};
+      let username = "";
+      const usernameQuery = db
+        .prepare("SELECT nameColor FROM guildMembers WHERE discord = ?")
+        .get(interaction.user.id) as { nameColor: string | null };
 
       if (usernameQuery?.nameColor) {
-        username = removeSectionSymbols(usernameQuery.nameColor)
-        const words = username.split(' ');
+        username = removeSectionSymbols(usernameQuery.nameColor);
+        const words = username.split(" ");
         username = words.length === 2 ? words[1] : username;
       }
 

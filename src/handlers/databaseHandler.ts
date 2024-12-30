@@ -187,7 +187,9 @@ export async function createGuildMember(uuid: string): Promise<void> {
       sbLevel: sbLevel ?? 0,
       quests: (player.achievements["generalQuestMaster"] as number) ?? 0,
       bridgeWins: player.stats?.duels?.bridge.wins ?? 0,
-      bridgeWlr: ((player.stats?.duels?.bridge.wins ?? 0) / (player.stats?.duels?.bridge.losses ?? 0)),
+      bridgeWlr:
+        (player.stats?.duels?.bridge.wins ?? 0) /
+        (player.stats?.duels?.bridge.losses ?? 0),
       mmWins: player.stats?.murdermystery?.wins ?? 0,
       pitPrestige: player.stats?.pit?.prestige ?? 0,
     };

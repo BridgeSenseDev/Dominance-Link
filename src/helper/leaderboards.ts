@@ -163,9 +163,9 @@ async function generateLeaderboardPageImage(
     statTextMetrics.actualBoundingBoxDescent;
   const statVerticalOffset = (rectHeight - statTextHeight) / 2;
 
-  let compactStat = camelCaseToWords(stat)
+  let compactStat = camelCaseToWords(stat);
   if (stat === "achievementPoints") {
-    compactStat = "AP"
+    compactStat = "AP";
   }
   ctx.fillText(
     compactStat,
