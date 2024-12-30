@@ -317,10 +317,11 @@ export default async function execute(
         new ActionRowBuilder<TextInputBuilder>().addComponents(q3Input);
       modal.addComponents(firstActionRow, secondActionRow, thirdActionRow);
       await interaction.showModal(modal);
-    } else if (interaction.customId === "accept") {
+    } else if (interaction.customId.startsWith("accept")) {
       await interaction.deferReply({ ephemeral: true });
 
-      const name = interaction.message.embeds[0].data.fields?.[0].value;
+      const uuid = interaction.customId.split("accept")[1];
+      const name = await uuidToName(uuid);
       const discordId =
         interaction.message.embeds[0].data.fields?.[3].value.slice(2, -1);
 
@@ -332,7 +333,6 @@ export default async function execute(
         return interaction.editReply({ embeds: [embed] });
       }
 
-      const uuid = await nameToUuid(name);
       const member = await interaction.guild.members
         .fetch(discordId)
         .catch(() => {
@@ -1058,7 +1058,7 @@ export default async function execute(
       const row = new ActionRowBuilder<ButtonBuilder>()
         .addComponents(
           new ButtonBuilder()
-            .setCustomId("accept")
+            .setCustomId(`accept${uuid}`)
             .setStyle(ButtonStyle.Success)
             .setLabel("Accept")
             .setEmoji(config.emojis.aTick),
