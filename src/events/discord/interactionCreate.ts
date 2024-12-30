@@ -67,10 +67,9 @@ export default async function execute(
     try {
       await command.execute(interaction);
     } catch (error) {
-      console.error(error);
-      await interaction.reply({
+      console.error(`${interaction.commandName} Error:\n${error}`);
+      await interaction.editReply({
         content: "There was an error while executing this command!",
-        ephemeral: true,
       });
     }
   } else if (interaction.isAutocomplete()) {
@@ -107,7 +106,7 @@ export default async function execute(
           .setDescription(
             `${config.emojis.aCross} You do not have permission to use this`,
           );
-        return interaction.editReply({ embeds: [embed] });
+        return interaction.reply({ embeds: [embed] });
       }
 
       const uuidPattern = /baseDays(\w+)/;
@@ -119,7 +118,7 @@ export default async function execute(
           .setColor(config.colors.red)
           .setTitle("Error")
           .setDescription(`${config.emojis.aCross} Failed to extract uuid`);
-        return interaction.editReply({ embeds: [embed] });
+        return interaction.reply({ embeds: [embed] });
       }
 
       const modal = new ModalBuilder()
@@ -135,6 +134,7 @@ export default async function execute(
       await interaction.showModal(modal);
     } else if (interaction.customId.endsWith("LbLeftPage")) {
       await interaction.deferReply({ ephemeral: true });
+
       const lbName = interaction.customId.split("LbLeftPage")[0];
       const totalPages =
         Math.floor(
@@ -153,6 +153,7 @@ export default async function execute(
       );
     } else if (interaction.customId.endsWith("LbRightPage")) {
       await interaction.deferReply({ ephemeral: true });
+
       const lbName = interaction.customId.split("LbRightPage")[0];
       const totalPages =
         Math.floor(
@@ -190,10 +191,12 @@ export default async function execute(
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId in config.autoRoles) {
+      await interaction.deferReply({ ephemeral: true });
+
       const roleId =
         config.autoRoles[interaction.customId as keyof typeof config.autoRoles];
       let msg: string;
-      await interaction.deferReply({ ephemeral: true });
+
       if (member.roles.resolve(roleId)) {
         await member.roles.remove(roleId);
         msg = `${config.emojis.minus} <@&${roleId}>`;
@@ -203,8 +206,9 @@ export default async function execute(
       }
       await interaction.editReply({ content: msg });
     } else if (interaction.customId === "requirements") {
-      const uuid = discordToUuid(interaction.user.id);
       await interaction.deferReply({ ephemeral: true });
+
+      const uuid = discordToUuid(interaction.user.id);
       if (!uuid) {
         await member.roles.add(
           interaction.guild?.roles.cache.get(config.roles.unverified) as Role,
@@ -452,6 +456,7 @@ export default async function execute(
           });
         });
     } else if (interaction.customId === "deny") {
+      await interaction.deferReply({ ephemeral: true });
       const discordId =
         interaction.message.embeds[0].data.fields?.[3].value.slice(2, -1);
 
@@ -493,10 +498,8 @@ export default async function execute(
             },
           ),
       );
-      const message = await interaction.reply({
+      const message = await interaction.editReply({
         components: [row],
-        ephemeral: true,
-        fetchReply: true,
       });
       const collector = message.createMessageComponentCollector({
         componentType: ComponentType.StringSelect,
@@ -665,11 +668,12 @@ export default async function execute(
       await (interaction.channel as ThreadChannel).setLocked();
       await (interaction.channel as ThreadChannel).setArchived();
     } else if (interaction.customId === "closeApplication") {
+      await interaction.deferReply({ ephemeral: true });
       if (!config.admins.includes(interaction.member?.user.id ?? "")) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
           .setDescription("Only admins can close this application");
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.editReply({ embeds: [embed] });
         return;
       }
       const embed = new EmbedBuilder()
@@ -685,10 +689,9 @@ export default async function execute(
           .setLabel("Confirm")
           .setEmoji(config.emojis.aCheckmark),
       );
-      const message = await interaction.reply({
+      const message = await interaction.editReply({
         embeds: [embed],
         components: [row],
-        fetchReply: true,
       });
       const collector = message.createMessageComponentCollector({
         componentType: ComponentType.Button,
@@ -705,7 +708,7 @@ export default async function execute(
         }
       });
     } else if (interaction.customId === "removeMute") {
-      await interaction.deferReply();
+      await interaction.deferReply({ ephemeral: true });
       const timeoutMember = await interaction.guild?.members.fetch(
         interaction.message.embeds[0].description?.match(/<@(\d+)>/)?.[1] ?? "",
       );
@@ -723,17 +726,13 @@ export default async function execute(
         await textChannels["minecraftLink"].permissionOverwrites.delete(
           timeoutMember,
         );
-      } catch (e) {
-        /* empty */
-      }
+      } catch (e) {}
 
       try {
         await textChannels["officerChat"].permissionOverwrites.delete(
           timeoutMember,
         );
-      } catch (e) {
-        /* empty */
-      }
+      } catch (e) {}
 
       let embed = new EmbedBuilder()
         .setColor(config.colors.green)
