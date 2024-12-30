@@ -338,11 +338,13 @@ export async function gsrun(sheets: JWT) {
         resource: { values: array },
       };
 
-      await gsapi.spreadsheets.values.clear({
-        spreadsheetId: "1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE",
-        range: "Guild API!A2:Z126",
-      });
-      await gsapi.spreadsheets.values.update(options);
+      try {
+        await gsapi.spreadsheets.values.clear({
+          spreadsheetId: "1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE",
+          range: "Guild API!A2:Z126",
+        });
+        await gsapi.spreadsheets.values.update(options);
+      } catch (error) {}
     },
     6 * 60 * 1000,
   );
