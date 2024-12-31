@@ -6,7 +6,6 @@ import {
   type ThreadChannel,
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
-import { chat, waitForMessage } from "../handlers/workerHandler.js";
 import {
   discordToUuid,
   getMemberRejoinChannel,
@@ -14,6 +13,7 @@ import {
   nameToUuid,
 } from "../helper/clientUtils.js";
 import messageToImage from "../helper/messageToImage.js";
+import { handleGuildInvite } from "../helper/utils.js";
 
 export const data = new SlashCommandBuilder()
   .setName("invite")
@@ -39,28 +39,21 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   const name = interaction.options.getString("name");
-  chat(`/g invite ${name}`);
+  if (!name) {
+    const embed = new EmbedBuilder()
+      .setColor(config.colors.red)
+      .setTitle("Error")
+      .setDescription(`${config.emojis.aCross} No name provided.`);
+    return interaction.editReply({ embeds: [embed] });
+  }
 
-  const receivedMessage = await waitForMessage(
-    [
-      "to your guild. They have 5 minutes to accept.",
-      "You cannot invite this player to your guild!",
-      "They will have 5 minutes to accept once they come online!",
-      "is already in another guild!",
-      "is already in your guild!",
-      "to your guild! Wait for them to accept!",
-      `Can't find a player by the name of '${name}'`,
-    ],
-    5000,
-  );
+  const receivedMessage = await handleGuildInvite(name, true);
 
   let channel: TextChannel | ThreadChannel | undefined;
   let mention: string | undefined;
-  if (name) {
-    const uuid = await nameToUuid(name);
-    if (uuid) {
-      ({ channel, mention } = getMemberRejoinChannel(uuid));
-    }
+  const uuid = await nameToUuid(name);
+  if (uuid) {
+    ({ channel, mention } = getMemberRejoinChannel(uuid));
   }
 
   if (!receivedMessage) {

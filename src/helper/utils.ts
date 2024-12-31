@@ -2,13 +2,26 @@ import Database from "bun:sqlite";
 import { promisify } from "node:util";
 import { google } from "googleapis";
 import config from "../config.json" with { type: "json" };
+import { fetchGexpForMember } from "../handlers/databaseHandler.ts";
+import {
+  type MessageObject,
+  chat,
+  waitForMessage,
+} from "../handlers/workerHandler.ts";
+import { hypixel } from "../index.ts";
 import type { NumberObject, StringObject } from "../types/global";
 import type {
   ICommentsAnalyzeRequest,
   ICommentsAnalyzeResponse,
   ICommentsApi,
 } from "../types/perspective.ts";
-import { formatDateForDb, updateTable } from "./clientUtils.js";
+import {
+  formatDateForDb,
+  getDaysInGuild,
+  sleep,
+  updateTable,
+  uuidToName,
+} from "./clientUtils.js";
 import messageToImage from "./messageToImage.ts";
 
 const db = new Database("guild.db");
@@ -205,4 +218,79 @@ export async function generateGuildAnnouncement(
 export function camelCaseToWords(s: string) {
   const result = s.replace(/([A-Z])/g, " $1");
   return result.charAt(0).toUpperCase() + result.slice(1);
+}
+
+async function kickPlayer() {
+  const guild = await hypixel.getGuild("name", "Dominance");
+
+  const membersSorted = guild.members
+    .filter(
+      (member) =>
+        !["Owner", "GUILDMASTER"].includes(member.rank) &&
+        getDaysInGuild(member.joinedAtTimestamp.toString(), 0) >= 7,
+    )
+    .sort((a, b) => a.weeklyExperience - b.weeklyExperience);
+
+  const breakUuids: string[] = [];
+  for (const breakMember of db.prepare("SELECT uuid FROM breaks").all() as [
+    { uuid: string },
+  ]) {
+    breakUuids.push(breakMember.uuid);
+  }
+
+  for (const member of membersSorted.slice(0, 5)) {
+    if (breakUuids.includes(member.uuid)) {
+      chat(
+        `/g kick ${await uuidToName(member.uuid)} Break. Check the #break channel in discord to rejoin when ready!`,
+      );
+      return;
+    }
+  }
+
+  const nonStaffLowestMonthly = membersSorted
+    .filter(
+      (member) =>
+        member.rank !== "Moderator" && !breakUuids.includes(member.uuid),
+    )
+    .slice(0, 5)
+    .sort(
+      (a, b) =>
+        fetchGexpForMember(a.uuid).monthlyGexp -
+        fetchGexpForMember(b.uuid).monthlyGexp,
+    );
+
+  for (const member of nonStaffLowestMonthly) {
+    chat(
+      `/g kick ${await uuidToName(member.uuid)} Least active player. You can reapply once active again!`,
+    );
+  }
+}
+
+export async function handleGuildInvite(
+  name: string,
+  retry = false,
+): Promise<MessageObject | null> {
+  chat(`/g invite ${name}`);
+
+  const receivedMessage = await waitForMessage(
+    [
+      "to your guild. They have 5 minutes to accept.",
+      "You cannot invite this player to your guild!",
+      "They will have 5 minutes to accept once they come online!",
+      "is already in another guild!",
+      "is already in your guild!",
+      "to your guild! Wait for them to accept!",
+      `Can't find a player by the name of '${name}'`,
+      "Your guild is full!",
+    ],
+    7000,
+  );
+
+  if (retry && receivedMessage?.string.includes("Your guild is full!")) {
+    kickPlayer();
+    await sleep(2000);
+    return handleGuildInvite(name);
+  }
+
+  return receivedMessage;
 }

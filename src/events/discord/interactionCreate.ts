@@ -25,7 +25,7 @@ import {
   fetchGuildMember,
   fetchMember,
 } from "../../handlers/databaseHandler.js";
-import { chat, waitForMessage } from "../../handlers/workerHandler.ts";
+import { chat } from "../../handlers/workerHandler.ts";
 import { hypixelApiErrorEmbed } from "../../helper/clientUtils.js";
 import {
   abbreviateNumber,
@@ -47,6 +47,7 @@ import requirementsEmbed from "../../helper/requirements.js";
 import {
   camelCaseToWords,
   generateGuildAnnouncement,
+  handleGuildInvite,
 } from "../../helper/utils.ts";
 import { hypixel } from "../../index.js";
 import type { BreakMember } from "../../types/global";
@@ -420,19 +421,7 @@ export default async function execute(
           await interaction.deleteReply();
           await interaction.message.delete();
 
-          chat(`/g invite ${name}`);
-
-          const receivedMessage = await waitForMessage(
-            [
-              "to your guild. They have 5 minutes to accept.",
-              "You cannot invite this player to your guild!",
-              "They will have 5 minutes to accept once they come online!",
-              "is already in another guild!",
-              "is already in your guild!",
-              "to your guild! Wait for them to accept!",
-            ],
-            5000,
-          );
+          const receivedMessage = await handleGuildInvite(name, true);
 
           if (!receivedMessage) {
             chat(`/msg ${name} Guild invite failed.`);
