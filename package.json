@@ -17,7 +17,7 @@
     "async-mutex": "^0.5.0",
     "cheerio": "^1.0.0",
     "discord-emoji-converter": "^1.2.10",
-    "discord.js": "^14.16.3",
+    "discord.js": "^14.17.2",
     "googleapis": "^144.0.0",
     "hypixel-api-reborn": "^11.3.7",
     "math-expression-evaluator": "^2.0.6",
