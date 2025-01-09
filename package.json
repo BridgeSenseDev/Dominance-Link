@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@types/bun": "^1.1.15",
+    "@types/bun": "^1.1.16",
     "@types/node-cron": "^3.0.11",
     "typescript": "^5.7.3"
   },
