@@ -182,13 +182,25 @@ export async function getSkyblockStats(channel: string, player: Player) {
 }
 
 export async function getHypixelPing(channel: string, player: Player) {
-  const ping = await (
-    await fetch(`https://api.polsu.xyz/polsu/ping?uuid=${player.uuid}`, {
+  const response = await fetch(
+    `https://api.polsu.xyz/polsu/ping?uuid=${player.uuid}`,
+    {
       headers: {
         "Api-Key": config.keys.polsuApiKey,
       },
-    })
-  ).json();
+    },
+  );
+
+  if (!response.ok) {
+    return `/${channel} Error: Failed to fetch ping`;
+  }
+
+  const ping = await response.json().catch(() => {
+    return {
+      success: false,
+      cause: "Failed to parse response",
+    };
+  });
 
   if (!ping.success) {
     return `/${channel} Error: ${ping.cause}`;
