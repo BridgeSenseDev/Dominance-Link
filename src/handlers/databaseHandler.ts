@@ -12,12 +12,12 @@ import { checkRequirements } from "../helper/requirements.js";
 import { ensureDayExists } from "../helper/utils.js";
 import { hypixel } from "../index.js";
 import type {
+  HypixelGuildMember as BaseHypixelGuildMember,
   BreakMember,
   GexpHistory,
   GuildMemberArchive,
   HypixelGuildMember,
   Member,
-  StringObject,
 } from "../types/global";
 
 const db = new Database("guild.db");
@@ -305,82 +305,101 @@ interface GexpResult {
   lifetimeGexp: number;
 }
 
-function getDatesBetween(startDate: Date, endDate: Date): string[] {
-  const dates = [];
+function calculateGexpForRow(row: GexpHistory, today: Date): GexpResult {
+  const { uuid: _, ...stats } = row;
 
-  while (startDate <= endDate) {
-    dates.push(formatDateForDb(new Date(startDate)));
-    startDate.setDate(startDate.getDate() + 1);
+  let lifetimeGexp = 0;
+  for (const key in stats) {
+    lifetimeGexp += Number(stats[key]) || 0;
   }
 
-  return dates;
+  const todayStr = formatDateForDb(today);
+  const dailyGexp = Number(stats[todayStr]) || 0;
+
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+
+  let weeklyGexp = 0;
+  let monthlyGexp = 0;
+
+  for (const key in stats) {
+    const date = new Date(key);
+    if (Number.isNaN(date.getTime())) continue;
+
+    const gexp = Number(stats[key]) || 0;
+    if (date >= sevenDaysAgo && date <= today) {
+      weeklyGexp += gexp;
+    }
+    if (date >= thirtyDaysAgo && date <= today) {
+      monthlyGexp += gexp;
+    }
+  }
+
+  return {
+    dailyGexp,
+    weeklyGexp,
+    monthlyGexp,
+    lifetimeGexp,
+  };
+}
+
+export function fetchGexpForMembers(
+  members: (BaseHypixelGuildMember & { [key: string]: number })[],
+): (BaseHypixelGuildMember & { [key: string]: number })[] {
+  if (members.length === 0) return members;
+
+  const today = getESTDate();
+  ensureDayExists(today);
+
+  const uuids = members.map((member) => member.uuid);
+
+  const placeholders = uuids.map(() => "?").join(", ");
+
+  const query = `SELECT * FROM gexpHistory WHERE uuid IN (${placeholders})`;
+  const rows = db.prepare(query).all(...uuids) as GexpHistory[];
+
+  const gexpMap = new Map<string, GexpHistory>();
+  for (const row of rows) {
+    gexpMap.set(row.uuid, row);
+  }
+
+  for (const member of members) {
+    const row = gexpMap.get(member.uuid);
+    let gexpResult: GexpResult;
+    if (row) {
+      gexpResult = calculateGexpForRow(row, today);
+    } else {
+      gexpResult = {
+        dailyGexp: 0,
+        weeklyGexp: 0,
+        monthlyGexp: 0,
+        lifetimeGexp: 0,
+      };
+    }
+
+    member["dailyGexp"] = gexpResult.dailyGexp;
+    member["monthlyGexp"] = gexpResult.monthlyGexp;
+    member["lifetimeGexp"] = gexpResult.lifetimeGexp;
+  }
+
+  return members;
 }
 
 export function fetchGexpForMember(uuid: string): GexpResult {
   const today = getESTDate();
-  const tableInfo = db
-    .prepare("PRAGMA table_info(gexpHistory)")
-    .all() as StringObject[];
-
   ensureDayExists(today);
 
-  const sevenDaysAgo = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate() - 6,
-  );
-  const thirtyDaysAgo = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate() - 29,
-  );
+  const row = db
+    .prepare("SELECT * FROM gexpHistory WHERE uuid = ?")
+    .get(uuid) as GexpHistory | undefined;
 
-  const dailyGexp = (
-    db
-      .prepare(
-        `SELECT "${formatDateForDb(today)}" AS r FROM gexpHistory WHERE uuid = ?`,
-      )
-      .get(uuid) as { r: number }
-  ).r;
-
-  const weeklyDates = getDatesBetween(sevenDaysAgo, today);
-  const monthlyDates = getDatesBetween(thirtyDaysAgo, today);
-
-  const weeklyColumns = weeklyDates.map((date) => `"${date}"`).join(", ");
-  const monthlyColumns = monthlyDates.map((date) => `"${date}"`).join(", ");
-
-  let weeklyGexp = 0;
-  const weeklyColumnsArray = weeklyColumns.split(", ");
-  for (const column of weeklyColumnsArray) {
-    const query = `SELECT IFNULL(SUM(${column}), 0) AS r FROM gexpHistory WHERE uuid = ?`;
-    weeklyGexp += (db.prepare(query).get(uuid) as { r: number }).r;
+  if (!row) {
+    return { dailyGexp: 0, weeklyGexp: 0, monthlyGexp: 0, lifetimeGexp: 0 };
   }
 
-  let monthlyGexp = 0;
-  const monthlyColumnsArray = monthlyColumns.split(", ");
-  for (const column of monthlyColumnsArray) {
-    const query = `SELECT IFNULL(SUM(${column}), 0) AS r FROM gexpHistory WHERE uuid =?`;
-    monthlyGexp += (db.prepare(query).get(uuid) as { r: number }).r;
-  }
-
-  const lifetimeGexp = (
-    db
-      .prepare(
-        `SELECT ${tableInfo
-          .map((column) => column["name"])
-          .filter((name) => name !== "uuid")
-          .map((name) => `IFNULL(SUM("${name}"), 0)`)
-          .join(" + ")} AS r FROM gexpHistory WHERE uuid =?`,
-      )
-      .get(uuid) as { r: number }
-  ).r;
-
-  return {
-    dailyGexp: dailyGexp || 0,
-    weeklyGexp: weeklyGexp || 0,
-    monthlyGexp: monthlyGexp || 0,
-    lifetimeGexp: lifetimeGexp || 0,
-  };
+  return calculateGexpForRow(row, today);
 }
 
 export function fetchTotalLifetimeGexp(): number {

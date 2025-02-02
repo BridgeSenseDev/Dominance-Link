@@ -10,7 +10,10 @@ import {
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
 import { textChannels } from "../events/discord/ready.ts";
-import { fetchGexpForMember } from "../handlers/databaseHandler.ts";
+import {
+  fetchGexpForMember,
+  fetchGexpForMembers,
+} from "../handlers/databaseHandler.ts";
 import type { HypixelGuildMember as BaseHypixelGuildMember } from "../types/global";
 import {
   abbreviateNumber,
@@ -301,35 +304,33 @@ async function generateLeaderboardPageImage(
 
 function fetchData(order: keyof HypixelGuildMember): HypixelGuildMember[] {
   if (order === "lifetimeGexp") {
-    const data = db
+    let data = db
       .prepare("SELECT * FROM guildMembers")
       .all() as HypixelGuildMember[];
-    for (const member of data) {
-      const gexpHistory = fetchGexpForMember(member.uuid);
-      member["lifetimeGexp"] = gexpHistory.lifetimeGexp;
-    }
+
+    data = fetchGexpForMembers(data);
+
     data.sort((a, b) => b["lifetimeGexp"] - a["lifetimeGexp"]);
     return data;
   }
 
   if (order === "dailyGexp") {
-    const data = db
+    let data = db
       .prepare("SELECT * FROM guildMembers")
       .all() as HypixelGuildMember[];
-    for (const member of data) {
-      const gexpHistory = fetchGexpForMember(member.uuid);
-      member["dailyGexp"] = gexpHistory.dailyGexp;
-    }
+
+    data = fetchGexpForMembers(data);
+
     data.sort((a, b) => b["dailyGexp"] - a["dailyGexp"]);
     return data;
   }
   if (order === "daysInGuild") {
-    const data = db
+    let data = db
       .prepare("SELECT * FROM guildMembers")
       .all() as HypixelGuildMember[];
-    for (const member of data) {
-      member["daysInGuild"] = getDaysInGuild(member.joined, member.baseDays);
-    }
+
+    data = fetchGexpForMembers(data);
+
     data.sort((a, b) => b["daysInGuild"] - a["daysInGuild"]);
     return data;
   }

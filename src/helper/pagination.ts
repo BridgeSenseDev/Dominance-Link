@@ -58,6 +58,27 @@ export default async function pagination(
 
   collector.on("collect", async (collectorInteraction) => {
     await collectorInteraction.deferUpdate();
+
+    const disabledPaginatorRow =
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId("tempLeftPage")
+          .setEmoji(config.emojis.leftArrow)
+          .setStyle(ButtonStyle.Danger)
+          .setDisabled(true),
+        new ButtonBuilder()
+          .setCustomId("tempRightPage")
+          .setEmoji(config.emojis.rightArrow)
+          .setStyle(ButtonStyle.Success)
+          .setDisabled(true),
+      );
+
+    await collectorInteraction.editReply({
+      components: actionsRows
+        ? [...actionsRows.flat(), disabledPaginatorRow]
+        : [disabledPaginatorRow],
+    });
+
     if (collectorInteraction.customId === "tempLeftPage") {
       if (page <= 0) {
         page = totalPages - 1;
@@ -77,7 +98,7 @@ export default async function pagination(
       : [paginatorRow];
 
     const embed = await getEmbedForPage(page, lb);
-    await interaction.editReply({
+    await collectorInteraction.editReply({
       embeds: [embed[0]],
       components: components,
       ...(embed[1] ? { files: [embed[1]] } : {}),
