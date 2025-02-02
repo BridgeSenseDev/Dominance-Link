@@ -1,5 +1,4 @@
-import { readFileSync } from "node:fs";
-import { Image, createCanvas } from "@napi-rs/canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -122,8 +121,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   const canvas = createCanvas(591, 568);
   const ctx = canvas.getContext("2d");
-  const image = new Image();
-  image.src = readFileSync("./images/member_bg.png");
+  const image = await loadImage("../../src/images/member_bg.png");
   ctx.filter = "blur(6px)";
   ctx.drawImage(image, 0, 0);
   ctx.filter = "none";
