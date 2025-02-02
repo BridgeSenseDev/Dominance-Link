@@ -121,7 +121,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 
   const canvas = createCanvas(591, 568);
   const ctx = canvas.getContext("2d");
-  const image = await loadImage("../../src/images/member_bg.png");
+  const image = await loadImage("./images/member_bg.png");
   ctx.filter = "blur(6px)";
   ctx.drawImage(image, 0, 0);
   ctx.filter = "none";
