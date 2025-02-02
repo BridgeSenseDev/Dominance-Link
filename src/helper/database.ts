@@ -238,9 +238,11 @@ export async function database() {
         "UPDATE guildMembers SET (tag, weeklyGexp) = (?, ?) WHERE uuid = ?",
       ).run(`[${rank ?? 0}]`, weeklyGexp ?? 0, uuid);
 
-      db.prepare(
-        `UPDATE gexpHistory SET ("${currentDay}") = (?) WHERE uuid = ?`,
-      ).run(currentDailyExp ?? 0, uuid);
+      if (currentDailyExp) {
+        db.prepare(
+          `UPDATE gexpHistory SET ("${currentDay}") = (?) WHERE uuid = ?`,
+        ).run(currentDailyExp, uuid);
+      }
     }
 
     const hypixelMemberUuids = guild.members.map((member) => member.uuid);

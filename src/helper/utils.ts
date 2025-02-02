@@ -287,7 +287,7 @@ export async function handleGuildInvite(
   );
 
   if (retry && receivedMessage?.string.includes("Your guild is full!")) {
-    kickPlayer();
+    await kickPlayer();
     await sleep(2000);
     return handleGuildInvite(name);
   }

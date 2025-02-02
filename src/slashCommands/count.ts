@@ -20,7 +20,7 @@ export const data = new SlashCommandBuilder()
   .setName("count")
   .setDescription("View counting stats");
 export async function execute(interaction: ChatInputCommandInteraction) {
-  await interaction.deferReply({ fetchReply: true });
+  await interaction.deferReply({ withResponse: true });
 
   const counts = db.prepare("SELECT * FROM counting").all() as Count[];
   const currentCount = db

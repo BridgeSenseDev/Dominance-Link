@@ -198,7 +198,7 @@ async function checkLevelUp(
       : `<@${member.discord}> has reached level **${getLevelDetails(member.xp).currentLevel + 1}**. GG!`;
     if (isUUID) {
       chat(msg);
-    } else if (channel?.isTextBased()) {
+    } else if (channel?.isSendable()) {
       await channel.send(msg);
     }
   }

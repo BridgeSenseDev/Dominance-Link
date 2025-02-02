@@ -6,21 +6,13 @@ import {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  type GuildChannel,
+  type ForumThreadChannel,
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
 import { textChannels } from "../events/discord/ready.ts";
-import {
-  fetchGexpForMember,
-  fetchGexpForMembers,
-} from "../handlers/databaseHandler.ts";
+import { fetchGexpForMembers } from "../handlers/databaseHandler.ts";
 import type { HypixelGuildMember as BaseHypixelGuildMember } from "../types/global";
-import {
-  abbreviateNumber,
-  formatNumber,
-  getDaysInGuild,
-  sleep,
-} from "./clientUtils.js";
+import { abbreviateNumber, formatNumber, sleep } from "./clientUtils.js";
 import { rgbaColor } from "./constants.js";
 import { camelCaseToWords } from "./utils.ts";
 
@@ -365,7 +357,7 @@ export const getLbEmbedForPage = async (
 };
 
 async function generateLeaderboard(
-  channel: GuildChannel,
+  channel: ForumThreadChannel,
   order: keyof HypixelGuildMember,
 ) {
   if (channel.isThread() && channel.archived) {
@@ -436,6 +428,8 @@ export default async function leaderboards() {
   setInterval(
     async () => {
       for (const { channel, name } of leaderboardChannels) {
+        if (!channel.isThreadOnly()) continue;
+
         await generateLeaderboard(channel, name);
         await sleep(3000);
       }

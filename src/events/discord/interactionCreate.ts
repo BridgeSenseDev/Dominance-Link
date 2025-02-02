@@ -10,6 +10,7 @@ import {
   type Guild,
   type GuildMember,
   type Interaction,
+  MessageFlags,
   ModalBuilder,
   type Role,
   StringSelectMenuBuilder,
@@ -68,10 +69,18 @@ export default async function execute(
     try {
       await command.execute(interaction);
     } catch (error) {
-      console.error(`${interaction.commandName} Error:\n${error}`);
-      await interaction.editReply({
-        content: "There was an error while executing this command!",
-      });
+      console.error(
+        `Slash command ${interaction.commandName} Error:\n${error}`,
+      );
+      if (interaction.deferred || interaction.replied) {
+        await interaction.editReply({
+          content: "There was an error while executing this command!",
+        });
+      } else {
+        await interaction.reply({
+          content: "There was an error while executing this command!",
+        });
+      }
     }
   } else if (interaction.isAutocomplete()) {
     const rows = db
@@ -134,7 +143,7 @@ export default async function execute(
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId.endsWith("LbLeftPage")) {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const lbName = interaction.customId.split("LbLeftPage")[0];
       const totalPages =
@@ -153,7 +162,7 @@ export default async function execute(
         totalPages,
       );
     } else if (interaction.customId.endsWith("LbRightPage")) {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const lbName = interaction.customId.split("LbRightPage")[0];
       const totalPages =
@@ -192,7 +201,7 @@ export default async function execute(
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId in config.autoRoles) {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const roleId =
         config.autoRoles[interaction.customId as keyof typeof config.autoRoles];
@@ -207,7 +216,7 @@ export default async function execute(
       }
       await interaction.editReply({ content: msg });
     } else if (interaction.customId === "requirements") {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const uuid = discordToUuid(interaction.user.id);
       if (!uuid) {
@@ -257,7 +266,7 @@ export default async function execute(
       modal.addComponents(firstActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId === "unVerify") {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const memberData = fetchMember(interaction.user.id);
 
@@ -289,7 +298,10 @@ export default async function execute(
           .setColor(config.colors.red)
           .setTitle("Error")
           .setDescription("Please verify first in <#1031568019522072677>");
-        await interaction.reply({ embeds: [embed], ephemeral: true });
+        await interaction.reply({
+          embeds: [embed],
+          flags: MessageFlags.Ephemeral,
+        });
         return;
       }
       const modal = new ModalBuilder()
@@ -319,7 +331,7 @@ export default async function execute(
       modal.addComponents(firstActionRow, secondActionRow, thirdActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId.startsWith("accept")) {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const uuid = interaction.customId.split("accept")[1];
       const name = await uuidToName(uuid);
@@ -445,7 +457,7 @@ export default async function execute(
           });
         });
     } else if (interaction.customId === "deny") {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       const discordId =
         interaction.message.embeds[0].data.fields?.[3].value.slice(2, -1);
 
@@ -497,7 +509,9 @@ export default async function execute(
 
       collector.on("collect", async (collectorInteraction) => {
         if (collectorInteraction.isStringSelectMenu()) {
-          await collectorInteraction.deferReply({ ephemeral: true });
+          await collectorInteraction.deferReply({
+            flags: MessageFlags.Ephemeral,
+          });
           const user = await client.users.fetch(collectorInteraction.customId);
           const embed = new EmbedBuilder()
             .setColor(config.colors.red)
@@ -657,7 +671,7 @@ export default async function execute(
       await (interaction.channel as ThreadChannel).setLocked();
       await (interaction.channel as ThreadChannel).setArchived();
     } else if (interaction.customId === "closeApplication") {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       if (!config.admins.includes(interaction.member?.user.id ?? "")) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.discordGray)
@@ -697,7 +711,7 @@ export default async function execute(
         }
       });
     } else if (interaction.customId === "removeMute") {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       const timeoutMember = await interaction.guild?.members.fetch(
         interaction.message.embeds[0].description?.match(/<@(\d+)>/)?.[1] ?? "",
       );
@@ -747,7 +761,7 @@ export default async function execute(
     }
   } else if (interaction.isModalSubmit()) {
     if (interaction.customId.startsWith("setBaseDays")) {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const uuidPattern = /setBaseDays(\w+)/;
       const match = interaction.customId.match(uuidPattern);
@@ -810,7 +824,7 @@ export default async function execute(
         await interaction.editReply({ embeds: [embed] });
       }
     } else if (interaction.customId === "verification") {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       let name: string;
       let uuid: string;
@@ -970,7 +984,7 @@ export default async function execute(
         await interaction.editReply({ embeds: [embed] });
       }
     } else if (interaction.customId === "applications") {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
       const q1 = interaction.fields.getTextInputValue("q1Input");
       const q2 = interaction.fields.getTextInputValue("q2Input");
       const q3 = interaction.fields.getTextInputValue("q3Input");
@@ -1080,7 +1094,7 @@ export default async function execute(
         );
       await interaction.editReply({ embeds: [replyEmbed] });
     } else if (interaction.customId === "breakModal") {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const q1 = interaction.fields.getTextInputValue("q1Input");
       const q2 = interaction.fields.getTextInputValue("q2Input");
@@ -1177,7 +1191,7 @@ export default async function execute(
 
       await textChannels["break"].send({ embeds: [embed] });
     } else if (interaction.customId.endsWith("LbSearchModal")) {
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
       const lbName = interaction.customId.split("LbSearchModal")[0];
       const name = interaction.fields.getTextInputValue("name");

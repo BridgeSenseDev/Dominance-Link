@@ -1,6 +1,7 @@
 import {
   type ChatInputCommandInteraction,
   EmbedBuilder,
+  MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
@@ -29,7 +30,7 @@ export const data = new SlashCommandBuilder()
   );
 
 export async function execute(interaction: ChatInputCommandInteraction) {
-  await interaction.deferReply({ ephemeral: true });
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   const message = interaction.options.getString("message");
 
   if (!message) {
