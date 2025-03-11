@@ -928,7 +928,7 @@ export default async function execute(
         return;
       }
 
-      if (discord === interaction.user.tag) {
+      if (discord.toLowerCase() === interaction.user.tag.toLowerCase()) {
         await createMember(member, uuid);
 
         const { displayName } = member;
