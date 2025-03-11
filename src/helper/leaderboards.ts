@@ -22,6 +22,8 @@ const db = new Database("guild.db");
 GlobalFonts.registerFromPath("./fonts/Minecraft Regular.ttf", "Minecraft");
 
 const sortOrder = [
+  "zombiesKills",
+  "zombiesWins",
   "pitPrestige",
   "mmWins",
   "networth",
@@ -423,6 +425,8 @@ export default async function leaderboards() {
     { channel: textChannels["bridgeWlr"], name: "bridgeWlr" },
     { channel: textChannels["mmWins"], name: "mmWins" },
     { channel: textChannels["pitPrestige"], name: "pitPrestige" },
+    { channel: textChannels["zombiesKills"], name: "zombiesKills" },
+    { channel: textChannels["zombiesWins"], name: "zombiesWins" },
   ];
 
   setInterval(
@@ -434,7 +438,7 @@ export default async function leaderboards() {
         await sleep(3000);
       }
     },
-    10 * 60 * 1000,
+    1 * 60 * 1000,
   );
 }
 

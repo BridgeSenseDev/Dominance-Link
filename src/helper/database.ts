@@ -509,10 +509,13 @@ export async function players() {
       (player.stats?.duels?.bridge.wins ?? 0) /
       (player.stats?.duels?.bridge.losses ?? 0);
     const mmWins = player.stats?.murdermystery?.wins ?? 0;
+    const zombiesWins = player.stats?.arcade?.zombies?.overall?.wins ?? 0;
     const pitPrestige = player.stats?.pit?.prestige ?? 0;
+    const zombiesKills =
+      player.stats?.arcade?.zombies?.overall?.zombieKills ?? 0;
 
     db.prepare(
-      "UPDATE guildMembers SET (nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests, bridgeWins, bridgeWlr, mmWins, pitPrestige) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?",
+      "UPDATE guildMembers SET (nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests, bridgeWins, bridgeWlr, mmWins, pitPrestige, zombiesKills, zombiesWins) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?",
     ).run(
       rankTagF(player) ?? "",
       (await checkRequirements(data.uuid, player)) ? 1 : 0,
@@ -531,6 +534,8 @@ export async function players() {
       bridgeWlr,
       mmWins,
       pitPrestige,
+      zombiesKills,
+      zombiesWins,
       data.uuid,
     );
   }, 7 * 1000);
