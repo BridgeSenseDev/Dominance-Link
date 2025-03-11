@@ -575,7 +575,7 @@ export default async function execute(
       modal.addComponents(firstActionRow, secondActionRow);
       await interaction.showModal(modal);
     } else if (interaction.customId === "endBreak") {
-      await interaction.deferReply({ fetchReply: true });
+      await interaction.deferReply({ withResponse: true });
 
       const breakData = db
         .prepare("SELECT * FROM breaks WHERE discord = ?")

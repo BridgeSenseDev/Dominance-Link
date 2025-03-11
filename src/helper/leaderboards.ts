@@ -428,7 +428,7 @@ export default async function leaderboards() {
   setInterval(
     async () => {
       for (const { channel, name } of leaderboardChannels) {
-        if (!channel.isThreadOnly()) continue;
+        if (!channel.isThread()) continue;
 
         await generateLeaderboard(channel, name);
         await sleep(3000);
