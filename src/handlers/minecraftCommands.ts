@@ -79,6 +79,11 @@ export async function handleMinecraftCommands(
         chat(await getReqs(channel, player));
         break;
       }
+      case "wl":
+      case "warlords": {
+        chat(await getWarlordsStats(channel, player));
+        break;
+      }
     }
   }
 }
@@ -246,6 +251,20 @@ export async function getZombiesStats(channel: string, player: Player) {
     : `Round ${zombies?.prison.bestRound ?? 0}`;
 
   return `/${channel} ${rankTag}${player.nickname} W: ${wins} K: ${kills} D: ${deaths} DE: ${DE} AA: ${AA} BB: ${BB} P: ${P}`;
+}
+
+export async function getWarlordsStats(channel: string, player: Player) {
+  const warlords = player.stats?.warlords;
+  const wlClass = warlords?.class
+    ? warlords.class.charAt(0).toUpperCase() + warlords.class.slice(1)
+    : "None";
+  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+  const wins = formatNumber(warlords?.wins ?? 0);
+  const wlr = formatNumber(warlords?.WLRatio ?? 0);
+  const kills = formatNumber(warlords?.kills ?? 0);
+  const kdr = formatNumber(warlords?.KDRatio ?? 0);
+
+  return `/${channel} [${wlClass}] ${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} K: ${kills} KDR: ${kdr}`;
 }
 
 export async function getReqs(channel: string, player: Player) {
