@@ -196,10 +196,6 @@ export async function getHypixelPing(channel: string, player: Player) {
     },
   );
 
-  if (!response.ok) {
-    return `/${channel} Error: Failed to fetch ping`;
-  }
-
   const ping = await response.json().catch(() => {
     return {
       success: false,
