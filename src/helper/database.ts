@@ -269,7 +269,7 @@ export async function gsrun(sheets: JWT) {
     async () => {
       const gsapi = google.sheets({ version: "v4", auth: sheets });
       const data = db
-        .prepare("SELECT * FROM guildMembers")
+        .prepare("SELECT * FROM guildMembers ORDER BY weeklyGexp DESC")
         .all() as HypixelGuildMember[];
       const guild = await hypixel
         .getGuild("name", "Dominance")
@@ -325,13 +325,6 @@ export async function gsrun(sheets: JWT) {
           ];
         }),
       );
-
-      array.sort((a, b) => {
-        if (typeof a[4] === "number" && typeof b[4] === "number") {
-          return b[4] - a[4];
-        }
-        return 0;
-      });
 
       const options = {
         spreadsheetId: "1YiNxpvH9FZ6Cl6ZQmBV07EvORvsVTAiq5kD1FgJiKEE",
