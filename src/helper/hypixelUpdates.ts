@@ -1,4 +1,3 @@
-import * as cheerio from "cheerio";
 import Parser from "rss-parser";
 import { chat } from "../handlers/workerHandler.ts";
 
@@ -86,51 +85,11 @@ export async function checkForHypixelUpdates(firstTime = false) {
       }
 
       if (!firstTime) {
-        const response = await fetch(link, {
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:89.0) Gecko/20100101 Firefox/89.0",
-          },
-        });
-
-        const html = await response.text();
-        const $ = cheerio.load(html);
-        const time = Number.parseInt(
-          $("time.u-dt").eq(0).attr("data-time") ?? "",
-        );
-        if (time + 43200 < Math.floor(Date.now() / 1000)) {
-          continue;
-        }
-
         chat(`/gc [HYPIXEL UPDATE] ${title} | ${link}`);
-        hypixelUpdates.push(title);
-
         await new Promise((resolve) => setTimeout(resolve, 1500));
-      } else if (firstTime) {
-        hypixelUpdates.push(title);
-      }
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-let skyblockVersion: string | undefined;
-export async function checkForSkyblockVersion() {
-  try {
-    const response = await fetch(
-      "https://api.hypixel.net/v2/resources/skyblock/skills",
-    );
-    const data = await response.json();
-
-    if (skyblockVersion !== data.version) {
-      if (skyblockVersion !== undefined) {
-        chat(
-          `/gc [HYPIXEL SKYBLOCK] Skyblock version has been updated to ${data.version}! Server restarts might occur!`,
-        );
       }
 
-      skyblockVersion = data.version;
+      hypixelUpdates.push(title);
     }
   } catch (error) {
     console.log(error);

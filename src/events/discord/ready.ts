@@ -23,7 +23,6 @@ import gexpWatch from "../../helper/gexpWatch.js";
 import {
   checkForHypixelUpdates,
   checkForIncidents,
-  checkForSkyblockVersion,
 } from "../../helper/hypixelUpdates.ts";
 import leaderboards from "../../helper/leaderboards.js";
 import {
@@ -116,7 +115,6 @@ export default async function execute(client: Client) {
   async function startChecking() {
     await checkForHypixelUpdates(firstTime);
     await checkForIncidents(firstTime);
-    await checkForSkyblockVersion();
 
     firstTime = false;
   }
