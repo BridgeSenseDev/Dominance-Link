@@ -438,7 +438,7 @@ export default async function leaderboards() {
         await sleep(3000);
       }
     },
-    1 * 60 * 1000,
+    10 * 60 * 1000,
   );
 }
 
