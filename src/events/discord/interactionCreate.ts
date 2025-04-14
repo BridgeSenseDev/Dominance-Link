@@ -816,9 +816,7 @@ export default async function execute(
               `\nPrevious days in guild: \`${abbreviateNumber(
                 guildMember.baseDays ?? 0,
               )}\`\nTotal days in guild: \`` +
-              `${abbreviateNumber(
-                getDaysInGuild(guildMember.joined, guildMember.baseDays),
-              )}\``,
+              `${getDaysInGuild(guildMember.joined, guildMember.baseDays)}\``,
           );
 
         await interaction.editReply({ embeds: [embed] });

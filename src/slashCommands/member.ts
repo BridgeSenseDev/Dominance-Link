@@ -29,7 +29,7 @@ const tagColorCodes: StringObject = {
   "[Elite]": "§5[Elite]",
   "[Moderator]": "§c[Mod]",
   "[Owner]": "§4[Owner]",
-  "[GM]": "§4[GM]",
+  "[GUILDMASTER]": "§4[GM]",
 };
 
 export const data = new SlashCommandBuilder()
@@ -150,7 +150,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     },
     {
       text: guildMember.nameColor,
-      font: "40px Minecraft",
+      font: "32px Minecraft",
     },
   );
 
@@ -302,9 +302,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     {
       text: `§7Total Days In Guild: ${daysColor(
         getDaysInGuild(guildMember.joined, guildMember.baseDays),
-      )}${abbreviateNumber(
-        getDaysInGuild(guildMember.joined, guildMember.baseDays),
-      )} Days`,
+      )}${getDaysInGuild(guildMember.joined, guildMember.baseDays)} Days`,
       font: "20px Minecraft",
     },
   );
