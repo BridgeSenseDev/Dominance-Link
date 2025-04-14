@@ -138,6 +138,9 @@ export async function sleep(ms: number) {
 }
 
 export function removeSectionSymbols(message: string) {
+  if (!message) {
+    return "";
+  }
   let modifiedMessage = message;
   let pos = modifiedMessage.indexOf("\u00A7");
   while (pos !== -1) {
