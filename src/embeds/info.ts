@@ -44,7 +44,7 @@ client.on("ready", async () => {
         22,
       )}\n\n** Socials:**\n\n${
         config.emojis.discord
-      } [Discord Invite](https://dominance.cf/discord)\n🌐 [Website](https://dominance.cf/)\n${
+      } [Discord Invite (dominance.bridgesense.dev/discord)](https://dominance.bridgesense.dev/discord)\n${
         config.emojis.hypixel
       } [Hypixel Forum Post](https://dominance.cf/forums)\n\n${dividers(
         22,

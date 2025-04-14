@@ -187,7 +187,7 @@ export async function weekly() {
             )
             .join(
               "\n\n",
-            )}\n\n**Detailed stats can be found in https://dominance.cf/sheets**`,
+            )}\n\n**Detailed stats can be found in https://dominance.bridgesense.dev/stats**`,
         )
         .setImage(config.guild.banner);
 

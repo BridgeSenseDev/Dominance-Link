@@ -1,6 +1,6 @@
 <br />
 <p align="center">
-  <a href="https://dominance.cf/discord">
+  <a href="https://dominance.bridgesense.dev/discord">
     <img src="https://raw.githubusercontent.com/BridgeSenseDev/Dominance-Link/main/.github/assets/img/Dominance Banner.png" alt="Dominance" width="400" height="auto">
   </a>
 </p>
