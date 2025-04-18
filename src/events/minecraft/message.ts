@@ -524,7 +524,7 @@ function isKickMessage(message: string) {
 
 function isGuildLevelUpMessage(message: string) {
   return (
-    message.includes("The guild has reached Level") && !message.includes(":")
+    message.includes("The Guild has reached Level") && !message.includes(":")
   );
 }
 
