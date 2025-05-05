@@ -27,10 +27,17 @@ async function processPlayerData(
   ];
 
   const skywarsData = playerData.stats?.skywars;
+
   const skywars: [string, number] = [
     skywarsData?.levelFormatted ?? "1⋆",
     skywarsData?.KDRatio ?? 0,
   ];
+
+  const lastChar = skywars[0].slice(-1);
+
+  if (!Number.isNaN(Number.parseFloat(lastChar))) {
+    skywars[0] += "⋆";
+  }
 
   const sbMember = (
     await hypixel.getSkyblockProfiles(uuid).catch(() => null)
