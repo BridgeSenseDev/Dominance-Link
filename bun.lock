@@ -10,7 +10,7 @@
         "discord.js": "^14.19.3",
         "googleapis": "^148.0.0",
         "hypixel-api-reborn": "^11.3.7",
-        "math-expression-evaluator": "^2.0.6",
+        "math-expression-evaluator": "^2.0.7",
         "mineflayer": "^4.29.0",
         "node-cron": "^3.0.3",
         "rss-parser": "^3.13.0",
@@ -261,7 +261,7 @@
 
     "magic-bytes.js": ["magic-bytes.js@1.10.0", "", {}, "sha512-/k20Lg2q8LE5xiaaSkMXk4sfvI+9EGEykFS4b0CHHGWqDYU0bGUFSwchNOMA56D7TCs9GwVTkqe9als1/ns8UQ=="],
 
-    "math-expression-evaluator": ["math-expression-evaluator@2.0.6", "", {}, "sha512-DRung1qNcKbgkhFeQ0fBPUFB6voRUMY7KyRyp1TRQ2v95Rp2egC823xLRooM1mDx1rmbkY7ym6ZWmpaE/VimOA=="],
+    "math-expression-evaluator": ["math-expression-evaluator@2.0.7", "", {}, "sha512-uwliJZ6BPHRq4eiqNWxZBDzKUiS5RIynFFcgchqhBOloVLVBpZpNG8jRYkedLcBvhph8TnRyWEuxPqiQcwIdog=="],
 
     "mime-db": ["mime-db@1.52.0", "", {}, "sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg=="],
 
