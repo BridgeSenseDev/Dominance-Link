@@ -5,19 +5,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
-import { getProfanityScores } from "../helper/utils.js";
-import type { NumberObject } from "../types/global";
-
-const limits: NumberObject = {
-  TOXICITY: 0.7,
-  SEVERE_TOXICITY: 0.5,
-  IDENTITY_ATTACK: 0.6,
-  INSULT: 0.8,
-  PROFANITY: 0.7,
-  THREAT: 0.8,
-  SEXUALLY_EXPLICIT: 0.8,
-  OBSCENE: 0.8,
-};
+import { getProfanityScores, limits } from "../helper/utils.js";
 
 export const data = new SlashCommandBuilder()
   .setName("automod")

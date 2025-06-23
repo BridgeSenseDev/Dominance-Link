@@ -127,18 +127,18 @@ export async function getProfanityScores(message: string) {
   return attributeScores;
 }
 
-export async function checkProfanity(message: string) {
-  const limits: NumberObject = {
-    TOXICITY: 0.7,
-    SEVERE_TOXICITY: 0.5,
-    IDENTITY_ATTACK: 0.6,
-    INSULT: 0.8,
-    PROFANITY: 0.7,
-    THREAT: 0.8,
-    SEXUALLY_EXPLICIT: 0.8,
-    OBSCENE: 0.8,
-  };
+export const limits: NumberObject = {
+  TOXICITY: 0.85,
+  SEVERE_TOXICITY: 0.5,
+  IDENTITY_ATTACK: 0.6,
+  INSULT: 0.8,
+  PROFANITY: 0.7,
+  THREAT: 0.8,
+  SEXUALLY_EXPLICIT: 0.8,
+  OBSCENE: 0.8,
+};
 
+export async function checkProfanity(message: string) {
   const attributeScores = await getProfanityScores(message);
   if (!attributeScores) {
     return false;
