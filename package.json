@@ -17,7 +17,7 @@
     "async-mutex": "^0.5.0",
     "discord-emoji-converter": "^1.2.10",
     "discord.js": "^14.22.1",
-    "googleapis": "^148.0.0",
+    "googleapis": "^159.0.0",
     "hypixel-api-reborn": "^11.3.7",
     "math-expression-evaluator": "^2.0.7",
     "mineflayer": "^4.32.0",
