@@ -24,7 +24,7 @@
     },
   },
   "overrides": {
-    "minecraft-data": "^3.97.0",
+    "minecraft-data": "^3.98.0",
   },
   "packages": {
     "@azure/msal-common": ["@azure/msal-common@14.14.0", "", {}, "sha512-OxcOk9H1/1fktHh6//VCORgSNJc2dCQObTm6JNmL824Z6iZSO6eFo/Bttxe0hETn9B+cr7gDouTQtsRq3YPuSQ=="],
@@ -271,7 +271,7 @@
 
     "mime-types": ["mime-types@2.1.35", "", { "dependencies": { "mime-db": "1.52.0" } }, "sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw=="],
 
-    "minecraft-data": ["minecraft-data@3.97.0", "", {}, "sha512-doy6GpttHUCdSezD6tBNmDk66rnwZ36DK4KlUSCTf/OH7YMypGPuP20R2cXWuf/wbxYj4x7nOBSrRR9+GgVFLw=="],
+    "minecraft-data": ["minecraft-data@3.98.0", "", {}, "sha512-JAPqJ/TZoxMUlAPPdWUh1v5wdqvYGFSZ4rW9bUtmaKBkGpomDSjw4V02ocBqbxKJvcTtmc5nM/LfN9/0DDqHrQ=="],
 
     "minecraft-folder-path": ["minecraft-folder-path@1.2.0", "", {}, "sha512-qaUSbKWoOsH9brn0JQuBhxNAzTDMwrOXorwuRxdJKKKDYvZhtml+6GVCUrY5HRiEsieBEjCUnhVpDuQiKsiFaw=="],
 
