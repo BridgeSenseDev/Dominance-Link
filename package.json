@@ -31,6 +31,6 @@
     "typescript": "^5.9.3"
   },
   "overrides": {
-    "minecraft-data": "^3.98.0"
+    "minecraft-data": "^3.99.1"
   }
 }
