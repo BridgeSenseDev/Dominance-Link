@@ -16,7 +16,7 @@
     "@napi-rs/canvas": "^0.1.80",
     "async-mutex": "^0.5.0",
     "discord-emoji-converter": "^1.2.10",
-    "discord.js": "^14.22.1",
+    "discord.js": "^14.23.2",
     "googleapis": "^148.0.0",
     "hypixel-api-reborn": "^11.3.7",
     "math-expression-evaluator": "^2.0.7",
