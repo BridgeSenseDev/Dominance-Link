@@ -37,12 +37,11 @@ import { ensureDayExists } from "./utils.js";
 
 const db = new Database("guild.db");
 
-export const sheet = new google.auth.JWT(
-  config.sheets.clientEmail,
-  undefined,
-  config.sheets.privateKey,
-  ["https://www.googleapis.com/auth/spreadsheets"],
-);
+export const sheet = new google.auth.JWT({
+  email: config.sheets.clientEmail,
+  key: config.sheets.privateKey,
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+});
 
 sheet.authorize();
 
