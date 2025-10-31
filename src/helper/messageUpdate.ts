@@ -7,7 +7,7 @@ import {
   escapeMarkdown,
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
-import { messages } from "../events/discord/ready.js";
+import { messages } from "../events/discord/clientReady.ts";
 import type { BreakMember, HypixelGuildMember } from "../types/global";
 import { uuidToName } from "./clientUtils.js";
 import { bullet, dividers, invis, sub } from "./constants.js";

@@ -33,7 +33,7 @@ import type {
   HypixelGuildMember,
   WaitlistMember,
 } from "../../types/global";
-import { textChannels } from "../discord/ready.js";
+import { textChannels } from "../discord/clientReady.ts";
 
 const db = new Database("guild.db");
 

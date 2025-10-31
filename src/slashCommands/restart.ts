@@ -4,7 +4,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
-import { worker } from "../events/discord/ready.ts";
+import { worker } from "../events/discord/clientReady.ts";
 import type { MessageObject } from "../handlers/workerHandler.js";
 import { discordToUuid, isStaff } from "../helper/clientUtils.js";
 

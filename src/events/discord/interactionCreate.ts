@@ -52,7 +52,7 @@ import {
 } from "../../helper/utils.ts";
 import { hypixel } from "../../index.js";
 import type { BreakMember } from "../../types/global";
-import { textChannels } from "./ready.js";
+import { textChannels } from "./clientReady.ts";
 
 const db = new Database("guild.db");
 

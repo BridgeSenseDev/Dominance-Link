@@ -9,7 +9,7 @@ import {
   type ForumThreadChannel,
 } from "discord.js";
 import config from "../config.json" with { type: "json" };
-import { textChannels } from "../events/discord/ready.ts";
+import { textChannels } from "../events/discord/clientReady.ts";
 import { fetchGexpForMembers } from "../handlers/databaseHandler.ts";
 import type { HypixelGuildMember as BaseHypixelGuildMember } from "../types/global";
 import { abbreviateNumber, formatNumber, sleep } from "./clientUtils.js";

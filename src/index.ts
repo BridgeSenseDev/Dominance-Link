@@ -1,7 +1,7 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import Hypixel from "hypixel-api-reborn";
 import config from "./config.json" with { type: "json" };
-import ready from "./events/discord/ready.js";
+import clientReady from "./events/discord/clientReady.ts";
 
 export const hypixel = new Hypixel.Client(config.keys.hypixelApiKey, {
   cache: true,
@@ -18,8 +18,8 @@ const client: Client = new Client({
   ],
 });
 
-client.on("ready", () => {
-  ready(client);
+client.on("clientReady", () => {
+  clientReady(client);
 });
 
 client.login(config.keys.discordBotToken);

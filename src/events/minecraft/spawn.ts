@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import config from "../../config.json" with { type: "json" };
 import { chat } from "../../handlers/workerHandler.js";
-import { textChannels } from "../discord/ready.js";
+import { textChannels } from "../discord/clientReady.ts";
 
 let emittedEvent = false;
 export default async function execute() {

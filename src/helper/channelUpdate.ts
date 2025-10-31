@@ -1,5 +1,5 @@
 import { ActivityType, type Client } from "discord.js";
-import { voiceChannels } from "../events/discord/ready.js";
+import { voiceChannels } from "../events/discord/clientReady.ts";
 import { chat } from "../handlers/workerHandler.js";
 import { hypixel } from "../index.js";
 import { sleep } from "./clientUtils.js";

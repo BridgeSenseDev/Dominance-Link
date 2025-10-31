@@ -9,7 +9,7 @@ import { google } from "googleapis";
 import type { JWT } from "googleapis-common";
 import { schedule } from "node-cron";
 import config from "../config.json" with { type: "json" };
-import { textChannels } from "../events/discord/ready.js";
+import { textChannels } from "../events/discord/clientReady.ts";
 import {
   archiveGuildMember,
   archiveMember,

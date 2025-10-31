@@ -10,7 +10,7 @@ import config from "../../config.json" with { type: "json" };
 import { archiveMember, fetchMember } from "../../handlers/databaseHandler.js";
 import { invis } from "../../helper/constants.js";
 import { hypixel } from "../../index.js";
-import { textChannels } from "./ready.js";
+import { textChannels } from "./clientReady.ts";
 
 const db = new Database("guild.db");
 

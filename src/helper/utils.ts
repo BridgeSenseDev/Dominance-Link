@@ -9,7 +9,7 @@ import {
   waitForMessage,
 } from "../handlers/workerHandler.ts";
 import { hypixel } from "../index.ts";
-import type { NumberObject, StringObject } from "../types/global";
+import type { NumberObject } from "../types/global";
 import type {
   ICommentsAnalyzeRequest,
   ICommentsAnalyzeResponse,
