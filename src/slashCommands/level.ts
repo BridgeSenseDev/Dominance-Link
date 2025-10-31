@@ -1,5 +1,5 @@
 import Database from "bun:sqlite";
-import { GlobalFonts, createCanvas, loadImage } from "@napi-rs/canvas";
+import { createCanvas, GlobalFonts, loadImage } from "@napi-rs/canvas";
 import {
   type ChatInputCommandInteraction,
   EmbedBuilder,

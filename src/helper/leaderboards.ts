@@ -1,5 +1,5 @@
 import Database from "bun:sqlite";
-import { GlobalFonts, type SKRSContext2D, createCanvas } from "@napi-rs/canvas";
+import { createCanvas, GlobalFonts, type SKRSContext2D } from "@napi-rs/canvas";
 import {
   ActionRowBuilder,
   AttachmentBuilder,

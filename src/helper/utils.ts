@@ -4,8 +4,8 @@ import { google } from "googleapis";
 import config from "../config.json" with { type: "json" };
 import { fetchGexpForMember } from "../handlers/databaseHandler.ts";
 import {
-  type MessageObject,
   chat,
+  type MessageObject,
   waitForMessage,
 } from "../handlers/workerHandler.ts";
 import { hypixel } from "../index.ts";

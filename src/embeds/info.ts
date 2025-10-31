@@ -39,7 +39,7 @@ client.on("ready", async () => {
       `**FAQ:**\n\n${bullet} **How many times can I rejoin the guild?**\n${invis}${sub} There is no limit, but you \
 			have to wait before reapplying\n\n${bullet} **Where can I apply?**\n${invis}${sub}<#1017099269372657724>\n\n\
 			${bullet} **How do I rank up once in the guild?**\n${invis}${sub} Learn about guild ranks in \
-			<#1036643935134695554>\n\n${bullet} **How much GEXP do I need to get every week?**\n${invis}${sub} We have \**NO\
+			<#1036643935134695554>\n\n${bullet} **How much GEXP do I need to get every week?**\n${invis}${sub} We have **NO\
 			** GEXP requirements\n\n${bullet} **Can public members participate in events**?\n${invis}${sub} Yes\n\n${dividers(
         22,
       )}\n\n** Socials:**\n\n${

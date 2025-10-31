@@ -1,5 +1,4 @@
 import { Database } from "bun:sqlite";
-import { demojify } from "discord-emoji-converter";
 import {
   type Channel,
   EmbedBuilder,
@@ -7,6 +6,7 @@ import {
   type TextChannel,
   type ThreadChannel,
 } from "discord.js";
+import { demojify } from "discord-emoji-converter";
 import type { Player } from "hypixel-api-reborn";
 import config from "../config.json" with { type: "json" };
 import { fetchGuildMember, fetchMember } from "../handlers/databaseHandler.js";

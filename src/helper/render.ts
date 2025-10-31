@@ -1,4 +1,4 @@
-import { GlobalFonts, type SKRSContext2D, loadImage } from "@napi-rs/canvas";
+import { GlobalFonts, loadImage, type SKRSContext2D } from "@napi-rs/canvas";
 import type {
   BoxProps,
   DeferredGradient,

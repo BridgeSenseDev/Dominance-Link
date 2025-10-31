@@ -27,13 +27,13 @@ import {
   fetchMember,
 } from "../../handlers/databaseHandler.js";
 import { chat } from "../../handlers/workerHandler.ts";
-import { hypixelApiErrorEmbed } from "../../helper/clientUtils.js";
 import {
   abbreviateNumber,
   discordToUuid,
   formatNumber,
   generateHeadUrl,
   getDaysInGuild,
+  hypixelApiErrorEmbed,
   nameToUuid,
   removeSectionSymbols,
   uuidToName,

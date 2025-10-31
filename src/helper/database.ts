@@ -404,7 +404,7 @@ export async function players() {
       return;
     }
 
-    const inGameRole = data.tag.replace(/[\[\]]/g, "");
+    const inGameRole = data.tag.replace(/[[\]]/g, "");
     const targetRole = data.targetRank?.slice(1, -1) ?? "";
 
     const player = await hypixel.getPlayer(data.uuid).catch(() => null);
