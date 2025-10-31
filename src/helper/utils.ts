@@ -18,8 +18,8 @@ import type {
 import {
   formatDateForDb,
   getDaysInGuild,
+  getESTDate,
   sleep,
-  updateTable,
   uuidToName,
 } from "./clientUtils.js";
 import messageToImage from "./messageToImage.ts";
@@ -59,28 +59,55 @@ export function formatDate(dateObj: Date) {
   return `${date + suffix} ${month} ${dateObj.getFullYear()}`;
 }
 
-export function ensureDayExists(day: Date) {
-  const tableInfo = db
-    .prepare("PRAGMA table_info(gexpHistory)")
-    .all() as StringObject[];
-  const columnExists = tableInfo.some(
-    (column) => column["name"] === formatDateForDb(day),
+export function ensureDayExists() {
+  const start = new Date(
+    new Date("2022-10-17").toLocaleString("en-US", {
+      timeZone: "America/New_York",
+    }),
+  );
+  start.setHours(start.getHours() + 4);
+
+  const end = new Date(getESTDate());
+  end.setHours(end.getHours() + 4);
+
+  const gexpCols = new Set(
+    db
+      .prepare("PRAGMA table_info(gexpHistory)")
+      .all()
+      .map((c: any) => c.name),
   );
 
-  if (!columnExists) {
-    db.prepare(
-      `ALTER TABLE gexpHistory ADD COLUMN "${formatDateForDb(
-        day,
-      )}" INTEGER DEFAULT 0`,
-    ).run();
-    db.prepare(
-      `ALTER TABLE gexpHistoryArchives ADD COLUMN "${formatDateForDb(
-        day,
-      )}" INTEGER`,
-    ).run();
+  const archiveCols = new Set(
+    db
+      .prepare("PRAGMA table_info(gexpHistoryArchives)")
+      .all()
+      .map((c: any) => c.name),
+  );
+
+  const missingDates: string[] = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const colName = formatDateForDb(d); // e.g. 2025-10-31
+    if (!gexpCols.has(colName) || !archiveCols.has(colName)) {
+      missingDates.push(colName);
+    }
   }
 
-  updateTable("2022-10-17", formatDateForDb(day));
+  if (missingDates.length > 0) {
+    db.transaction(() => {
+      for (const date of missingDates) {
+        if (!gexpCols.has(date)) {
+          db.prepare(
+            `ALTER TABLE gexpHistory ADD COLUMN "${date}" INTEGER DEFAULT 0`,
+          ).run();
+        }
+        if (!archiveCols.has(date)) {
+          db.prepare(
+            `ALTER TABLE gexpHistoryArchives ADD COLUMN "${date}" INTEGER DEFAULT 0`,
+          ).run();
+        }
+      }
+    })();
+  }
 }
 
 export async function getProfanityScores(message: string) {

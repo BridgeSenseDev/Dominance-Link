@@ -53,7 +53,7 @@ function ensureDataForDate(date: string, guild: string) {
 
 export default async function gexpWatch() {
   schedule(
-    "00 55 12 * * 0-6",
+    "00 55 23 * * 0-6",
     async () => {
       const guildThumbnails: StringObject = {
         rebel:
@@ -183,7 +183,7 @@ export default async function gexpWatch() {
       await textChannels["guildWatch"].send({ embeds });
     },
     {
-      timezone: "Asia/Hong_Kong",
+      timezone: "America/New_York",
     },
   );
 }

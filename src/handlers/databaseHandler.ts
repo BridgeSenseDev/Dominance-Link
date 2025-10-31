@@ -305,7 +305,8 @@ interface GexpResult {
   lifetimeGexp: number;
 }
 
-function calculateGexpForRow(row: GexpHistory, today: Date): GexpResult {
+function calculateGexpForRow(row: GexpHistory): GexpResult {
+  const today = getESTDate();
   const { uuid: _, ...stats } = row;
 
   let lifetimeGexp = 0;
@@ -350,8 +351,7 @@ export function fetchGexpForMembers(
 ): (BaseHypixelGuildMember & { [key: string]: number })[] {
   if (members.length === 0) return members;
 
-  const today = getESTDate();
-  ensureDayExists(today);
+  ensureDayExists();
 
   const uuids = members.map((member) => member.uuid);
 
@@ -369,7 +369,7 @@ export function fetchGexpForMembers(
     const row = gexpMap.get(member.uuid);
     let gexpResult: GexpResult;
     if (row) {
-      gexpResult = calculateGexpForRow(row, today);
+      gexpResult = calculateGexpForRow(row);
     } else {
       gexpResult = {
         dailyGexp: 0,
@@ -388,8 +388,7 @@ export function fetchGexpForMembers(
 }
 
 export function fetchGexpForMember(uuid: string): GexpResult {
-  const today = getESTDate();
-  ensureDayExists(today);
+  ensureDayExists();
 
   const row = db
     .prepare("SELECT * FROM gexpHistory WHERE uuid = ?")
@@ -399,7 +398,7 @@ export function fetchGexpForMember(uuid: string): GexpResult {
     return { dailyGexp: 0, weeklyGexp: 0, monthlyGexp: 0, lifetimeGexp: 0 };
   }
 
-  return calculateGexpForRow(row, today);
+  return calculateGexpForRow(row);
 }
 
 export function fetchTotalLifetimeGexp(): number {

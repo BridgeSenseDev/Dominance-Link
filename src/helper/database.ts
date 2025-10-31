@@ -27,7 +27,6 @@ import {
   abbreviateNumber,
   doubleDigits,
   getDaysInGuild,
-  getESTDate,
   rankTagF,
   uuidToName,
 } from "./clientUtils.js";
@@ -206,7 +205,7 @@ export async function database() {
     const guild = await hypixel.getGuild("name", "Dominance").catch(() => null);
     if (!guild) return;
 
-    ensureDayExists(getESTDate());
+    ensureDayExists();
 
     for (const member of guild.members) {
       const data = fetchGuildMember(member.uuid);

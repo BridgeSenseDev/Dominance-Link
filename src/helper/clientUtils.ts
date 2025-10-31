@@ -354,33 +354,6 @@ export function getESTDate(): Date {
   );
 }
 
-export function updateTable(startDate: string, endDate: string) {
-  const columns = db
-    .prepare("PRAGMA table_info(gexpHistory)")
-    .all() as StringObject[];
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-
-  for (const column of columns) {
-    const date = column["name"];
-    if (date === "uuid") continue;
-    if (!dateRegex.test(date)) {
-      db.exec(`ALTER TABLE gexpHistory DROP COLUMN ${date}`);
-    }
-  }
-
-  for (
-    let currentDate = new Date(startDate);
-    currentDate <= new Date(endDate);
-    currentDate.setDate(currentDate.getDate() + 1)
-  ) {
-    const date = `"${currentDate.toISOString().split("T")[0]}"`;
-    if (!columns.some((column) => `"${column["name"]}"` === date)) {
-      db.exec(`ALTER TABLE gexpHistory ADD COLUMN ${date} INTEGER`);
-      db.exec(`ALTER TABLE gexpHistoryArchives ADD COLUMN ${date} INTEGER`);
-    }
-  }
-}
-
 function isValidUUID(uuid: string) {
   const uuidRegex =
     /([0-9a-f]{8})(?:-|)([0-9a-f]{4})(?:-|)(4[0-9a-f]{3})(?:-|)([89ab][0-9a-f]{3})(?:-|)([0-9a-f]{12})/;
