@@ -70,7 +70,7 @@ export default async function execute(_client: Client, message: Message) {
           await message.react(config.emojis.aCross);
         }
       }
-    } catch (e) {
+    } catch (_e) {
       await message.react(config.emojis.aCross);
     }
   }
@@ -88,8 +88,7 @@ export default async function execute(_client: Client, message: Message) {
 
   const messageContent = (await formatMentions(message))
     ?.replace(/\n/g, "")
-    // biome-ignore lint/suspicious/noControlCharactersInRegex: <explanation>
-    .replace(/[^\x00-\x7F]/g, "*");
+    .replace(/[^\u0020-\u007E]/g, "*");
 
   let tag = "";
 
@@ -133,7 +132,7 @@ export default async function execute(_client: Client, message: Message) {
         await (channel as TextChannel).permissionOverwrites.edit(member, {
           SendMessages: false,
         });
-      } catch (e) {
+      } catch (_e) {
         /* empty */
       }
     }

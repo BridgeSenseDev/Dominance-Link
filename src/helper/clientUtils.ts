@@ -12,12 +12,7 @@ import config from "../config.json" with { type: "json" };
 import { fetchGuildMember, fetchMember } from "../handlers/databaseHandler.js";
 import { chat } from "../handlers/workerHandler.js";
 import client from "../index.js";
-import type {
-  BreakMember,
-  Member,
-  StringObject,
-  WaitlistMember,
-} from "../types/global.js";
+import type { BreakMember, Member, WaitlistMember } from "../types/global.js";
 import { rankColor } from "./constants.js";
 
 const db = new Database("guild.db");
@@ -29,14 +24,14 @@ export async function nameToUuid(name: string): Promise<string | null> {
         await fetch(`https://playerdb.co/api/player/minecraft/${name}`)
       ).json()
     ).data.player.raw_id;
-  } catch (e) {
+  } catch (_e) {
     try {
       return (
         await (
           await fetch(`https://api.mojang.com/users/profiles/minecraft/${name}`)
         ).json()
       ).id;
-    } catch (err) {
+    } catch (_err) {
       return null;
     }
   }
@@ -49,14 +44,14 @@ export async function uuidToName(uuid: string): Promise<string | null> {
         await fetch(`https://playerdb.co/api/player/minecraft/${uuid}`)
       ).json()
     ).data.player.username;
-  } catch (e) {
+  } catch (_e) {
     try {
       return (
         await (
           await fetch(`https://api.mojang.com/user/profile/${uuid}`)
         ).json()
       ).name;
-    } catch (err) {
+    } catch (_err) {
       return null;
     }
   }
@@ -128,7 +123,7 @@ export async function formatMentions(message: Message) {
 
   try {
     return demojify(msg);
-  } catch (e) {
+  } catch (_e) {
     return msg;
   }
 }
@@ -174,7 +169,7 @@ export function formatNumber(inputNumber: number): string {
 export function abbreviateNumber(number: number) {
   return Intl.NumberFormat("en-US", {
     notation: "compact",
-    maximumFractionDigits: 1,
+    maximumFractionDigits: 2,
   }).format(number);
 }
 
@@ -313,7 +308,7 @@ export function rankTagF(player: Player) {
     return "";
   }
 
-  if (player.rank === "Default") {
+  if (!player.rank) {
     return `§7${player.nickname}`;
   }
   if (player.rank === "VIP") {
@@ -326,13 +321,17 @@ export function rankTagF(player: Player) {
     return `§b[MVP] ${player.nickname}`;
   }
 
-  const plusColor = rankColor[player.plusColor?.toCode() ?? "RED"];
+  const plusColor =
+    rankColor[player.cosmetics.rankPlusColor?.toCode() ?? "RED"];
 
   if (player.rank === "MVP+") {
     return `§b[MVP${plusColor}+§b] ${player.nickname}`;
   }
   if (player.rank === "MVP++") {
-    if (!player.prefixColor || player.prefixColor.toCode() === "GOLD") {
+    if (
+      !player.cosmetics.monthlyRankColor ||
+      player.cosmetics.monthlyRankColor.toCode() === "GOLD"
+    ) {
       return `§6[MVP${plusColor}++§6] ${player.nickname}`;
     }
     return `§b[MVP${plusColor}++§b] ${player.nickname}`;
@@ -375,7 +374,7 @@ export function generateHeadUrl(uuid: string, name: string) {
 }
 
 export function getDaysInGuild(
-  joined: string,
+  joined: string | null,
   baseDays: number | null,
 ): number {
   if (!joined) return baseDays ?? 0;

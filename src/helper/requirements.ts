@@ -1,56 +1,34 @@
 import type { Player } from "hypixel-api-reborn";
 import config from "../config.json" with { type: "json" };
-import { hypixel } from "../index.js";
 import { abbreviateNumber, formatNumber, uuidToName } from "./clientUtils.js";
+import { fetchSkyBlockStats } from "./utils.js";
 
 async function processPlayerData(
   uuid: string,
-  playerData: Player,
+  player: Player,
 ): Promise<{
-  skyblock: [number, number, number];
+  skyblock: number[];
   bedwars: [number, number, number];
   duels: [number, number];
   skywars: [string, number];
 }> {
-  let skyblock: [number, number, number] | undefined;
-  const bedwarsData = playerData.stats?.bedwars;
+  const bwData = player.stats.BedWars;
   const bedwars: [number, number, number] = [
-    bedwarsData?.level ?? 0,
-    +(bedwarsData?.finalKDRatio.toFixed(1) ?? 0),
-    bedwarsData?.wins ?? 0,
+    bwData.level ?? 0,
+    bwData.FKDR,
+    bwData.wins,
   ];
 
-  const duelsData = playerData.stats?.duels;
-  const duels: [number, number] = [
-    duelsData?.wins ?? 0,
-    +(duelsData?.WLRatio.toFixed(1) ?? 0),
-  ];
+  const duelsData = player.stats.Duels;
+  const duels: [number, number] = [duelsData.wins, duelsData.WLR];
 
-  const skywarsData = playerData.stats?.skywars;
+  const swData = player.stats.SkyWars;
+  const skywars: [string, number] = [swData.levelFormatted ?? "1⋆", swData.KDR];
 
-  const skywars: [string, number] = [
-    skywarsData?.levelFormatted ?? "1⋆",
-    skywarsData?.KDRatio ?? 0,
-  ];
-
-  const lastChar = skywars[0].slice(-1);
-
-  if (!Number.isNaN(Number.parseFloat(lastChar))) {
-    skywars[0] += "⋆";
-  }
-
-  const sbMember = (
-    await hypixel.getSkyblockProfiles(uuid).catch(() => null)
-  )?.find((profile) => profile.selected)?.me;
-  if (sbMember) {
-    skyblock = [
-      (await sbMember.getNetworth()).networth,
-      sbMember.skills.average,
-      sbMember.level,
-    ];
-  } else {
-    skyblock = [0, 0, 0];
-  }
+  const sbStats = await fetchSkyBlockStats(uuid);
+  const skyblock = sbStats
+    ? [sbStats.networth, sbStats.skillAverage, sbStats.level]
+    : [0, 0, 0];
 
   return { skyblock, bedwars, duels, skywars };
 }
@@ -72,53 +50,48 @@ export default async function requirementsEmbed(
   let meetsReqs2 = false;
 
   // Achievements
-  if (!playerData.achievementPoints) {
+  const ap = playerData.achievements.points;
+  if (!ap) {
     requirementEmbed += `':red_circle: **Achievements**\n${config.emojis.aCross} **Achievement Points:** \`0 / 3,000\`\n\n`;
-  } else if (playerData.achievementPoints >= 9000) {
+  } else if (ap >= 9000) {
     meetsReqs1 = true;
     requirementEmbed += `:green_circle: **Achievements**\n${
       config.emojis.aTick
-    } **Achievement Points:** \`${formatNumber(
-      playerData.achievementPoints,
-    )}\`\n\n`;
-  } else if (playerData.achievementPoints >= 3000) {
+    } **Achievement Points:** \`${formatNumber(ap)}\`\n\n`;
+  } else if (ap >= 3000) {
     meetsReqs2 = true;
     requirementEmbed += `:yellow_circle: **Achievements**\n${
       config.emojis.aWarning
-    } **Achievement Points:** \`${formatNumber(
-      playerData.achievementPoints,
-    )} / 9,000\`\n\n`;
+    } **Achievement Points:** \`${formatNumber(ap)} / 9,000\`\n\n`;
   } else {
     requirementEmbed += `:red_circle: **Achievements**\n${
       config.emojis.aCross
-    } **Achievement Points:** \`${formatNumber(
-      playerData.achievementPoints,
-    )} / 3,000\`\n\n`;
+    } **Achievement Points:** \`${formatNumber(ap)} / 3,000\`\n\n`;
   }
 
   // Bedwars 1
   if (bedwars[0] >= 500 && bedwars[1] >= 3) {
     meetsReqs1 = true;
     requirementEmbed += ":green_circle: **Bedwars 1**\n";
-    requirementEmbed += `${config.emojis.aTick} **Stars:** \`${bedwars[0]}\`\n`;
-    requirementEmbed += `${config.emojis.aTick} **FKDR:** \`${bedwars[1]}\`\n\n`;
+    requirementEmbed += `${config.emojis.aTick} **Stars:** \`${Math.floor(bedwars[0])}\`\n`;
+    requirementEmbed += `${config.emojis.aTick} **FKDR:** \`${formatNumber(bedwars[1])}\`\n\n`;
   } else if (bedwars[0] >= 200) {
     meetsReqs2 = true;
     requirementEmbed += ":yellow_circle: **Bedwars 1**\n";
 
     if (bedwars[0] >= 500) {
-      requirementEmbed += `${config.emojis.aTick} **Stars:** \`${bedwars[0]}\`\n`;
+      requirementEmbed += `${config.emojis.aTick} **Stars:** \`${Math.floor(bedwars[0])}\`\n`;
     } else {
-      requirementEmbed += `${config.emojis.aWarning} **Stars:** \`${bedwars[0]} / 500\`\n`;
+      requirementEmbed += `${config.emojis.aWarning} **Stars:** \`${Math.floor(bedwars[0])} / 500\`\n`;
     }
     if (bedwars[1] >= 3) {
-      requirementEmbed += `${config.emojis.aTick} **FKDR:** \`${bedwars[1]}\`\n\n`;
+      requirementEmbed += `${config.emojis.aTick} **FKDR:** \`${formatNumber(bedwars[1])}\`\n\n`;
     } else {
-      requirementEmbed += `${config.emojis.aWarning} **FKDR:** \`${bedwars[1]} / 3\`\n\n`;
+      requirementEmbed += `${config.emojis.aWarning} **FKDR:** \`${formatNumber(bedwars[1])} / 3\`\n\n`;
     }
   } else {
     requirementEmbed += ":red_circle: **Bedwars 1**\n";
-    requirementEmbed += `${config.emojis.aCross} **Stars:** \`${bedwars[0]} / 200\`\n\n`;
+    requirementEmbed += `${config.emojis.aCross} **Stars:** \`${Math.floor(bedwars[0])} / 200\`\n\n`;
   }
 
   // Bedwars 2
@@ -129,14 +102,14 @@ export default async function requirementsEmbed(
     requirementEmbed += ":red_circle: **Bedwars 2**\n";
   }
   if (bedwars[0] >= 150) {
-    requirementEmbed += `${config.emojis.aTick} **Stars:** \`${bedwars[0]}\`\n`;
+    requirementEmbed += `${config.emojis.aTick} **Stars:** \`${Math.floor(bedwars[0])}\`\n`;
   } else {
-    requirementEmbed += `${config.emojis.aCross} **Stars:** \`${bedwars[0]} / 150\`\n`;
+    requirementEmbed += `${config.emojis.aCross} **Stars:** \`${Math.floor(bedwars[0])} / 150\`\n`;
   }
   if (bedwars[1] >= 5) {
-    requirementEmbed += `${config.emojis.aTick} **FKDR:** \`${bedwars[1]}\`\n\n`;
+    requirementEmbed += `${config.emojis.aTick} **FKDR:** \`${formatNumber(bedwars[1])}\`\n\n`;
   } else {
-    requirementEmbed += `${config.emojis.aCross} **FKDR:** \`${bedwars[1]} / 5\`\n\n`;
+    requirementEmbed += `${config.emojis.aCross} **FKDR:** \`${formatNumber(bedwars[1])} / 5\`\n\n`;
   }
 
   // Duels 1
@@ -235,64 +208,42 @@ export default async function requirementsEmbed(
   if (skyblock[0] >= 3000000000 && skyblock[1] >= 40) {
     meetsReqs1 = true;
     requirementEmbed += ":green_circle: **Skyblock 1**\n";
-    requirementEmbed += `${config.emojis.aTick} **Networth:** \`${abbreviateNumber(
-      Math.round(skyblock[0] * 100) / 100,
-    )}\`\n`;
-    requirementEmbed += `${config.emojis.aTick} **Skill Average:** \`${
-      Math.round(skyblock[1] * 10) / 10
-    }\`\n\n`;
+    requirementEmbed += `${config.emojis.aTick} **Networth:** \`${abbreviateNumber(skyblock[0])}\`\n`;
+    requirementEmbed += `${config.emojis.aTick} **Skill Average:** \`${formatNumber(skyblock[1])}\`\n\n`;
   } else if (skyblock[0] >= 1000000000 && skyblock[1] > 25) {
     meetsReqs2 = true;
     requirementEmbed += ":yellow_circle: **Skyblock 1**\n";
     if (skyblock[0] >= 3000000000) {
-      requirementEmbed += `${
-        config.emojis.aTick
-      } **Networth:** \`${abbreviateNumber(
-        Math.round(skyblock[0] * 100) / 100,
-      )}\`\n`;
+      requirementEmbed += `${config.emojis.aTick} **Networth:** \`${abbreviateNumber(skyblock[0])}\`\n`;
     } else {
       requirementEmbed += `${
         config.emojis.aWarning
-      } **Networth:** \`${abbreviateNumber(
-        Math.round(skyblock[0] * 100) / 100,
-      )} / 3b\`\n`;
+      } **Networth:** \`${abbreviateNumber(skyblock[0])} / 3B\`\n`;
     }
     if (skyblock[1] === 0) {
       requirementEmbed += `${config.emojis.aCross} **Skill Average:** \`No Skyblock Data / API Disabled\`\n\n`;
     } else if (skyblock[1] >= 40) {
-      requirementEmbed += `${config.emojis.aTick} **Skill Average:** \`${
-        Math.round(skyblock[1] * 10) / 10
-      }\`\n\n`;
+      requirementEmbed += `${config.emojis.aTick} **Skill Average:** \`${formatNumber(skyblock[1])}\`\n\n`;
     } else {
-      requirementEmbed += `${config.emojis.aWarning} **Skill Average:** \`${
-        Math.round(skyblock[1] * 10) / 10
-      } / 40\`\n\n`;
+      requirementEmbed += `${config.emojis.aWarning} **Skill Average:** \`${formatNumber(skyblock[1])} / 40\`\n\n`;
     }
   } else {
     requirementEmbed += ":red_circle: **Skyblock 1**\n";
     if (skyblock[0] >= 3000000000) {
       requirementEmbed += `${
         config.emojis.aTick
-      } **Networth:** \`${abbreviateNumber(
-        Math.round(skyblock[0] * 100) / 100,
-      )}\`\n`;
+      } **Networth:** \`${abbreviateNumber(skyblock[0])}\`\n`;
     } else {
       requirementEmbed += `${
         config.emojis.aCross
-      } **Networth:** \`${abbreviateNumber(
-        Math.round(skyblock[0] * 100) / 100,
-      )} / 1b\`\n`;
+      } **Networth:** \`${abbreviateNumber(skyblock[0])} / 1B\`\n`;
     }
     if (skyblock[1] === 0) {
       requirementEmbed += `${config.emojis.aCross} **Skill Average:** \`No Skyblock Data / API Disabled\`\n\n`;
     } else if (skyblock[1] >= 40) {
-      requirementEmbed += `${config.emojis.aTick} **Skill Average:** \`${
-        Math.round(skyblock[1] * 10) / 10
-      }\`\n\n`;
+      requirementEmbed += `${config.emojis.aTick} **Skill Average:** \`${formatNumber(skyblock[1])}\`\n\n`;
     } else {
-      requirementEmbed += `${config.emojis.aCross} **Skill Average:** \`${
-        Math.round(skyblock[1] * 10) / 10
-      } / 25\`\n\n`;
+      requirementEmbed += `${config.emojis.aCross} **Skill Average:** \`${formatNumber(skyblock[1])} / 25\`\n\n`;
     }
   }
 
@@ -300,31 +251,18 @@ export default async function requirementsEmbed(
   if (skyblock[2] >= 250) {
     meetsReqs1 = true;
     requirementEmbed += ":green_circle: **Skyblock 2**\n";
-    requirementEmbed += `${config.emojis.aTick} **Level:** \`${abbreviateNumber(
-      Math.round(skyblock[2] * 100) / 100,
-    )}\`\n`;
+    requirementEmbed += `${config.emojis.aTick} **Level:** \`${Math.floor(skyblock[2])}\`\n`;
   } else if (skyblock[2] >= 200) {
     meetsReqs2 = true;
-    if (skyblock[2] >= 250) {
-      requirementEmbed += `${
-        config.emojis.aTick
-      } **Level:** \`${abbreviateNumber(
-        Math.round(skyblock[2] * 100) / 100,
-      )}\`\n`;
-    } else {
-      requirementEmbed += `${
-        config.emojis.aCross
-      } **Level:** \`${abbreviateNumber(
-        Math.round(skyblock[2] * 100) / 100,
-      )} / 250\`\n`;
-    }
+    requirementEmbed += ":yellow_circle: **Skyblock 2**\n";
+    requirementEmbed += `${
+      config.emojis.aCross
+    } **Level:** \`${Math.floor(skyblock[2])} / 250\`\n`;
   } else {
     requirementEmbed += ":red_circle: **Skyblock 2**\n";
     requirementEmbed += `${
       config.emojis.aCross
-    } **Level:** \`${abbreviateNumber(
-      Math.round(skyblock[2] * 100) / 100,
-    )} / 200\`\n`;
+    } **Level:** \`${Math.floor(skyblock[2])} / 200\`\n`;
   }
 
   if (meetsReqs1) {
@@ -360,7 +298,7 @@ export async function checkRequirements(uuid: string, playerData: Player) {
 
   // Primary requirements
   const meetsPrimary =
-    playerData.achievementPoints >= 9000 ||
+    playerData.achievements.points >= 9000 ||
     (bedwars[0] >= 500 && bedwars[1] >= 3) ||
     (bedwars[0] >= 150 && bedwars[1] >= 5) ||
     (duels[0] >= 10000 && duels[1] >= 2) ||
@@ -372,7 +310,7 @@ export async function checkRequirements(uuid: string, playerData: Player) {
 
   // Secondary requirements
   const meetsSecondary =
-    playerData.achievementPoints >= 3000 ||
+    playerData.achievements.points >= 3000 ||
     bedwars[0] >= 200 ||
     duels[0] >= 4000 ||
     stars >= 10 ||

@@ -213,7 +213,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       `§c${abbreviateNumber(
         gexpHistory.lifetimeGexp /
           Number(
-            (new Date().getTime() -
+            (Date.now() -
               new Date(Number.parseInt(guildMember.joined, 10)).getTime()) /
               (1000 * 3600 * 24),
           ),
@@ -222,7 +222,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     [
       "§cDays In Guild",
       `§c${abbreviateNumber(
-        (new Date().getTime() -
+        (Date.now() -
           new Date(Number.parseInt(guildMember.joined, 10)).getTime()) /
           (1000 * 3600 * 24),
       )}`,

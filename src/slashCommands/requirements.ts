@@ -29,7 +29,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     return;
   });
 
-  if (!player) return;
+  if (!player || player.isRaw()) return;
 
   const requirementData = await requirementsEmbed(player.uuid, player);
   let color: number;

@@ -81,7 +81,12 @@ export default async function gexpWatch() {
         const guild = await hypixel
           .getGuild("name", guildNames[i])
           .catch(() => null);
-        guildGexp[i] = guild?.experience ?? 0;
+
+        if (!guild || guild.isRaw()) {
+          guildGexp[i] = 0;
+        } else {
+          guildGexp[i] = guild.experience;
+        }
       }
 
       const date = new Date();

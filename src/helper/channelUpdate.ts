@@ -29,7 +29,7 @@ async function channelUpdate(client: Client) {
       const guild = await hypixel
         .getGuild("name", "Dominance")
         .catch(() => null);
-      if (guild) {
+      if (guild && !guild.isRaw()) {
         await voiceChannels["level"].setName(`📈│Guild Level: ${guild.level}`);
       }
 

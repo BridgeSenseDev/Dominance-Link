@@ -2,7 +2,7 @@ import type { Player } from "hypixel-api-reborn";
 import config from "../config.json" with { type: "json" };
 import { abbreviateNumber, formatNumber } from "../helper/clientUtils.ts";
 import { checkRequirements } from "../helper/requirements.ts";
-import { formatTime, timeAgo } from "../helper/utils.ts";
+import { fetchSkyBlockStats, formatTime, timeAgo } from "../helper/utils.ts";
 import { hypixel } from "../index.ts";
 import { chat } from "./workerHandler.ts";
 
@@ -19,9 +19,9 @@ export async function handleMinecraftCommands(
     }
 
     const player = await hypixel.getPlayer(ign).catch(async (e) => {
-      chat(`/{channel} Error: ${e.message}`);
+      chat(`/${channel} Error: ${e.message}`);
     });
-    if (!player) return;
+    if (!player || player.isRaw()) return;
 
     switch (command) {
       case "bw":
@@ -89,104 +89,64 @@ export async function handleMinecraftCommands(
 }
 
 export function getBedwarsStats(channel: string, player: Player) {
-  const bedwars = player.stats?.bedwars;
-  const star = bedwars?.level ?? 0;
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const fk = formatNumber(bedwars?.finalKills ?? 0);
-  const fkdr = formatNumber(bedwars?.finalKDRatio ?? 0);
-  const wins = formatNumber(bedwars?.wins ?? 0);
-  const wlr = formatNumber(bedwars?.WLRatio ?? 0);
-  const ws = formatNumber(bedwars?.winstreak ?? 0);
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const bw = player.stats.BedWars;
 
-  return `/${channel} [${star}✫] ${rankTag}${player.nickname} FK: ${fk} FKDR: ${fkdr} W: ${wins} WLR: ${wlr} WS: ${ws}`;
+  return `/${channel} [${Math.floor(bw.level)}✫] ${nametag}${player.nickname} FK: ${formatNumber(bw.finalKills)} FKDR: ${formatNumber(bw.FKDR)} W: ${formatNumber(bw.wins)} WLR: ${formatNumber(bw.WLR)} WS: ${formatNumber(bw.winStreak)}`;
 }
 
 export function getDuelsStats(channel: string, player: Player) {
-  const duels = player.stats?.duels;
-  const division = duels?.title ? `[${duels?.title}] ` : "";
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const wins = formatNumber(duels?.wins ?? 0);
-  const wlr = formatNumber(duels?.WLRatio ?? 0);
-  const cws = formatNumber(duels?.winstreak ?? 0);
-  const bws = formatNumber(duels?.bestWinstreak ?? 0);
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const duels = player.stats.Duels;
+  const division = duels.title ? `[${duels?.title}] ` : "";
 
-  return `/${channel} ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} CWS: ${cws} BWS: ${bws}`;
+  return `/${channel} ${division}${nametag}${player.nickname} W: ${formatNumber(duels.wins)} WLR: ${formatNumber(duels.WLR)} CWS: ${formatNumber(duels.winStreak)} BWS: ${formatNumber(duels.bestWinStreak)}`;
 }
 
 export function getMurderMysteryStats(channel: string, player: Player) {
-  const murderMystery = player.stats?.murdermystery;
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const wins = murderMystery?.wins ?? 0;
-  const kills = murderMystery?.kills ?? 0;
-  const kdr = formatNumber(
-    (murderMystery?.kills ?? 0) / (murderMystery?.deaths ?? 0),
-  );
-
-  return `/${channel} ${rankTag}${player.nickname} W: ${wins} K: ${kills} KDR: ${kdr}`;
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const mm = player.stats.MurderMystery;
+  return `/${channel} ${nametag}${player.nickname} W: ${formatNumber(mm.wins)} K: ${formatNumber(mm.kills)} KDR: ${formatNumber(mm.KDR)}`;
 }
 
 export function getBridgeStats(channel: string, player: Player) {
-  const bridge = player.stats?.duels?.bridge;
-  const division = bridge?.title ? `[${bridge?.title}] ` : "";
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const wins = formatNumber(bridge?.wins ?? 0);
-  const wlr = formatNumber(bridge?.WLRatio ?? 0);
-  const goals = formatNumber(bridge?.goals ?? 0);
-  const cws = formatNumber(bridge?.winstreak ?? 0);
-  const bws = formatNumber(bridge?.bestWinstreak ?? 0);
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const bridge = player.stats.Duels.bridge;
+  const division = bridge.title ? `[${bridge?.title}] ` : "";
 
-  return `/${channel} ${division}${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} G: ${goals} CWS: ${cws} BWS: ${bws}`;
+  // TODO: bridge goals
+  return `/${channel} ${division}${nametag}${player.nickname} W: ${formatNumber(bridge.wins)} WLR: ${formatNumber(bridge.WLR)} G: 0 CWS: ${formatNumber(bridge.winStreak)} BWS: ${formatNumber(bridge.bestWinStreak)}`;
 }
 
 export function getVampStats(channel: string, player: Player) {
-  const vamp = player.stats?.vampirez;
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const humanWins = formatNumber(vamp?.human.wins ?? 0);
-  const humanKills = formatNumber(vamp?.vampire.kills ?? 0);
-  const humanKdr = formatNumber(
-    (vamp?.vampire.kills ?? 0) / (vamp?.human.deaths ?? 0),
-  );
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const vamp = player.stats.VampireZ;
 
-  return `/${channel} ${rankTag}${player.nickname} HW: ${humanWins} HK: ${humanKills} HKDR: ${humanKdr}`;
+  return `/${channel} ${nametag}${player.nickname} HW: ${formatNumber(vamp.wins)} HK: ${formatNumber(vamp.human.kills)} HKDR: ${formatNumber(vamp.human.KDR)}`;
 }
 
 export function getSkyWarsStats(channel: string, player: Player) {
-  const skywars = player.stats?.skywars;
-  const level = skywars?.levelFormatted ?? "1⋆";
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const wins = formatNumber(skywars?.wins ?? 0);
-  const wlr = formatNumber(skywars?.WLRatio ?? 0);
-  const kills = formatNumber(skywars?.kills ?? 0);
-  const kdr = formatNumber((skywars?.kills ?? 0) / (skywars?.deaths ?? 0));
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const sw = player.stats.SkyWars;
+  const level = sw.levelFormatted ?? "1⋆";
 
-  return `/${channel} [${level}] ${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} K: ${kills} KDR: ${kdr}`;
+  return `/${channel} [${level}] ${nametag}${player.nickname} W: ${formatNumber(sw.wins)} WLR: ${formatNumber(sw.WLR)} K: ${formatNumber(sw.kills)} KDR: ${formatNumber(sw.KDR)}`;
 }
 
 export async function getSkyblockStats(channel: string, player: Player) {
-  const sbProfiles = await hypixel
-    .getSkyblockProfiles(player.uuid, { getMuseum: true })
-    .catch((e) => {
-      return `/${channel} Error: ${e.message}`;
-    });
-  if (typeof sbProfiles === "string") {
-    return sbProfiles;
-  }
+  const sbStats = await fetchSkyBlockStats(player.uuid);
 
-  const sbMember = sbProfiles?.find((profile) => profile.selected)?.me;
+  if (sbStats) {
+    const nametag = player.rank ? `[${player.rank}] ` : "";
 
-  if (sbMember) {
-    const { networth } = (await sbMember.getNetworth()) ?? { networth: 0 };
-    const sbSkillAverage = sbMember.skills.average;
-    const sbLevel = sbMember.level;
-    const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-
-    return `/${channel} [${Math.floor(sbLevel)}] ${rankTag}${player.nickname} NW: ${abbreviateNumber(networth)} SA: ${formatNumber(sbSkillAverage)}`;
+    return `/${channel} [${Math.floor(sbStats.level)}] ${nametag}${player.nickname} NW: ${abbreviateNumber(sbStats.networth)} SA: ${formatNumber(sbStats.skillAverage)}`;
   }
 
   return `/${channel} Error: No profiles found for ${player.nickname}`;
 }
 
 export async function getHypixelPing(channel: string, player: Player) {
+  const nametag = player.rank ? `[${player.rank}] ` : "";
   const response = await fetch(
     `https://api.polsu.xyz/polsu/ping?uuid=${player.uuid}`,
     {
@@ -211,71 +171,59 @@ export async function getHypixelPing(channel: string, player: Player) {
   const min = ping.data.stats.min;
   const max = ping.data.stats.max;
   const recent = `Ping ${timeAgo(ping.data.history[0].timestamp * 1000)}: ${ping.data.history[0].avg}ms`;
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
 
-  return `/${channel} ${rankTag}${player.nickname} MAX: ${max}ms MIN: ${min}ms AVG: ${avg}ms ${recent}`;
+  return `/${channel} ${nametag}${player.nickname} MAX: ${max}ms MIN: ${min}ms AVG: ${avg}ms ${recent}`;
 }
 
 export async function getHypixelStats(channel: string, player: Player) {
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const level = Math.floor(player.level ?? 0);
-  const achievementPoints = formatNumber(player.achievementPoints ?? 0);
-  const rewardStreak = formatNumber(player.rewardStreak ?? 0);
-  const karma = abbreviateNumber(player.karma ?? 0);
-  const lastLogin = player.lastLogin ? timeAgo(player.lastLogin) : "N/A";
+  const nametag = player.rank ? `[${player.rank}] ` : "";
 
-  return `/${channel} [${level}] ${rankTag}${player.nickname} AP: ${achievementPoints} Karma: ${karma} Reward Streak: ${rewardStreak} Last Login: ${lastLogin}`;
+  const lastLogin = player.lastLoginAt ? timeAgo(player.lastLoginAt) : "N/A";
+
+  return `/${channel} [${player.level.level}] ${nametag}${player.nickname} AP: ${formatNumber(player.achievements.points)} Karma: ${formatNumber(player.karma)} Reward Streak: ${formatNumber(player.rewards.rewardStreak)} Last Login: ${lastLogin}`;
 }
 
 export async function getZombiesStats(channel: string, player: Player) {
-  const zombies = player.stats?.arcade?.zombies;
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const wins = formatNumber(zombies?.overall?.wins ?? 0);
-  const kills = formatNumber(zombies?.overall?.zombieKills ?? 0);
-  const deaths = formatNumber(zombies?.overall?.deaths ?? 0);
-  const DE = zombies?.deadEnd.fastestRound30
-    ? formatTime(zombies.deadEnd.fastestRound30)
-    : `Round ${zombies?.deadEnd.bestRound ?? 0}`;
-  const AA = zombies?.alienArcadium.fastestRound30
-    ? formatTime(zombies.alienArcadium.fastestRound30)
-    : `Round ${zombies?.alienArcadium.bestRound ?? 0}`;
-  const BB = zombies?.badBlood.fastestRound30
-    ? formatTime(zombies.badBlood.fastestRound30)
-    : `Round ${zombies?.badBlood.bestRound ?? 0}`;
-  const P = zombies?.prison.fastestRound30
-    ? formatTime(zombies.prison.fastestRound30)
-    : `Round ${zombies?.prison.bestRound ?? 0}`;
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const zb = player.stats.Arcade.zombies;
 
-  return `/${channel} ${rankTag}${player.nickname} W: ${wins} K: ${kills} D: ${deaths} DE: ${DE} AA: ${AA} BB: ${BB} P: ${P}`;
+  const DE = zb?.deadEnd.fastestRound30
+    ? formatTime(zb.deadEnd.fastestRound30)
+    : `Round ${zb?.deadEnd.bestRound ?? 0}`;
+  const AA = zb?.alienArcadium.fastestRound30
+    ? formatTime(zb.alienArcadium.fastestRound30)
+    : `Round ${zb?.alienArcadium.bestRound ?? 0}`;
+  const BB = zb?.badBlood.fastestRound30
+    ? formatTime(zb.badBlood.fastestRound30)
+    : `Round ${zb?.badBlood.bestRound ?? 0}`;
+  const P = zb?.prison.fastestRound30
+    ? formatTime(zb.prison.fastestRound30)
+    : `Round ${zb?.prison.bestRound ?? 0}`;
+
+  return `/${channel} ${nametag}${player.nickname} W: ${formatNumber(zb.overall.wins)} K: ${formatNumber(zb.overall.zombieKills)} D: ${formatNumber(zb.overall.deaths)} DE: ${DE} AA: ${AA} BB: ${BB} P: ${P}`;
 }
 
 export async function getWarlordsStats(channel: string, player: Player) {
-  const warlords = player.stats?.warlords;
-  const wlClass = warlords?.class
-    ? warlords.class.charAt(0).toUpperCase() + warlords.class.slice(1)
-    : "None";
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
-  const wins = formatNumber(warlords?.wins ?? 0);
-  const wlr = formatNumber(warlords?.WLRatio ?? 0);
-  const kills = formatNumber(warlords?.kills ?? 0);
-  const kdr = formatNumber(warlords?.KDRatio ?? 0);
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const wl = player.stats.Warlords;
+  const wlClass = wl.class.charAt(0).toUpperCase() + wl.class.slice(1);
 
-  return `/${channel} [${wlClass}] ${rankTag}${player.nickname} W: ${wins} WLR: ${wlr} K: ${kills} KDR: ${kdr}`;
+  return `/${channel} [${wlClass}] ${nametag}${player.nickname} W: ${formatNumber(wl.wins)} WLR: ${formatNumber(wl.WLR)} K: ${formatNumber(wl.kills)} KDR: ${formatNumber(wl.KDR)}`;
 }
 
 export async function getReqs(channel: string, player: Player) {
-  const rankTag = player.rank === "Default" ? "" : `[${player.rank}] `;
+  const nametag = player.rank ? `[${player.rank}] ` : "";
   const reqs = await checkRequirements(player.uuid, player);
 
   if (reqs === 0) {
-    return `/${channel} ${rankTag}${player.nickname} does not meet requirements!`;
+    return `/${channel} ${nametag}${player.nickname} does not meet requirements!`;
   }
   if (reqs === 1) {
-    return `/${channel} ${rankTag}${player.nickname} meets secondary requirements! (200k GEXP/week)`;
+    return `/${channel} ${nametag}${player.nickname} meets secondary requirements! (200k GEXP/week)`;
   }
   if (reqs === 2) {
-    return `/${channel} ${rankTag}${player.nickname} meets primary requirements! (65k GEXP/week)`;
+    return `/${channel} ${nametag}${player.nickname} meets primary requirements! (65k GEXP/week)`;
   }
 
-  return `/${channel} ${rankTag}${player.nickname} requirements check failed!`;
+  return `/${channel} ${nametag}${player.nickname} requirements check failed!`;
 }

@@ -1,6 +1,9 @@
 import Database from "bun:sqlite";
 import { promisify } from "node:util";
 import { google } from "googleapis";
+import { PrepareSkyBlockProfileForSkyHelperNetworth } from "hypixel-api-reborn";
+import type RequestData from "hypixel-api-reborn/dist/Private/RequestData.d.ts";
+import { ProfileNetworthCalculator } from "skyhelper-networth";
 import config from "../config.json" with { type: "json" };
 import { fetchGexpForMember } from "../handlers/databaseHandler.ts";
 import {
@@ -71,17 +74,17 @@ export function ensureDayExists() {
   end.setHours(end.getHours() + 4);
 
   const gexpCols = new Set(
-    db
-      .prepare("PRAGMA table_info(gexpHistory)")
-      .all()
-      .map((c: any) => c.name),
+    (
+      db.prepare("PRAGMA table_info(gexpHistory)").all() as { name: string }[]
+    ).map((c) => c.name),
   );
 
   const archiveCols = new Set(
-    db
-      .prepare("PRAGMA table_info(gexpHistoryArchives)")
-      .all()
-      .map((c: any) => c.name),
+    (
+      db.prepare("PRAGMA table_info(gexpHistoryArchives)").all() as {
+        name: string;
+      }[]
+    ).map((c) => c.name),
   );
 
   const missingDates: string[] = [];
@@ -146,7 +149,7 @@ export async function getProfanityScores(message: string) {
       key: config.keys.googleCloud,
       resource: analyzeRequest,
     });
-  } catch (e) {
+  } catch (_e) {
     return null;
   }
 
@@ -248,13 +251,15 @@ export function camelCaseToWords(s: string) {
 }
 
 async function kickPlayer() {
-  const guild = await hypixel.getGuild("name", "Dominance");
+  const guild = await hypixel.getGuild("name", "Dominance").catch(() => null);
+
+  if (!guild || guild.isRaw()) return;
 
   const membersSorted = guild.members
     .filter(
       (member) =>
         !["Owner", "GUILDMASTER"].includes(member.rank) &&
-        getDaysInGuild(member.joinedAtTimestamp.toString(), 0) >= 7,
+        getDaysInGuild(member.joinedAtTimestamp?.toString() ?? "", 0) >= 7,
     )
     .sort((a, b) => a.weeklyExperience - b.weeklyExperience);
 
@@ -320,4 +325,41 @@ export async function handleGuildInvite(
   }
 
   return receivedMessage;
+}
+
+export async function fetchSkyBlockStats(uuid: string) {
+  const profiles = await hypixel
+    .getSkyBlockProfiles(uuid, { museum: false, garden: false })
+    .catch(() => null);
+
+  if (!profiles || profiles.isRaw() || !profiles.selectedProfile) {
+    return null;
+  } else {
+    const profile = profiles.selectedProfile;
+
+    const museum = await hypixel.getSkyBlockMuseum(profile.profileId, {
+      raw: true,
+    });
+
+    let museumProfile: RequestData | undefined;
+    if (museum.isRaw() && museum.data.members[profile.me.uuid]) {
+      museumProfile = museum.data.members[profile.me.uuid];
+    }
+
+    const profileData = PrepareSkyBlockProfileForSkyHelperNetworth(profile);
+    const networthCalculator = new ProfileNetworthCalculator(
+      profileData,
+      museumProfile,
+      profile.banking.balance,
+    );
+    const networthData = await networthCalculator.getNetworth({
+      onlyNetworth: true,
+    });
+
+    return {
+      level: profile.me.leveling.level,
+      skillAverage: profile.me.playerData.skills.nonCosmeticAverage,
+      networth: networthData.networth,
+    };
+  }
 }

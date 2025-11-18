@@ -231,13 +231,13 @@ export default async function execute(
         return;
       }
 
-      const playerResponse = await hypixel.getPlayer(uuid).catch(async (e) => {
+      const player = await hypixel.getPlayer(uuid).catch(async (e) => {
         await interaction.editReply(hypixelApiErrorEmbed(e.message));
       });
 
-      if (!playerResponse) return;
+      if (!player || player.isRaw()) return;
 
-      const requirementData = await requirementsEmbed(uuid, playerResponse);
+      const requirementData = await requirementsEmbed(uuid, player);
       let color: number;
       if (requirementData.reqs === 2) {
         color = config.colors.green;
@@ -251,7 +251,7 @@ export default async function execute(
         .setColor(color)
         .setAuthor({ name: requirementData.author, iconURL: config.guild.icon })
         .setDescription(requirementData.embed)
-        .setThumbnail(generateHeadUrl(uuid, playerResponse.nickname));
+        .setThumbnail(generateHeadUrl(uuid, player.nickname));
       await interaction.editReply({ embeds: [embed] });
     } else if (interaction.customId === "verify") {
       const modal = new ModalBuilder()
@@ -519,7 +519,7 @@ export default async function execute(
             .setDescription(`**Reason:** ${collectorInteraction.values}`);
           try {
             await user.send({ embeds: [embed] });
-          } catch (e) {
+          } catch (_e) {
             /* empty */
           }
           const applicationEmbed = new EmbedBuilder()
@@ -729,13 +729,13 @@ export default async function execute(
         await textChannels["minecraftLink"].permissionOverwrites.delete(
           timeoutMember,
         );
-      } catch (e) {}
+      } catch (_e) {}
 
       try {
         await textChannels["officerChat"].permissionOverwrites.delete(
           timeoutMember,
         );
-      } catch (e) {}
+      } catch (_e) {}
 
       let embed = new EmbedBuilder()
         .setColor(config.colors.green)
@@ -809,7 +809,7 @@ export default async function execute(
               extractedUuid,
             )}**\nCurrent days in guild: \`` +
               `${abbreviateNumber(
-                (new Date().getTime() -
+                (Date.now() -
                   new Date(Number.parseInt(guildMember.joined, 10)).getTime()) /
                   (1000 * 3600 * 24),
               )}\`` +
@@ -829,14 +829,14 @@ export default async function execute(
       const ign = interaction.fields.getTextInputValue("verificationInput");
 
       try {
-        const playerData = (
+        const player = (
           await (
             await fetch(`https://playerdb.co/api/player/minecraft/${ign}`)
           ).json()
         ).data.player;
-        uuid = playerData.raw_id;
-        name = playerData.username;
-      } catch (e) {
+        uuid = player.raw_id;
+        name = player.username;
+      } catch (_e) {
         const embed = new EmbedBuilder()
           .setColor(config.colors.red)
           .setTitle("Error")
@@ -907,12 +907,10 @@ export default async function execute(
           await interaction.editReply(hypixelApiErrorEmbed(e.message));
         });
 
-      if (!player) return;
+      if (!player || player.isRaw()) return;
 
       name = player.nickname;
-      const discord = player.socialMedia.find(
-        (media) => media.name === "Discord",
-      )?.link;
+      const discord = player.socialMedia.discord;
 
       if (!discord) {
         const embed = new EmbedBuilder()
@@ -990,14 +988,14 @@ export default async function execute(
       const uuid = discordToUuid(interaction.user.id);
       if (!uuid) return;
 
-      const playerResponse = await hypixel
+      const player = await hypixel
         .getPlayer(uuid, { guild: true })
         .catch(async (e) => {
           await interaction.editReply(hypixelApiErrorEmbed(e.message));
         });
-      if (!playerResponse) return;
+      if (!player || player.isRaw()) return;
 
-      const requirementData = await requirementsEmbed(uuid, playerResponse);
+      const requirementData = await requirementsEmbed(uuid, player);
       const name = (await uuidToName(uuid)) ?? "";
       let color: number;
       let meetingReqs: string;
@@ -1036,7 +1034,7 @@ export default async function execute(
           },
           {
             name: ":shield: Guild: ",
-            value: playerResponse.guild?.name ?? "None",
+            value: player.guild?.name ?? "None",
             inline: true,
           },
           {

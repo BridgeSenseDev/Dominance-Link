@@ -47,7 +47,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       )[1],
       10,
     );
-  } catch (e) {
+  } catch (_e) {
     await interaction.editReply(
       "`/g online` timed out, try again in a few minutes",
     );

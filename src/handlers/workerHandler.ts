@@ -79,7 +79,7 @@ export function autoRejoin() {
     const status = await hypixel
       .getStatus(config.minecraft.ign)
       .catch(() => null);
-    if (!status) return;
+    if (!status || status.isRaw()) return;
 
     if (!status.online) {
       console.log("[MINECRAFT] Restarting bot");
@@ -96,7 +96,7 @@ export function autoRejoin() {
       await textChannels["botStatus"].send({ embeds: [embed] });
       try {
         worker.postMessage({ type: "quit" });
-      } catch (err) {
+      } catch (_err) {
         /* empty */
       }
       worker.postMessage({ type: "restartBot" });

@@ -5,7 +5,6 @@ import {
   type GuildMember,
   type Role,
 } from "discord.js";
-import type { Guild } from "hypixel-api-reborn";
 import config from "../../config.json" with { type: "json" };
 import { archiveMember, fetchMember } from "../../handlers/databaseHandler.js";
 import { invis } from "../../helper/constants.js";
@@ -21,20 +20,17 @@ export default async function execute(_client: Client, member: GuildMember) {
   if (memberData) {
     const { uuid } = memberData;
     const player = await hypixel.getPlayer(uuid).catch(() => null);
-    if (!player) {
+    if (!player || player.isRaw()) {
       return await archiveMember(member);
     }
 
-    const discord = player.socialMedia.find(
-      (media) => media.name === "Discord",
-    )?.link;
+    const discord = player.socialMedia.discord;
 
     if (discord === member.user.tag) {
-      const guild = (await hypixel.getGuild("player", uuid, {}).catch(() => {
-        /* empty */
-      })) as Guild;
-
-      if (guild?.name?.toLowerCase() === "dominance") {
+      const guild = await hypixel
+        .getGuild("player", uuid, {})
+        .catch(() => null);
+      if (guild && !guild.isRaw() && guild.name.toLowerCase() === "dominance") {
         db.prepare("UPDATE guildMembers SET discord = ? WHERE uuid = ?").run(
           member.user.id,
           uuid,

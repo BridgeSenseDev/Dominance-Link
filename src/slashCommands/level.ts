@@ -74,7 +74,7 @@ async function createRankCard({
   ctx.clip();
   try {
     ctx.drawImage(await loadImage(avatar), 30, 50, 150, 150);
-  } catch (err) {
+  } catch (_err) {
     throw new Error("Error loading the avatar image. The URL may be invalid.");
   }
   ctx.restore();

@@ -4,7 +4,7 @@ import config from "./config.json" with { type: "json" };
 import clientReady from "./events/discord/clientReady.ts";
 
 export const hypixel = new Hypixel.Client(config.keys.hypixelApiKey, {
-  cache: true,
+  cacheTime: 600,
 });
 
 const client: Client = new Client({

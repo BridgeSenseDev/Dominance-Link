@@ -202,11 +202,9 @@ export default async function execute(
     let member = null;
     const discordId = uuidToDiscord(uuid);
     if (discordId) {
-      try {
-        member = await textChannels["guildChat"].guild.members.fetch(discordId);
-      } catch (e) {
-        /* empty */
-      }
+      member = await textChannels["guildChat"].guild.members
+        .fetch(discordId)
+        .catch(() => null);
     }
 
     return await archiveGuildMember(member, uuid);
@@ -330,7 +328,7 @@ export default async function execute(
       chat(`/g accept ${ign}`);
     } else {
       const player = await hypixel.getPlayer(ign).catch(() => null);
-      if (!player) {
+      if (!player || player.isRaw()) {
         return;
       }
 
@@ -377,7 +375,7 @@ async function handleWaitlist(client: Client, uuid: string) {
       .get(uuid) as WaitlistMember;
     await client.channels.cache.get(channel)?.delete();
     db.prepare("DELETE FROM waitlist WHERE uuid = ?").run(uuid);
-  } catch (e) {
+  } catch (_e) {
     /* empty */
   }
 }
@@ -422,7 +420,7 @@ async function handleBreak(
       `${config.emojis.aWave} Welcome back from your break, <@${breakData.discord}>! ${funFact}`,
     );
     return;
-  } catch (e) {
+  } catch (_e) {
     /* empty */
   }
 }

@@ -10,13 +10,6 @@ export interface NumberObject {
   [key: string]: number;
 }
 
-interface Member {
-  discord: string;
-  uuid: string;
-  messages: number;
-  xp: number;
-}
-
 export interface HypixelGuildMember {
   uuid: string;
   discord: string | null;
@@ -44,21 +37,10 @@ export interface HypixelGuildMember {
   bridgeWlr: number;
   mmWins: number;
   pitPrestige: number;
+  zombiesWins: number;
+  zombiesKills: number;
   name?: string | null;
   discordTag?: string | null;
-}
-
-interface GuildMemberArchive {
-  uuid: string;
-  discord: string | null;
-  messages: number;
-  baseDays: number;
-  playtime: number;
-}
-
-interface GexpHistory {
-  uuid: string;
-  [date: string]: string | number;
 }
 
 export interface BreakMember {

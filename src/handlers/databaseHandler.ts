@@ -9,7 +9,7 @@ import {
 } from "../helper/clientUtils.js";
 import { guildMemberRoles } from "../helper/constants.js";
 import { checkRequirements } from "../helper/requirements.js";
-import { ensureDayExists } from "../helper/utils.js";
+import { ensureDayExists, fetchSkyBlockStats } from "../helper/utils.js";
 import { hypixel } from "../index.js";
 import type {
   HypixelGuildMember as BaseHypixelGuildMember,
@@ -127,7 +127,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
   }
 
   const player = await hypixel.getPlayer(uuid).catch(() => null);
-  if (!player) {
+  if (!player || player.isRaw()) {
     return;
   }
 
@@ -151,17 +151,17 @@ export async function createGuildMember(uuid: string): Promise<void> {
       discord = fetchMember(uuid)?.discord ?? null;
     }
 
-    let networth = 0;
-    let sbSkillAverage = 0;
-    let sbLevel = 0;
-    const sbMember = (
-      await hypixel.getSkyblockProfiles(uuid).catch(() => null)
-    )?.find((profile) => profile.selected)?.me;
-    if (sbMember) {
-      networth = (await sbMember.getNetworth()).networth ?? 0;
-      sbSkillAverage = sbMember.skills.average;
-      sbLevel = sbMember.level;
-    }
+    const bw = player.stats.BedWars;
+    const duels = player.stats.Duels;
+    const sbData = await fetchSkyBlockStats(uuid);
+    const networth = sbData ? sbData.networth : 0;
+    const skillAverage = sbData ? sbData.skillAverage : 0;
+    const sbLevel = sbData ? sbData.level : 0;
+    const sw = player.stats.SkyWars;
+    const bridge = duels.bridge;
+    const mm = player.stats.MurderMystery;
+    const pit = player.stats.Pit;
+    const zombies = player.stats.Arcade.zombies;
 
     const guildMember: HypixelGuildMember = {
       uuid: player.uuid,
@@ -175,23 +175,24 @@ export async function createGuildMember(uuid: string): Promise<void> {
       playtime: playtime,
       nameColor: rankTagF(player) ?? "",
       reqs: (await checkRequirements(uuid, player)) ? 1 : 0,
-      bwStars: player.stats?.bedwars?.level ?? 0,
-      bwFkdr: player.stats?.bedwars?.finalKDRatio ?? 0,
-      duelsWins: player.stats?.duels?.wins ?? 0,
-      duelsWlr: player.stats?.duels?.WLRatio ?? 0,
-      networth: networth,
-      skillAverage: sbSkillAverage,
-      swLevel: player.stats?.skywars?.level ?? 0,
-      achievementPoints: player.achievementPoints ?? 0,
-      networkLevel: player.level ?? 0,
-      sbLevel: sbLevel ?? 0,
-      quests: (player.achievements["generalQuestMaster"] as number) ?? 0,
-      bridgeWins: player.stats?.duels?.bridge.wins ?? 0,
-      bridgeWlr:
-        (player.stats?.duels?.bridge.wins ?? 0) /
-        (player.stats?.duels?.bridge.losses ?? 0),
-      mmWins: player.stats?.murdermystery?.wins ?? 0,
-      pitPrestige: player.stats?.pit?.prestige ?? 0,
+      bwStars: bw.level,
+      bwFkdr: bw.FKDR,
+      duelsWins: duels.wins,
+      duelsWlr: duels.WLR,
+      networth,
+      skillAverage,
+      swLevel: sw.level,
+      achievementPoints: player.achievements.points,
+      networkLevel: player.level.level,
+      sbLevel: sbLevel,
+      quests:
+        (player.achievements.achievements["generalQuestMaster"] as number) ?? 0,
+      bridgeWins: bridge.wins,
+      bridgeWlr: bridge.WLR,
+      mmWins: mm.wins,
+      pitPrestige: pit.prestige,
+      zombiesWins: zombies.overall.wins,
+      zombiesKills: zombies.overall.zombieKills,
     };
 
     db.query(

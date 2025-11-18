@@ -32,7 +32,7 @@ import {
 } from "./clientUtils.js";
 import { bwPrestiges, guildMemberRoles, hypixelRoles } from "./constants.js";
 import { checkRequirements } from "./requirements.js";
-import { ensureDayExists } from "./utils.js";
+import { ensureDayExists, fetchSkyBlockStats } from "./utils.js";
 
 const db = new Database("guild.db");
 
@@ -203,7 +203,7 @@ export async function weekly() {
 export async function database() {
   setInterval(async () => {
     const guild = await hypixel.getGuild("name", "Dominance").catch(() => null);
-    if (!guild) return;
+    if (!guild || guild.isRaw()) return;
 
     ensureDayExists();
 
@@ -272,7 +272,7 @@ export async function gsrun(sheets: JWT) {
       const guild = await hypixel
         .getGuild("name", "Dominance")
         .catch(() => null);
-      if (!guild) return;
+      if (!guild || guild.isRaw()) return;
 
       type HypixelGuildMemberWithExpHistory = HypixelGuildMember & {
         [key: string]: number;
@@ -301,8 +301,7 @@ export async function gsrun(sheets: JWT) {
               null)
             : null;
 
-          const { name, discord, nameColor, targetRank, ...rest } =
-            memberWithExpHistory;
+          const { name, ...rest } = memberWithExpHistory;
 
           const expHistory = Object.keys(rest).reduce(
             (acc: { [key: string]: unknown }, key) => {
@@ -337,7 +336,7 @@ export async function gsrun(sheets: JWT) {
           range: "Guild API!A2:Z126",
         });
         await gsapi.spreadsheets.values.update(options);
-      } catch (error) {}
+      } catch (_error) {}
     },
     6 * 60 * 1000,
   );
@@ -408,24 +407,20 @@ export async function players() {
     const targetRole = data.targetRank?.slice(1, -1) ?? "";
 
     const player = await hypixel.getPlayer(data.uuid).catch(() => null);
-    if (!player) return;
+    if (!player || player.isRaw()) return;
 
-    const bwFkdr = +(player.stats?.bedwars?.finalKDRatio.toFixed(1) ?? 0);
-    const bwStars = player.stats?.bedwars?.level ?? 0;
-    const duelsWins = player.stats?.duels?.wins ?? 0;
-    const duelsWlr = +(player.stats?.duels?.WLRatio.toFixed(1) ?? 0);
+    const bw = player.stats.BedWars;
+    const duels = player.stats.Duels;
+    const sw = player.stats.SkyWars;
+    const mm = player.stats.MurderMystery;
+    const bridge = duels.bridge;
+    const zombies = player.stats.Arcade.zombies;
+    const pit = player.stats.Pit;
 
-    let networth = 0;
-    let sbSkillAverage = 0;
-    let sbLevel = 0;
-    const sbMember = (
-      await hypixel.getSkyblockProfiles(player.uuid).catch(() => null)
-    )?.find((profile) => profile.selected)?.me;
-    if (sbMember) {
-      networth = (await sbMember.getNetworth()).networth ?? 0;
-      sbSkillAverage = sbMember.skills.average;
-      sbLevel = sbMember.level;
-    }
+    const sbData = await fetchSkyBlockStats(player.uuid);
+    const networth = sbData ? sbData.networth : 0;
+    const skillAverage = sbData ? sbData.skillAverage : 0;
+    const sbLevel = sbData ? sbData.level : 0;
 
     if (
       data.targetRank &&
@@ -455,13 +450,13 @@ export async function players() {
       let member: GuildMember | undefined;
       try {
         member = await guild.members.fetch(data.discord);
-      } catch (e) {
+      } catch (_e) {
         await archiveMember(null, data.discord);
         return;
       }
 
       // Bedwars roles
-      const bwRole = bwPrestiges[Math.floor(bwStars / 100) * 100];
+      const bwRole = bwPrestiges[Math.floor(bw.level / 100) * 100];
       for (const roleId of Object.values(bwPrestiges)) {
         if (member.roles.cache.has(roleId) && roleId !== bwRole) {
           await member.roles.remove(roleId);
@@ -492,41 +487,28 @@ export async function players() {
       await assignDaysRoles(member, getDaysInGuild(data.joined, data.baseDays));
     }
 
-    const swLevel = player.stats?.skywars?.level ?? 0;
-    const { achievementPoints, level } = player;
-    const quests = player.achievements["generalQuestMaster"] as number;
-    const bridgeWins = player.stats?.duels?.bridge.wins ?? 0;
-    const bridgeWlr =
-      (player.stats?.duels?.bridge.wins ?? 0) /
-      (player.stats?.duels?.bridge.losses ?? 0);
-    const mmWins = player.stats?.murdermystery?.wins ?? 0;
-    const zombiesWins = player.stats?.arcade?.zombies?.overall?.wins ?? 0;
-    const pitPrestige = player.stats?.pit?.prestige ?? 0;
-    const zombiesKills =
-      player.stats?.arcade?.zombies?.overall?.zombieKills ?? 0;
-
     db.prepare(
       "UPDATE guildMembers SET (nameColor, reqs, bwStars, bwFkdr, duelsWins, duelsWlr, networth, skillAverage, swLevel, achievementPoints, networkLevel, sbLevel, quests, bridgeWins, bridgeWlr, mmWins, pitPrestige, zombiesKills, zombiesWins) = (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) WHERE uuid = ?",
     ).run(
       rankTagF(player) ?? "",
       (await checkRequirements(data.uuid, player)) ? 1 : 0,
-      bwStars,
-      bwFkdr,
-      duelsWins,
-      duelsWlr,
+      bw.level,
+      bw.FKDR,
+      duels.wins,
+      duels.WLR,
       Math.round(networth * 100) / 100,
-      Math.round(sbSkillAverage * 100) / 100,
-      swLevel,
-      achievementPoints,
-      level,
+      Math.round(skillAverage * 100) / 100,
+      sw.level,
+      player.achievements.points,
+      player.level.level,
       sbLevel,
-      quests,
-      bridgeWins,
-      bridgeWlr,
-      mmWins,
-      pitPrestige,
-      zombiesKills,
-      zombiesWins,
+      player.achievements.achievements["generalQuestMaster"],
+      bridge.wins,
+      bridge.WLR,
+      mm.wins,
+      pit.prestige,
+      zombies.overall.zombieKills,
+      zombies.overall.wins,
       data.uuid,
     );
   }, 7 * 1000);

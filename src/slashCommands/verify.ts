@@ -65,7 +65,7 @@ async function verify(
   const player = await hypixel
     .getPlayer(uuid, { guild: true })
     .catch(() => null);
-  if (!player) {
+  if (!player || player.isRaw()) {
     return new EmbedBuilder()
       .setColor(config.colors.red)
       .setTitle("Caution")
@@ -98,9 +98,7 @@ async function verify(
       );
   }
 
-  const discord = player.socialMedia.find(
-    (media) => media.name === "Discord",
-  )?.link;
+  const discord = player.socialMedia.discord;
 
   if (!discord) {
     return new EmbedBuilder()
