@@ -55,14 +55,15 @@ export function chat(message: string, n = 0) {
       worker.removeListener("message", listener);
       const newAttemptCount = attemptCount + 1;
 
-      if (newAttemptCount >= 2) {
+      if (newAttemptCount >= 5) {
         return chat(
           "/gc Command failed to send message after 5 attempts. Please try again later.",
         );
       }
 
-      await sleep(2500);
-      return chat(`${message} - ${generateID(24)}`, newAttemptCount);
+      await sleep(1500);
+      const separator = message.includes(" - ") ? "" : " - ";
+      return chat(`${message}${separator}${generateID(15)}`, newAttemptCount);
     }
   };
 
