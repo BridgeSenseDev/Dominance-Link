@@ -1,9 +1,11 @@
 import type { Player } from "hypixel-api-reborn";
+import { ZombiesMap } from "hypixel-api-reborn";
 import config from "../config.json" with { type: "json" };
 import { abbreviateNumber, formatNumber } from "../helper/clientUtils.ts";
 import { checkRequirements } from "../helper/requirements.ts";
 import { fetchSkyBlockStats, formatTime, timeAgo } from "../helper/utils.ts";
 import { hypixel } from "../index.ts";
+import { fetchGuildMember } from "./databaseHandler.ts";
 import { chat } from "./workerHandler.ts";
 
 export async function handleMinecraftCommands(
@@ -11,6 +13,10 @@ export async function handleMinecraftCommands(
   message: string,
   author: string,
 ) {
+  if (author === config.minecraft.ign && message.includes("Commands: !h")) {
+    return;
+  }
+
   const command = /!(\w+)/.exec(message)?.[1];
   if (command) {
     let ign = /!\w+\s+(\S+)/.exec(message)?.[1];
@@ -24,6 +30,11 @@ export async function handleMinecraftCommands(
     if (!player || player.isRaw()) return;
 
     switch (command) {
+      case "h":
+      case "help": {
+        chat(getHelpMessage(channel));
+        break;
+      }
       case "bw":
       case "bedwars": {
         chat(getBedwarsStats(channel, player));
@@ -60,13 +71,8 @@ export async function handleMinecraftCommands(
         break;
       }
       case "p":
-      case "ping": {
-        chat(await getHypixelPing(channel, player));
-        break;
-      }
-      case "h":
-      case "hypixel": {
-        chat(await getHypixelStats(channel, player));
+      case "player": {
+        chat(await getPlayerStats(channel, player));
         break;
       }
       case "z":
@@ -82,6 +88,11 @@ export async function handleMinecraftCommands(
       case "wl":
       case "warlords": {
         chat(await getWarlordsStats(channel, player));
+        break;
+      }
+      case "wg":
+      case "woolgames": {
+        chat(await getWoolGamesStats(channel, player));
         break;
       }
     }
@@ -106,7 +117,7 @@ export function getDuelsStats(channel: string, player: Player) {
 export function getMurderMysteryStats(channel: string, player: Player) {
   const nametag = player.rank ? `[${player.rank}] ` : "";
   const mm = player.stats.MurderMystery;
-  return `/${channel} ${nametag}${player.nickname} W: ${formatNumber(mm.wins)} K: ${formatNumber(mm.kills)} KDR: ${formatNumber(mm.KDR)}`;
+  return `/${channel} ${nametag}${player.nickname} W: ${formatNumber(mm.wins)} K: ${formatNumber(mm.kills)} KDR: ${formatNumber(mm.kills / mm.deaths)}`;
 }
 
 export function getBridgeStats(channel: string, player: Player) {
@@ -145,8 +156,13 @@ export async function getSkyblockStats(channel: string, player: Player) {
   return `/${channel} Error: No profiles found for ${player.nickname}`;
 }
 
-export async function getHypixelPing(channel: string, player: Player) {
+export async function getPlayerStats(channel: string, player: Player) {
   const nametag = player.rank ? `[${player.rank}] ` : "";
+  const lastLogin = player.lastLoginAt ? timeAgo(player.lastLoginAt) : "N/A";
+  const guildMember = fetchGuildMember(player.uuid);
+  const playtime = guildMember?.playtime
+    ? ` PT: ${formatNumber(guildMember.playtime / 3600)}h `
+    : "";
   const response = await fetch(
     `https://api.polsu.xyz/polsu/ping?uuid=${player.uuid}`,
     {
@@ -155,52 +171,39 @@ export async function getHypixelPing(channel: string, player: Player) {
       },
     },
   );
-
-  const ping = await response.json().catch(() => {
-    return {
-      success: false,
-      cause: "Failed to parse response",
-    };
+  const pingData = await response.json().catch(() => {
+    return null;
   });
+  const ping = pingData?.data?.stats?.avg
+    ? `${pingData.data.stats.avg}ms`
+    : "0ms";
 
-  if (!ping.success) {
-    return `/${channel} Error: ${ping.cause}`;
-  }
-
-  const avg = ping.data.stats.avg;
-  const min = ping.data.stats.min;
-  const max = ping.data.stats.max;
-  const recent = `Ping ${timeAgo(ping.data.history[0].timestamp * 1000)}: ${ping.data.history[0].avg}ms`;
-
-  return `/${channel} ${nametag}${player.nickname} MAX: ${max}ms MIN: ${min}ms AVG: ${avg}ms ${recent}`;
-}
-
-export async function getHypixelStats(channel: string, player: Player) {
-  const nametag = player.rank ? `[${player.rank}] ` : "";
-
-  const lastLogin = player.lastLoginAt ? timeAgo(player.lastLoginAt) : "N/A";
-
-  return `/${channel} [${player.level.level}] ${nametag}${player.nickname} AP: ${formatNumber(player.achievements.points)} Karma: ${formatNumber(player.karma)} Reward Streak: ${formatNumber(player.rewards.rewardStreak)} Last Login: ${lastLogin}`;
+  return `/${channel} [${Math.floor(player.level.level)}] ${nametag}${player.nickname}${playtime} Ping: ${ping} AP: ${formatNumber(player.achievements.points)} Karma: ${formatNumber(player.karma)} Reward Streak: ${formatNumber(player.rewards.rewardStreak)} Last Login: ${lastLogin}`;
 }
 
 export async function getZombiesStats(channel: string, player: Player) {
   const nametag = player.rank ? `[${player.rank}] ` : "";
   const zb = player.stats.Arcade.zombies;
 
-  const DE = zb?.deadEnd.fastestRound30
-    ? formatTime(zb.deadEnd.fastestRound30)
-    : `Round ${zb?.deadEnd.bestRound ?? 0}`;
-  const AA = zb?.alienArcadium.fastestRound30
-    ? formatTime(zb.alienArcadium.fastestRound30)
-    : `Round ${zb?.alienArcadium.bestRound ?? 0}`;
-  const BB = zb?.badBlood.fastestRound30
-    ? formatTime(zb.badBlood.fastestRound30)
-    : `Round ${zb?.badBlood.bestRound ?? 0}`;
-  const P = zb?.prison.fastestRound30
-    ? formatTime(zb.prison.fastestRound30)
-    : `Round ${zb?.prison.bestRound ?? 0}`;
+  const deadEndMap = new ZombiesMap(player.stats.Arcade, "deadend");
+  const alienArcadiumMap = new ZombiesMap(player.stats.Arcade, "alienarcadium");
+  const badBloodMap = new ZombiesMap(player.stats.Arcade, "badblood");
+  const prisonMap = new ZombiesMap(player.stats.Arcade, "prison");
 
-  return `/${channel} ${nametag}${player.nickname} W: ${formatNumber(zb.overall.wins)} K: ${formatNumber(zb.overall.zombieKills)} D: ${formatNumber(zb.overall.deaths)} DE: ${DE} AA: ${AA} BB: ${BB} P: ${P}`;
+  const DE = deadEndMap.fastestTime30
+    ? formatTime(deadEndMap.fastestTime30)
+    : `Round ${deadEndMap.bestRoundZombies ?? 0}`;
+  const AA = alienArcadiumMap.fastestTime30
+    ? formatTime(alienArcadiumMap.fastestTime30)
+    : `Round ${alienArcadiumMap.bestRoundZombies ?? 0}`;
+  const BB = badBloodMap.fastestTime30
+    ? formatTime(badBloodMap.fastestTime30)
+    : `Round ${badBloodMap.bestRoundZombies ?? 0}`;
+  const P = prisonMap.fastestTime30
+    ? formatTime(prisonMap.fastestTime30)
+    : `Round ${prisonMap.bestRoundZombies ?? 0}`;
+
+  return `/${channel} ${nametag}${player.nickname} W: ${formatNumber(zb.wins)} K: ${formatNumber(zb.zombieKills)} KDR: ${formatNumber(zb.zombieKills / zb.deaths)} DE: ${DE} AA: ${AA} BB: ${BB} P: ${P}`;
 }
 
 export async function getWarlordsStats(channel: string, player: Player) {
@@ -209,6 +212,23 @@ export async function getWarlordsStats(channel: string, player: Player) {
   const wlClass = wl.class.charAt(0).toUpperCase() + wl.class.slice(1);
 
   return `/${channel} [${wlClass}] ${nametag}${player.nickname} W: ${formatNumber(wl.wins)} WLR: ${formatNumber(wl.WLR)} K: ${formatNumber(wl.kills)} KDR: ${formatNumber(wl.KDR)}`;
+}
+
+export async function getWoolGamesStats(channel: string, player: Player) {
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const wg = player.stats.WoolGames;
+  const wins = wg.captureTheWool.wins + wg.sheepWars.wins + wg.woolWars.wins;
+  const losses =
+    wg.captureTheWool.losses +
+    wg.sheepWars.losses +
+    wg.woolWars.gamesPlayed -
+    wg.woolWars.wins;
+  const kills =
+    wg.captureTheWool.kills + wg.sheepWars.kills + wg.woolWars.kills;
+  const deaths =
+    wg.captureTheWool.deaths + wg.sheepWars.deaths + wg.woolWars.deaths;
+
+  return `/${channel} [${wg.level}] ${nametag}${player.nickname} PT: ${formatNumber(wg.playtime / 3600)}h W: ${formatNumber(wins)} WLR: ${formatNumber(wins / losses)} K: ${formatNumber(kills)} KDR: ${formatNumber(kills / deaths)}`;
 }
 
 export async function getReqs(channel: string, player: Player) {
@@ -226,4 +246,24 @@ export async function getReqs(channel: string, player: Player) {
   }
 
   return `/${channel} ${nametag}${player.nickname} requirements check failed!`;
+}
+
+export function getHelpMessage(channel: string) {
+  const commands = [
+    "!h/help",
+    "!p/player",
+    "!bw/bedwars",
+    "!sb/skyblock",
+    "!d/duels",
+    "!mm/murder",
+    "!b/bridge",
+    "!vz/vampirez",
+    "!sw/skywars",
+    "!z/zombies",
+    "!wl/warlords",
+    "!wg/woolgames",
+    "!r/reqs",
+  ];
+
+  return `/${channel} Commands: ${commands.join(" ")}`;
 }

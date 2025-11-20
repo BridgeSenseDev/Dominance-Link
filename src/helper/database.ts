@@ -507,8 +507,8 @@ export async function players() {
       bridge.WLR,
       mm.wins,
       pit.prestige,
-      zombies.overall.zombieKills,
-      zombies.overall.wins,
+      zombies.zombieKills,
+      zombies.wins,
       data.uuid,
     );
   }, 7 * 1000);
