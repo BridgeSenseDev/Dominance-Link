@@ -1,4 +1,3 @@
-import Database from "bun:sqlite";
 import { createCanvas, GlobalFonts, type SKRSContext2D } from "@napi-rs/canvas";
 import {
   ActionRowBuilder,
@@ -8,9 +7,10 @@ import {
   EmbedBuilder,
   type ForumThreadChannel,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { textChannels } from "../events/discord/clientReady.ts";
 import { fetchGexpForMembers } from "../handlers/databaseHandler.ts";
+import { db } from "../index.ts";
 import type { HypixelGuildMember as BaseHypixelGuildMember } from "../types/global";
 import { abbreviateNumber, formatNumber, sleep } from "./clientUtils.js";
 import { rgbaColor } from "./constants.js";
@@ -18,7 +18,6 @@ import { camelCaseToWords } from "./utils.ts";
 
 type HypixelGuildMember = BaseHypixelGuildMember & { [key: string]: number };
 
-const db = new Database("guild.db");
 GlobalFonts.registerFromPath("./fonts/Minecraft Regular.ttf", "Minecraft");
 
 const sortOrder = [

@@ -10,7 +10,7 @@ import {
   type MessageActionRowComponentBuilder,
   type ModalSubmitInteraction,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 
 export default async function pagination(
   initialPage: number,

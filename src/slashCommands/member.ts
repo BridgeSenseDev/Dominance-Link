@@ -7,7 +7,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import {
   fetchGexpForMember,
   fetchGuildMember,

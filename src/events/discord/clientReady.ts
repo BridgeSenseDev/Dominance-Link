@@ -7,7 +7,7 @@ import type {
   TextChannel,
   VoiceChannel,
 } from "discord.js";
-import config from "../../config.json" with { type: "json" };
+import config from "../../config.json";
 import discordCommands from "../../handlers/discordCommands.js";
 import discordEvents from "../../handlers/discordEvents.js";
 import { autoRejoin, startBot } from "../../handlers/workerHandler.js";

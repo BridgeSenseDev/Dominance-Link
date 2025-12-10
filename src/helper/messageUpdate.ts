@@ -1,4 +1,3 @@
-import Database from "bun:sqlite";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -6,14 +5,13 @@ import {
   EmbedBuilder,
   escapeMarkdown,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { messages } from "../events/discord/clientReady.ts";
+import { db } from "../index.ts";
 import type { BreakMember, HypixelGuildMember } from "../types/global";
 import { uuidToName } from "./clientUtils.js";
 import { bullet, dividers, invis, sub } from "./constants.js";
 import { formatDate } from "./utils.js";
-
-const db = new Database("guild.db");
 
 export async function unverifiedUpdate() {
   setInterval(async () => {

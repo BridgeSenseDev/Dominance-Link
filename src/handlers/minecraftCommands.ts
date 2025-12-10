@@ -1,6 +1,6 @@
 import type { Player } from "hypixel-api-reborn";
 import { ZombiesMap } from "hypixel-api-reborn";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { abbreviateNumber, formatNumber } from "../helper/clientUtils.ts";
 import { checkRequirements } from "../helper/requirements.ts";
 import { fetchSkyBlockStats, formatTime, timeAgo } from "../helper/utils.ts";

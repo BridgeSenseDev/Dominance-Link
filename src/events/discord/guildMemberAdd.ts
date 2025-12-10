@@ -1,17 +1,14 @@
-import Database from "bun:sqlite";
 import {
   type Client,
   EmbedBuilder,
   type GuildMember,
   type Role,
 } from "discord.js";
-import config from "../../config.json" with { type: "json" };
+import config from "../../config.json";
 import { archiveMember, fetchMember } from "../../handlers/databaseHandler.js";
 import { invis } from "../../helper/constants.js";
-import { hypixel } from "../../index.js";
+import { db, hypixel } from "../../index.js";
 import { textChannels } from "./clientReady.ts";
-
-const db = new Database("guild.db");
 
 export default async function execute(_client: Client, member: GuildMember) {
   if (member.guild.id !== "242357942664429568") return;

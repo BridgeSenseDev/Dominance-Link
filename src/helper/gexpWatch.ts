@@ -1,13 +1,10 @@
-import Database from "bun:sqlite";
 import { EmbedBuilder } from "discord.js";
 import { schedule } from "node-cron";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { textChannels } from "../events/discord/clientReady.ts";
-import { hypixel } from "../index.js";
+import { db, hypixel } from "../index.js";
 import type { NumberObject, StringObject } from "../types/global";
 import { doubleDigits } from "./clientUtils.js";
-
-const db = new Database("guild.db");
 
 interface GuildWatch {
   date: string;

@@ -1,5 +1,5 @@
 import type { Player } from "hypixel-api-reborn";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { abbreviateNumber, formatNumber, uuidToName } from "./clientUtils.js";
 import { fetchSkyBlockStats } from "./utils.js";
 

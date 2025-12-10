@@ -1,4 +1,3 @@
-import Database from "bun:sqlite";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -9,7 +8,7 @@ import {
   type TextChannel,
 } from "discord.js";
 import Mex from "math-expression-evaluator";
-import config from "../../config.json" with { type: "json" };
+import config from "../../config.json";
 import { fetchGuildMember } from "../../handlers/databaseHandler.js";
 import { chat } from "../../handlers/workerHandler.js";
 import {
@@ -19,10 +18,9 @@ import {
   uuidToName,
 } from "../../helper/clientUtils.js";
 import { checkProfanity } from "../../helper/utils.js";
+import { db } from "../../index.ts";
 import type { Count } from "../../types/global";
 import { textChannels } from "./clientReady.ts";
-
-const db = new Database("guild.db");
 
 export default async function execute(_client: Client, message: Message) {
   const { guildId, author, content, channel, member } = message;

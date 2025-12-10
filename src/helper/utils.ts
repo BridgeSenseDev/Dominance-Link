@@ -1,17 +1,16 @@
-import Database from "bun:sqlite";
 import { promisify } from "node:util";
 import { google } from "googleapis";
 import { PrepareSkyBlockProfileForSkyHelperNetworth } from "hypixel-api-reborn";
 import type RequestData from "hypixel-api-reborn/dist/Private/RequestData.d.ts";
 import { ProfileNetworthCalculator } from "skyhelper-networth";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { fetchGexpForMember } from "../handlers/databaseHandler.ts";
 import {
   chat,
   type MessageObject,
   waitForMessage,
 } from "../handlers/workerHandler.ts";
-import { hypixel } from "../index.ts";
+import { db, hypixel } from "../index.ts";
 import type { NumberObject } from "../types/global";
 import type {
   ICommentsAnalyzeRequest,
@@ -26,8 +25,6 @@ import {
   uuidToName,
 } from "./clientUtils.js";
 import messageToImage from "./messageToImage.ts";
-
-const db = new Database("guild.db");
 
 export function formatDate(dateObj: Date) {
   let suffix: string;

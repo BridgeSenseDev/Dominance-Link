@@ -5,7 +5,7 @@ import {
   type TextChannel,
   type ThreadChannel,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import {
   discordToUuid,
   getMemberRejoinChannel,

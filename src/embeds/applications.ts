@@ -7,7 +7,7 @@ import {
   GatewayIntentBits,
   type TextChannel,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { bullet, dividers, invis, sub } from "../helper/constants.js";
 
 function formatDate(dateObj: Date) {

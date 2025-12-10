@@ -1,4 +1,3 @@
-import { Database } from "bun:sqlite";
 import {
   type Channel,
   EmbedBuilder,
@@ -8,14 +7,12 @@ import {
 } from "discord.js";
 import { demojify } from "discord-emoji-converter";
 import type { Player } from "hypixel-api-reborn";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { fetchGuildMember, fetchMember } from "../handlers/databaseHandler.js";
 import { chat } from "../handlers/workerHandler.js";
-import client from "../index.js";
+import client, { db } from "../index.js";
 import type { BreakMember, Member, WaitlistMember } from "../types/global.js";
 import { rankColor } from "./constants.js";
-
-const db = new Database("guild.db");
 
 export async function nameToUuid(name: string): Promise<string | null> {
   try {

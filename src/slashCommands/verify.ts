@@ -1,4 +1,3 @@
-import Database from "bun:sqlite";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -10,12 +9,10 @@ import {
   SlashCommandBuilder,
   type User,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { createMember, fetchMember } from "../handlers/databaseHandler.js";
 import { generateHeadUrl, nameToUuid } from "../helper/clientUtils.js";
-import { hypixel } from "../index.js";
-
-const db = new Database("guild.db");
+import { db, hypixel } from "../index.js";
 
 export const data = new SlashCommandBuilder()
   .setName("verify")

@@ -1,4 +1,3 @@
-import Database from "bun:sqlite";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -19,7 +18,7 @@ import {
   TextInputStyle,
   type ThreadChannel,
 } from "discord.js";
-import config from "../../config.json" with { type: "json" };
+import config from "../../config.json";
 import {
   archiveMember,
   createMember,
@@ -50,11 +49,9 @@ import {
   generateGuildAnnouncement,
   handleGuildInvite,
 } from "../../helper/utils.ts";
-import { hypixel } from "../../index.js";
+import { db, hypixel } from "../../index.js";
 import type { BreakMember } from "../../types/global";
 import { textChannels } from "./clientReady.ts";
-
-const db = new Database("guild.db");
 
 export default async function execute(
   client: Client,

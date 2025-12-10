@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { textChannels, worker } from "../events/discord/clientReady.ts";
 import { sleep } from "../helper/clientUtils.ts";
 import { generateID } from "../helper/utils.ts";

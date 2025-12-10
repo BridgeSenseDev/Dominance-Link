@@ -1,20 +1,18 @@
-import Database from "bun:sqlite";
 import {
   type AttachmentBuilder,
   type ChatInputCommandInteraction,
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import {
   discordToUuid,
   formatNumber,
   uuidToName,
 } from "../helper/clientUtils.js";
 import pagination from "../helper/pagination.js";
+import { db } from "../index.js";
 import type { Count } from "../types/global";
-
-const db = new Database("guild.db");
 
 export const data = new SlashCommandBuilder()
   .setName("count")

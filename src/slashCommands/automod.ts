@@ -4,7 +4,7 @@ import {
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { getProfanityScores, limits } from "../helper/utils.js";
 
 export const data = new SlashCommandBuilder()

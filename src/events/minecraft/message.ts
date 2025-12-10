@@ -1,4 +1,3 @@
-import { Database } from "bun:sqlite";
 import { Mutex } from "async-mutex";
 import {
   type Client,
@@ -8,7 +7,7 @@ import {
   type ThreadChannel,
   WebhookClient,
 } from "discord.js";
-import config from "../../config.json" with { type: "json" };
+import config from "../../config.json";
 import {
   archiveGuildMember,
   createGuildMember,
@@ -27,15 +26,13 @@ import {
 } from "../../helper/clientUtils.js";
 import messageToImage from "../../helper/messageToImage.js";
 import { generateGuildAnnouncement } from "../../helper/utils.ts";
-import { hypixel } from "../../index.ts";
+import { db, hypixel } from "../../index.ts";
 import type {
   BreakMember,
   HypixelGuildMember,
   WaitlistMember,
 } from "../../types/global";
 import { textChannels } from "../discord/clientReady.ts";
-
-const db = new Database("guild.db");
 
 global.playtime = {};
 let logMessages = "";

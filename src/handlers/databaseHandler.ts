@@ -1,6 +1,5 @@
-import { Database } from "bun:sqlite";
 import type { GuildMember } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import {
   formatDateForDb,
   getDaysInGuild,
@@ -10,7 +9,7 @@ import {
 import { guildMemberRoles } from "../helper/constants.js";
 import { checkRequirements } from "../helper/requirements.js";
 import { ensureDayExists, fetchSkyBlockStats } from "../helper/utils.js";
-import { hypixel } from "../index.js";
+import { db, hypixel } from "../index.js";
 import type {
   HypixelGuildMember as BaseHypixelGuildMember,
   BreakMember,
@@ -19,8 +18,6 @@ import type {
   HypixelGuildMember,
   Member,
 } from "../types/global";
-
-const db = new Database("guild.db");
 
 export function fetchMember(identifier: string): Member | null {
   const member = db

@@ -1,4 +1,3 @@
-import Database from "bun:sqlite";
 import { createCanvas, GlobalFonts, loadImage } from "@napi-rs/canvas";
 import {
   type ChatInputCommandInteraction,
@@ -6,16 +5,16 @@ import {
   type GuildMember,
   SlashCommandBuilder,
 } from "discord.js";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { fetchMember } from "../handlers/databaseHandler.js";
 import { getLevelDetails } from "../helper/clientUtils.js";
+import { db } from "../index.js";
 
 GlobalFonts.registerFromPath("./fonts/Nunito-Semibold.ttf", "Nunito-Semibold");
 GlobalFonts.registerFromPath(
   "./fonts/Nunito-ExtraBold.ttf",
   "Nunito-ExtraBold",
 );
-const db = new Database("guild.db");
 
 interface RankCardOptions {
   displayName: string;

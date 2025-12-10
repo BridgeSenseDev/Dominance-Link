@@ -1,6 +1,6 @@
 import { parentPort } from "node:worker_threads";
 import mineflayer from "mineflayer";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 
 let bot: mineflayer.Bot;
 let spawned = false;

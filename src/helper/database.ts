@@ -1,4 +1,3 @@
-import Database from "bun:sqlite";
 import {
   EmbedBuilder,
   type Guild,
@@ -8,7 +7,7 @@ import {
 import { google } from "googleapis";
 import type { JWT } from "googleapis-common";
 import { schedule } from "node-cron";
-import config from "../config.json" with { type: "json" };
+import config from "../config.json";
 import { textChannels } from "../events/discord/clientReady.ts";
 import {
   archiveGuildMember,
@@ -17,7 +16,7 @@ import {
   fetchGuildMember,
 } from "../handlers/databaseHandler.js";
 import { chat } from "../handlers/workerHandler.js";
-import client, { hypixel } from "../index.js";
+import client, { db, hypixel } from "../index.js";
 import type {
   HypixelGuildMember,
   HypixelRoleKeys,
@@ -33,8 +32,6 @@ import {
 import { bwPrestiges, guildMemberRoles, hypixelRoles } from "./constants.js";
 import { checkRequirements } from "./requirements.js";
 import { ensureDayExists, fetchSkyBlockStats } from "./utils.js";
-
-const db = new Database("guild.db");
 
 export const sheet = new google.auth.JWT({
   email: config.sheets.clientEmail,
