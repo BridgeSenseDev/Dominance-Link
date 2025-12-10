@@ -493,7 +493,7 @@ export async function players() {
       rankTagF(player) ?? "",
       (await checkRequirements(data.uuid, player)) ? 1 : 0,
       bw.level,
-      bw.FKDR,
+      bw.finals.total.ratio,
       duels.wins,
       duels.WLR,
       Math.round(networth * 100) / 100,

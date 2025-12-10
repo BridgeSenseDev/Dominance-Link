@@ -103,7 +103,7 @@ export function getBedwarsStats(channel: string, player: Player) {
   const nametag = player.rank ? `[${player.rank}] ` : "";
   const bw = player.stats.BedWars;
 
-  return `/${channel} [${Math.floor(bw.level)}✫] ${nametag}${player.nickname} FK: ${formatNumber(bw.finalKills)} FKDR: ${formatNumber(bw.FKDR)} W: ${formatNumber(bw.wins)} WLR: ${formatNumber(bw.WLR)} WS: ${formatNumber(bw.winStreak)}`;
+  return `/${channel} [${Math.floor(bw.level)}✫] ${nametag}${player.nickname} FK: ${formatNumber(bw.finals.total.kills)} FKDR: ${formatNumber(bw.finals.total.ratio)} W: ${formatNumber(bw.wins)} WLR: ${formatNumber(bw.winLossRatio)} WS: ${formatNumber(bw.winstreak)}`;
 }
 
 export function getDuelsStats(channel: string, player: Player) {

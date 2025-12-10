@@ -176,7 +176,7 @@ export async function createGuildMember(uuid: string): Promise<void> {
       nameColor: rankTagF(player) ?? "",
       reqs: (await checkRequirements(uuid, player)) ? 1 : 0,
       bwStars: bw.level,
-      bwFkdr: bw.FKDR,
+      bwFkdr: bw.finals.total.ratio,
       duelsWins: duels.wins,
       duelsWlr: duels.WLR,
       networth,
@@ -191,8 +191,8 @@ export async function createGuildMember(uuid: string): Promise<void> {
       bridgeWlr: bridge.WLR,
       mmWins: mm.wins,
       pitPrestige: pit.prestige,
-      zombiesWins: zombies.overall.wins,
-      zombiesKills: zombies.overall.zombieKills,
+      zombiesWins: zombies.wins,
+      zombiesKills: zombies.zombieKills,
     };
 
     db.query(

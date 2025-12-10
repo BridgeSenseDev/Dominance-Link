@@ -15,7 +15,7 @@ async function processPlayerData(
   const bwData = player.stats.BedWars;
   const bedwars: [number, number, number] = [
     bwData.level ?? 0,
-    bwData.FKDR,
+    bwData.finals.total.ratio,
     bwData.wins,
   ];
 
