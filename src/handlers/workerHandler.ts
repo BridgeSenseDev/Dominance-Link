@@ -109,27 +109,30 @@ export async function waitForMessage(
   inputStrings: string[],
   timeoutDuration = 30000,
 ): Promise<MessageObject | null> {
-  const timeoutPromise = new Promise<null>((resolve) => {
-    setTimeout(() => {
+  return new Promise((resolve) => {
+    let timeout: Timer;
+
+    const messageListener = (msg: MessageObject) => {
+      if (
+        msg &&
+        msg.type === "message" &&
+        inputStrings.some((str) => msg.string.includes(str))
+      ) {
+        cleanup();
+        resolve(msg);
+      }
+    };
+
+    const cleanup = () => {
+      worker.off("message", messageListener);
+      clearTimeout(timeout);
+    };
+
+    worker.on("message", messageListener);
+
+    timeout = setTimeout(() => {
+      cleanup();
       resolve(null);
     }, timeoutDuration);
   });
-
-  return Promise.race([
-    new Promise<MessageObject>((resolve) => {
-      const messageListener = (msg: MessageObject) => {
-        if (
-          msg &&
-          msg.type === "message" &&
-          inputStrings.some((str) => msg.string.includes(str))
-        ) {
-          worker.off("message", messageListener);
-          resolve(msg);
-        }
-      };
-
-      worker.on("message", messageListener);
-    }),
-    timeoutPromise,
-  ]);
 }
