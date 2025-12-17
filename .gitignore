@@ -7,3 +7,5 @@ dist
 src/embeds/guildInfo.ts
 test/
 .idea/
+*.db-shm
+*.db-wal

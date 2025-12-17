@@ -1,5 +1,4 @@
 import { Database } from "bun:sqlite";
-import { writeHeapSnapshot } from "node:v8";
 import { Client, GatewayIntentBits } from "discord.js";
 import Hypixel from "hypixel-api-reborn";
 import config from "./config.json";
@@ -37,18 +36,5 @@ setInterval(() => {
     console.error("Uptime Kuma fetch failed:", error),
   );
 }, 60000);
-
-setInterval(
-  () => {
-    const filename = `heap-${Date.now()}.heapsnapshot`;
-    console.log(`[DEBUG] Saving memory snapshot to ${filename}...`);
-
-    // This saves the file to the current folder on the VPS
-    writeHeapSnapshot(filename);
-
-    console.log(`[DEBUG] Snapshot saved!`);
-  },
-  1000 * 60 * 60 * 4,
-);
 
 export default client;
