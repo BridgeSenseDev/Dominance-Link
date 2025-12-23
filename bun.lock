@@ -15,7 +15,7 @@
         "mineflayer": "^4.33.0",
         "node-cron": "^3.0.3",
         "rss-parser": "^3.13.0",
-        "skyhelper-networth": "^2.5.1",
+        "skyhelper-networth": "^2.6.1",
       },
       "devDependencies": {
         "@biomejs/biome": "^2.3.10",
@@ -424,7 +424,7 @@
 
     "signal-exit": ["signal-exit@4.1.0", "", {}, "sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw=="],
 
-    "skyhelper-networth": ["skyhelper-networth@2.5.1", "", { "dependencies": { "axios": "^1.8.3", "prismarine-nbt": "^2.7.0" } }, "sha512-tUw/QPd2GUMOqzRmx5euTlGvLEKCx1UcQ3f6R5tghoKRWOfdbCh8NHG0cqSJIgI9xR8w+B2HObRlICs3XP9XiQ=="],
+    "skyhelper-networth": ["skyhelper-networth@2.6.1", "", { "dependencies": { "axios": "^1.8.3", "prismarine-nbt": "^2.7.0" } }, "sha512-VGlLlDwQFBxgEJyrA1Qxv3pr1tylwq/Mb2G1XHmjPBtoXNSvpqmkPNGobVXRRVdeRkwRX2MYh1ByZKYNLLygGg=="],
 
     "smart-buffer": ["smart-buffer@4.2.0", "", {}, "sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg=="],
 
