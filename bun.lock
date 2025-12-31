@@ -13,7 +13,7 @@
         "hypixel-api-reborn": "git+https://github.com/BridgeSenseDev/hypixel-api-reborn.git#personal",
         "math-expression-evaluator": "^2.0.7",
         "mineflayer": "^4.33.0",
-        "node-cron": "^3.0.3",
+        "node-cron": "^4.2.1",
         "rss-parser": "^3.13.0",
         "skyhelper-networth": "^2.6.1",
       },
@@ -334,7 +334,7 @@
 
     "node-cache": ["node-cache@5.1.2", "", { "dependencies": { "clone": "2.x" } }, "sha512-t1QzWwnk4sjLWaQAS8CHgOJ+RAfmHpxFWmc36IWTiWHQfs0w5JDMBS1b1ZxQteo0vVVuWJvIUKHDkkeK7vIGCg=="],
 
-    "node-cron": ["node-cron@3.0.3", "", { "dependencies": { "uuid": "8.3.2" } }, "sha512-dOal67//nohNgYWb+nWmg5dkFdIwDm8EpeGYMekPMrngV3637lqnX0lbUcCtgibHTz6SEz7DAIjKvKDFYCnO1A=="],
+    "node-cron": ["node-cron@4.2.1", "", {}, "sha512-lgimEHPE/QDgFlywTd8yTR61ptugX3Qer29efeyWw2rv259HtGBNn1vZVmp8lB9uo9wC0t/AT4iGqXxia+CJFg=="],
 
     "node-domexception": ["node-domexception@1.0.0", "", {}, "sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ=="],
 
