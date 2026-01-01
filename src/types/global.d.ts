@@ -1,6 +1,5 @@
 /* eslint-disable no-var */
 /* eslint-disable vars-on-top */
-import type { hypixelRoles } from "../helper/constants";
 
 export interface StringObject {
   [key: string]: string;
@@ -43,6 +42,26 @@ export interface HypixelGuildMember {
   discordTag?: string | null;
 }
 
+export interface Member {
+  discord: string;
+  uuid: string;
+  messages: number;
+  xp: number;
+}
+
+export interface GexpHistory {
+  uuid: string;
+  [key: string]: number;
+}
+
+export interface GuildMemberArchive {
+  uuid: string;
+  discord: string;
+  messages: number;
+  playtime: number;
+  baseDays: number;
+}
+
 export interface BreakMember {
   uuid: string;
   discord: string;
@@ -62,8 +81,6 @@ export interface Count {
   count: number;
   discord: string;
 }
-
-export type HypixelRoleKeys = keyof typeof hypixelRoles;
 
 declare global {
   var onlineMembers: number;

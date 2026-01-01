@@ -17,6 +17,7 @@ import {
   formatMentions,
   uuidToName,
 } from "../../helper/clientUtils.js";
+import { GUILD_ROLES, getRoleByInGameTag } from "../../helper/constants.js";
 import { checkProfanity } from "../../helper/utils.js";
 import { db } from "../../index.ts";
 import type { Count } from "../../types/global";
@@ -116,8 +117,11 @@ export default async function execute(_client: Client, message: Message) {
     tag = user.tag;
   }
 
-  if (tag === "[Moderator]") {
-    tag = "[MOD]";
+  if (tag === "[Staff]") {
+    const roleKey = getRoleByInGameTag(tag);
+    tag = roleKey
+      ? `${config.guild.tagColor}[${GUILD_ROLES[roleKey].displayName === "Moderator" ? "Mod" : GUILD_ROLES[roleKey].displayName}]`
+      : tag;
   }
 
   const name = await uuidToName(uuid ?? "");

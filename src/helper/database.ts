@@ -17,11 +17,7 @@ import {
 } from "../handlers/databaseHandler.js";
 import { chat } from "../handlers/workerHandler.js";
 import client, { db, hypixel } from "../index.js";
-import type {
-  HypixelGuildMember,
-  HypixelRoleKeys,
-  StringObject,
-} from "../types/global";
+import type { HypixelGuildMember, StringObject } from "../types/global";
 import {
   abbreviateNumber,
   doubleDigits,
@@ -29,7 +25,15 @@ import {
   rankTagF,
   uuidToName,
 } from "./clientUtils.js";
-import { bwPrestiges, guildMemberRoles, hypixelRoles } from "./constants.js";
+import {
+  bwPrestiges,
+  GUILD_ROLES,
+  type GuildRoleKey,
+  getGuildMemberRoleIds,
+  getMemberRoleKeys,
+  getRoleByInGameTag,
+  isInGameTagStaff,
+} from "./constants.js";
 import { checkRequirements } from "./requirements.js";
 import { ensureDayExists, fetchSkyBlockStats } from "./utils.js";
 
@@ -41,14 +45,18 @@ export const sheet = new google.auth.JWT({
 
 sheet.authorize();
 
-const roleOrder = ["slayer", "elite", "hero", "supreme", "dominator", "goat"];
+const roleOrder = getMemberRoleKeys();
 
-function getHighestDaysRole(days: number) {
-  return (
-    Object.keys(hypixelRoles).find(
-      (role) => days >= hypixelRoles[role as keyof typeof hypixelRoles].days,
-    ) || "slayer"
+function getHighestDaysRole(days: number): GuildRoleKey {
+  const memberRoles = Object.entries(GUILD_ROLES).filter(
+    ([, role]) => !role.isStaff,
   );
+  for (const [key, role] of memberRoles) {
+    if (days >= role.daysThreshold) {
+      return key as GuildRoleKey;
+    }
+  }
+  return "titan";
 }
 
 async function setDiscordNicknames(member: GuildMember, ign: string) {
@@ -69,11 +77,11 @@ async function setDiscordNicknames(member: GuildMember, ign: string) {
 
 async function assignMemberRoles(
   member: GuildMember,
-  currentRole: string,
-  roles: { [key: string]: Role },
+  currentRole: GuildRoleKey,
+  roles: Record<string, Role>,
 ) {
   for (const role of roleOrder) {
-    if (role === "slayer" || role === currentRole) {
+    if (role === currentRole) {
       if (!member.roles.cache.has(roles[role].id)) {
         await member.roles.add(roles[role].id);
       }
@@ -130,18 +138,20 @@ export async function weekly() {
         const daysInGuild = getDaysInGuild(member.joined, member.baseDays);
         const highestDaysRole = getHighestDaysRole(daysInGuild);
         const weeklyRole =
-          Object.keys(hypixelRoles).find(
-            (role) =>
-              hypixelRoles[role as keyof typeof hypixelRoles].gexp <=
-              member.weeklyGexp,
-          ) || "slayer";
+          Object.entries(GUILD_ROLES).find(
+            ([, role]) =>
+              !role.isStaff && role.gexpThreshold <= member.weeklyGexp,
+          )?.[0] || "titan";
 
         const assignRoleBasedOnDays =
-          roleOrder.indexOf(highestDaysRole) > roleOrder.indexOf(weeklyRole);
+          roleOrder.indexOf(highestDaysRole) >
+          roleOrder.indexOf(weeklyRole as GuildRoleKey);
 
-        const targetRole = assignRoleBasedOnDays ? highestDaysRole : weeklyRole;
+        const targetRole = assignRoleBasedOnDays
+          ? highestDaysRole
+          : (weeklyRole as GuildRoleKey);
         db.prepare("UPDATE guildMembers SET targetRank = ? WHERE uuid = ?").run(
-          `[${hypixelRoles[targetRole as HypixelRoleKeys].name}]`,
+          `[${GUILD_ROLES[targetRole].displayName}]`,
           member.uuid,
         );
 
@@ -172,12 +182,12 @@ export async function weekly() {
         .setTitle(`Weekly Roles Update ${prevWeek} - ${previous}`)
         .setDescription(
           `${Object.entries(roleDesc)
-            .filter(([role]) => role !== "slayer")
+            .filter(([role]) => role !== "titan")
             .filter(([, desc]) => desc.trim() !== "")
             .map(
               ([role, desc]) =>
                 `Congrats to the following **${
-                  hypixelRoles[role as HypixelRoleKeys].name
+                  GUILD_ROLES[role as GuildRoleKey].displayName
                 }** members:${desc}`,
             )
             .join(
@@ -240,7 +250,7 @@ export async function database() {
       }
     }
 
-    const hypixelMemberUuids = guild.members.map((member) => member.uuid);
+    const hypixelMemberUuids = guild.members.map((member: any) => member.uuid);
 
     const uuidsToCheck = [
       ...(db.prepare("SELECT uuid FROM guildMembers").all() as {
@@ -285,7 +295,7 @@ export async function gsrun(sheets: JWT) {
           );
 
           const memberToUpdate = guild.members.find(
-            (m) => m.uuid === memberWithExpHistory.uuid,
+            (m: any) => m.uuid === memberWithExpHistory.uuid,
           );
           if (memberToUpdate) {
             for (const day of memberToUpdate.expHistory) {
@@ -350,7 +360,7 @@ export async function players() {
   const roles = {
     unverified: getRole(config.roles.unverified),
     break: getRole(config.roles.break),
-    slayer: getRole(config.roles.slayer),
+    titan: getRole(config.roles.slayer),
     elite: getRole(config.roles.elite),
     hero: getRole(config.roles.hero),
     supreme: getRole(config.roles.supreme),
@@ -367,7 +377,7 @@ export async function players() {
         .prepare("SELECT discord FROM guildMembers")
         .all()
         .map((i) => (i as { discord: string }).discord);
-      const members = Array.from(roles.slayer.members).concat(
+      const members = Array.from(roles.titan.members).concat(
         Array.from(roles.elite.members),
         Array.from(roles.hero.members),
         Array.from(roles.supreme.members),
@@ -379,7 +389,7 @@ export async function players() {
       );
       for (const member of members) {
         if (!discordId.includes(member[0])) {
-          await member[1].roles.remove(guildMemberRoles);
+          await member[1].roles.remove(getGuildMemberRoleIds());
         }
       }
     },
@@ -421,22 +431,22 @@ export async function players() {
 
     if (
       data.targetRank &&
-      !["[Moderator]", "[Owner]", "[GUILDMASTER]"].includes(data.tag) &&
+      !isInGameTagStaff(data.tag) &&
       data.targetRank !== data.tag
     ) {
       const ign = await uuidToName(data.uuid);
-      if (data.targetRank === "[Hero]") {
-        chat(`/g promote ${ign}`);
-      } else if (data.targetRank === "[Elite]") {
-        if (data.tag === "[Slayer]") {
+      const currentRoleKey = getRoleByInGameTag(data.tag);
+      const targetRoleKey = getRoleByInGameTag(data.targetRank);
+
+      if (targetRoleKey && currentRoleKey) {
+        const currentPriority = GUILD_ROLES[currentRoleKey].priority;
+        const targetPriority = GUILD_ROLES[targetRoleKey].priority;
+
+        if (targetPriority > currentPriority) {
           chat(`/g promote ${ign}`);
-        } else if (data.tag === "[Hero]") {
+        } else if (targetPriority < currentPriority) {
           chat(`/g demote ${ign}`);
         }
-      } else if (data.targetRank === "[Slayer]") {
-        chat(`/g demote ${ign}`);
-      } else if (["[Slayer]", "[Elite]"].includes(data.tag)) {
-        chat(`/g promote ${ign}`);
       }
     } else if (!data.targetRank && ["Elite", "Hero"].includes(inGameRole)) {
       const ign = await uuidToName(data.uuid);
@@ -463,14 +473,14 @@ export async function players() {
         await member.roles.add(bwRole);
       }
 
-      if (!["[Owner]", "[GUILDMASTER]"].includes(data.tag)) {
+      if (!isInGameTagStaff(data.tag)) {
         await setDiscordNicknames(member, player.nickname);
       }
 
       const memberRoles = member.roles.cache.map((role) => role.id);
 
       if (!memberRoles.includes(config.roles.slayer)) {
-        await member.roles.add(roles.slayer);
+        await member.roles.add(roles.titan);
       }
 
       if (!memberRoles.includes(config.roles.unverified)) {
@@ -478,7 +488,12 @@ export async function players() {
       }
 
       if (targetRole) {
-        await assignMemberRoles(member, targetRole.toLowerCase(), roles);
+        const targetRoleKey = getRoleByInGameTag(
+          targetRole.replace(/[[\]]/g, ""),
+        );
+        if (targetRoleKey) {
+          await assignMemberRoles(member, targetRoleKey, roles);
+        }
       }
 
       await assignDaysRoles(member, getDaysInGuild(data.joined, data.baseDays));

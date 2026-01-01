@@ -20,17 +20,8 @@ import {
   getDaysInGuild,
   nameToUuid,
 } from "../helper/clientUtils.js";
+import { GUILD_ROLES, getRoleByInGameTag } from "../helper/constants.js";
 import renderBox, { renderSkin } from "../helper/render.js";
-import type { StringObject } from "../types/global";
-
-const tagColorCodes: StringObject = {
-  "[Slayer]": "§2[Slayer]",
-  "[Hero]": "§6[Hero]",
-  "[Elite]": "§5[Elite]",
-  "[Moderator]": "§c[Mod]",
-  "[Owner]": "§4[Owner]",
-  "[GUILDMASTER]": "§4[GM]",
-};
 
 export const data = new SlashCommandBuilder()
   .setName("member")
@@ -179,7 +170,14 @@ export async function execute(interaction: ChatInputCommandInteraction) {
       height: 32,
     },
     {
-      text: tagColorCodes[guildMember.tag],
+      text: (() => {
+        const roleKey = getRoleByInGameTag(guildMember.tag);
+        if (roleKey) {
+          const role = GUILD_ROLES[roleKey];
+          return `${config.guild.tagColor}${role.inGameTag}`;
+        }
+        return `§7${guildMember.tag}`;
+      })(),
       font: "22px Minecraft Bold",
     },
   );

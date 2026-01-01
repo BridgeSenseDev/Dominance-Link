@@ -55,10 +55,103 @@
     "ign": ""
   },
   "guild": {
+    "tagColor": "§e",
     "gexpReq": "",
     "gexpReqNum": 0,
     "icon": "",
     "banner": ""
+  },
+  "guildRoles": {
+    "headModerator": {
+      "discordRoleId": "",
+      "displayName": "Head Moderator",
+      "inGameTag": "[Owner]",
+      "gexpThreshold": 0,
+      "daysThreshold": 0,
+      "isStaff": true,
+      "priority": 1
+    },
+    "guildmaster": {
+      "discordRoleId": "",
+      "displayName": "Guild Master",
+      "inGameTag": "[GUILDMASTER]",
+      "gexpThreshold": 0,
+      "daysThreshold": 0,
+      "isStaff": true,
+      "priority": 1
+    },
+    "moderator": {
+      "discordRoleId": "",
+      "displayName": "Moderator",
+      "inGameTag": "[Staff]",
+      "gexpThreshold": 0,
+      "daysThreshold": 0,
+      "isStaff": true,
+      "priority": 2
+    },
+    "jrModerator": {
+      "discordRoleId": "",
+      "displayName": "Junior Moderator",
+      "inGameTag": "[Staff]",
+      "gexpThreshold": 0,
+      "daysThreshold": 0,
+      "isStaff": true,
+      "priority": 3
+    },
+    "goat": {
+      "discordRoleId": "",
+      "displayName": "Goat",
+      "inGameTag": null,
+      "gexpThreshold": 600000,
+      "daysThreshold": 1000,
+      "isStaff": false,
+      "priority": 4
+    },
+    "dominator": {
+      "discordRoleId": "",
+      "displayName": "Dominator",
+      "inGameTag": null,
+      "gexpThreshold": 400000,
+      "daysThreshold": 750,
+      "isStaff": false,
+      "priority": 5
+    },
+    "supreme": {
+      "discordRoleId": "",
+      "displayName": "Supreme",
+      "inGameTag": null,
+      "gexpThreshold": 250000,
+      "daysThreshold": 600,
+      "isStaff": false,
+      "priority": 6
+    },
+    "hero": {
+      "discordRoleId": "",
+      "displayName": "Hero",
+      "inGameTag": "[Hero]",
+      "gexpThreshold": 175000,
+      "daysThreshold": 300,
+      "isStaff": false,
+      "priority": 7
+    },
+    "elite": {
+      "discordRoleId": "",
+      "displayName": "Elite",
+      "inGameTag": "[Elite]",
+      "gexpThreshold": 125000,
+      "daysThreshold": 150,
+      "isStaff": false,
+      "priority": 8
+    },
+    "titan": {
+      "discordRoleId": "",
+      "displayName": "Titan",
+      "inGameTag": "[Titan]",
+      "gexpThreshold": 0,
+      "daysThreshold": 0,
+      "isStaff": false,
+      "priority": 9
+    }
   },
   "colors": {
     "yellow": 16572208,

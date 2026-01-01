@@ -6,7 +6,7 @@ import {
   getESTDate,
   rankTagF,
 } from "../helper/clientUtils.js";
-import { guildMemberRoles } from "../helper/constants.js";
+import { getGuildMemberRoleIds } from "../helper/constants.js";
 import { checkRequirements } from "../helper/requirements.js";
 import { ensureDayExists, fetchSkyBlockStats } from "../helper/utils.js";
 import { db, hypixel } from "../index.js";
@@ -96,7 +96,7 @@ export async function archiveMember(
   if (member) {
     await member.roles.add(config.roles.unverified);
     await member.roles.remove(config.roles.verified);
-    for (const role of [...guildMemberRoles, config.roles.break]) {
+    for (const role of [...getGuildMemberRoleIds(), config.roles.break]) {
       if (member.roles.cache.has(role)) {
         await member.roles.remove(role);
       }
@@ -286,7 +286,7 @@ export async function archiveGuildMember(
   }
 
   if (member) {
-    for (const role of [...guildMemberRoles, config.roles.break]) {
+    for (const role of [...getGuildMemberRoleIds(), config.roles.break]) {
       if (breaks && role === config.roles.break) continue;
 
       if (member.roles.cache.has(role)) {

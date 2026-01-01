@@ -11,8 +11,8 @@ import config from "../config.json";
 import { fetchGuildMember, fetchMember } from "../handlers/databaseHandler.js";
 import { chat } from "../handlers/workerHandler.js";
 import client, { db } from "../index.js";
-import type { BreakMember, Member, WaitlistMember } from "../types/global.js";
-import { rankColor } from "./constants.js";
+import type { BreakMember, Member, WaitlistMember } from "../types/global";
+import { isInGameTagStaff, rankColor } from "./constants.js";
 
 export async function nameToUuid(name: string): Promise<string | null> {
   try {
@@ -363,7 +363,7 @@ export async function isStaff(identifier: string) {
   if (!uuid) return false;
   const guildMember = fetchGuildMember(uuid);
   if (!guildMember) return false;
-  return ["[GUILDMASTER]", "[Owner]", "[Moderator]"].includes(guildMember.tag);
+  return isInGameTagStaff(guildMember.tag);
 }
 
 export function generateHeadUrl(uuid: string, name: string) {

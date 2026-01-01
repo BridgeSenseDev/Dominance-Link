@@ -1,17 +1,56 @@
 import config from "../config.json";
 import type { StringObject } from "../types/global";
 
-export const guildMemberRoles = [
-  config.roles.headModerator,
-  config.roles.moderator,
-  config.roles.jrModerator,
-  config.roles.goat,
-  config.roles.dominator,
-  config.roles.supreme,
-  config.roles.hero,
-  config.roles.elite,
-  config.roles.slayer,
-];
+export const GUILD_ROLES = config.guildRoles;
+
+export type GuildRoleKey = keyof typeof GUILD_ROLES;
+export type GuildRole = (typeof GUILD_ROLES)[GuildRoleKey];
+
+export function getRoleByDiscordId(discordId: string): GuildRoleKey | null {
+  for (const [key, role] of Object.entries(GUILD_ROLES)) {
+    if (role.discordRoleId === discordId) {
+      return key as GuildRoleKey;
+    }
+  }
+  return null;
+}
+
+export function getRoleByInGameTag(tag: string): GuildRoleKey | null {
+  for (const [key, role] of Object.entries(GUILD_ROLES)) {
+    if (role.inGameTag === tag) {
+      return key as GuildRoleKey;
+    }
+  }
+  return null;
+}
+
+export function getOrderedRoleKeys(): GuildRoleKey[] {
+  return Object.entries(GUILD_ROLES)
+    .sort(([, a], [, b]) => a.priority - b.priority)
+    .map(([key]) => key as GuildRoleKey);
+}
+
+export function getMemberRoleKeys(): GuildRoleKey[] {
+  return Object.entries(GUILD_ROLES)
+    .filter(([, role]) => !role.isStaff)
+    .sort(([, a], [, b]) => a.priority - b.priority)
+    .map(([key]) => key as GuildRoleKey);
+}
+
+export function getGuildMemberRoleIds(): string[] {
+  return Object.values(GUILD_ROLES).map((role) => role.discordRoleId);
+}
+
+export function isStaffRole(roleKey: GuildRoleKey): boolean {
+  return GUILD_ROLES[roleKey].isStaff;
+}
+
+export function isInGameTagStaff(tag: string): boolean {
+  const roleKey = getRoleByInGameTag(tag);
+  return roleKey ? isStaffRole(roleKey) : false;
+}
+
+export const guildMemberRoles = getGuildMemberRoleIds();
 
 export const rgbaColor: StringObject = {
   0: "rgba(0,0,0,1)",
@@ -54,15 +93,6 @@ export const rankColor: StringObject = {
   YELLOW: "§e",
   WHITE: "§f",
 };
-
-export const hypixelRoles = {
-  goat: { name: "Goat", gexp: 600000, days: 1000 },
-  dominator: { name: "Dominator", gexp: 400000, days: 750 },
-  supreme: { name: "Supreme", gexp: 250000, days: 600 },
-  hero: { name: "Hero", gexp: 175000, days: 300 },
-  elite: { name: "Elite", gexp: 125000, days: 150 },
-  slayer: { name: "Slayer", gexp: 0, days: 0 },
-} as const;
 
 export const bwPrestiges: { [key: number]: string } = {
   100: "1108963209165152277",
