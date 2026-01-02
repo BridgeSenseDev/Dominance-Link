@@ -119,13 +119,11 @@ export default async function execute(_client: Client, message: Message) {
 
   if (tag === "[Staff]") {
     const roleKey = getRoleByInGameTag(tag);
-    tag = roleKey
-      ? `${config.guild.tagColor}[${GUILD_ROLES[roleKey].displayName === "Moderator" ? "Mod" : GUILD_ROLES[roleKey].displayName}]`
-      : tag;
+    tag = roleKey ? GUILD_ROLES[roleKey].inGameTag || tag : tag;
   }
 
   const name = await uuidToName(uuid ?? "");
-  const messageLength = `/gc ${name} ${user?.tag}: ${messageContent}`.length;
+  const messageLength = `/gc ${name} ${tag}» ${messageContent}`.length;
 
   // Auto mod
   if (await checkProfanity(content)) {
@@ -176,9 +174,9 @@ export default async function execute(_client: Client, message: Message) {
   }
 
   if (channel.id === textChannels["minecraftLink"].id) {
-    chat(`/gc ${name} ${tag}: ${messageContent}`);
+    chat(`/gc ${name} ${tag}» ${messageContent}`);
   } else if (channel.id === textChannels["officerChat"].id) {
-    chat(`/oc ${name} ${tag}: ${messageContent}`);
+    chat(`/oc ${name} ${tag}» ${messageContent}`);
   }
 
   await message.delete();
