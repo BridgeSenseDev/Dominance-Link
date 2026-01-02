@@ -141,7 +141,7 @@ export function getSkyWarsStats(channel: string, player: Player) {
   const sw = player.stats.SkyWars;
   const level = sw.levelFormatted ?? "1⋆";
 
-  return `/${channel} [${level}] ${nametag}${player.nickname} W: ${formatNumber(sw.wins)} WLR: ${formatNumber(sw.WLR)} K: ${formatNumber(sw.kills)} KDR: ${formatNumber(sw.KDR)}`;
+  return `/${channel} [${level}] ${nametag}${player.nickname} W: ${formatNumber(sw.wins)} WLR: ${formatNumber(sw.WLRatio)} K: ${formatNumber(sw.kills.total.kills)} KDR: ${formatNumber(sw.kills.total.ratio)}`;
 }
 
 export async function getSkyblockStats(channel: string, player: Player) {

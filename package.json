@@ -18,7 +18,7 @@
     "discord-emoji-converter": "^1.2.10",
     "discord.js": "^14.25.1",
     "googleapis": "^168.0.0",
-    "hypixel-api-reborn": "git+https://github.com/BridgeSenseDev/hypixel-api-reborn.git#personal",
+    "hypixel-api-reborn": "git@github.com:BridgeSenseDev/hypixel-api-reborn#personal",
     "math-expression-evaluator": "^2.0.7",
     "mineflayer": "^4.33.0",
     "node-cron": "^3.0.3",

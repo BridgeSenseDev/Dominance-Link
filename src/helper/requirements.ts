@@ -23,7 +23,10 @@ async function processPlayerData(
   const duels: [number, number] = [duelsData.wins, duelsData.WLR];
 
   const swData = player.stats.SkyWars;
-  const skywars: [string, number] = [swData.levelFormatted ?? "1⋆", swData.KDR];
+  const skywars: [string, number] = [
+    swData.levelFormatted ?? "1⋆",
+    swData.kills.total.ratio,
+  ];
 
   const sbStats = await fetchSkyBlockStats(uuid);
   const skyblock = sbStats
