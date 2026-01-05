@@ -247,7 +247,7 @@ export function camelCaseToWords(s: string) {
   return result.charAt(0).toUpperCase() + result.slice(1);
 }
 
-async function kickPlayer() {
+export async function kickPlayer() {
   const guild = await hypixel.getGuild("name", "Dominance").catch(() => null);
 
   if (!guild || guild.isRaw()) return;
@@ -255,10 +255,25 @@ async function kickPlayer() {
   const membersSorted = guild.members
     .filter(
       (member) =>
-        !["Owner", "GUILDMASTER"].includes(member.rank) &&
+        !["Staff", "Owner", "GUILDMASTER"].includes(member.rank) &&
         getDaysInGuild(member.joinedAtTimestamp?.toString() ?? "", 0) >= 7,
     )
     .sort((a, b) => a.weeklyExperience - b.weeklyExperience);
+
+  const lowestWeekly = membersSorted.slice(0, 15);
+  const lowestMonthly = lowestWeekly
+    .sort(
+      (a, b) =>
+        fetchGexpForMember(a.uuid).monthlyGexp -
+        fetchGexpForMember(b.uuid).monthlyGexp,
+    )
+    .slice(0, 5);
+
+  const toKick = lowestMonthly.sort(
+    (a, b) =>
+      fetchGexpForMember(a.uuid).lifetimeGexp -
+      fetchGexpForMember(b.uuid).lifetimeGexp,
+  )[0];
 
   const breakUuids: string[] = [];
   for (const breakMember of db.prepare("SELECT uuid FROM breaks").all() as [
@@ -267,32 +282,13 @@ async function kickPlayer() {
     breakUuids.push(breakMember.uuid);
   }
 
-  for (const member of membersSorted.slice(0, 5)) {
-    if (breakUuids.includes(member.uuid)) {
-      chat(
-        `/g kick ${await uuidToName(member.uuid)} Break. Check the #break channel in discord to rejoin when ready!`,
-      );
-      return;
-    }
-  }
+  const isOnBreak = breakUuids.includes(toKick.uuid);
+  const kickMessage = isOnBreak
+    ? `Break. Check the #break channel in discord to rejoin when ready!`
+    : `Least active player. You can reapply once active again!`;
 
-  const nonStaffLowestMonthly = membersSorted
-    .filter(
-      (member) =>
-        member.rank !== "Moderator" && !breakUuids.includes(member.uuid),
-    )
-    .slice(0, 5)
-    .sort(
-      (a, b) =>
-        fetchGexpForMember(a.uuid).monthlyGexp -
-        fetchGexpForMember(b.uuid).monthlyGexp,
-    );
-
-  for (const member of nonStaffLowestMonthly) {
-    chat(
-      `/g kick ${await uuidToName(member.uuid)} Least active player. You can reapply once active again!`,
-    );
-  }
+  // chat(`/g kick ${await uuidToName(toKick.uuid)} ${kickMessage}`);
+  return uuidToName(toKick.uuid);
 }
 
 export async function handleGuildInvite(
@@ -316,6 +312,7 @@ export async function handleGuildInvite(
   );
 
   if (retry && receivedMessage?.string.includes("Your guild is full!")) {
+    await sleep(2000);
     await kickPlayer();
     await sleep(2000);
     return handleGuildInvite(name);
