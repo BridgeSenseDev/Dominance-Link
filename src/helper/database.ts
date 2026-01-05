@@ -29,6 +29,7 @@ import {
   bwPrestiges,
   GUILD_ROLES,
   type GuildRoleKey,
+  getEffectiveGameRole,
   getGuildMemberRoleIds,
   getMemberRoleKeys,
   getRoleByInGameTag,
@@ -48,9 +49,10 @@ sheet.authorize();
 const roleOrder = getMemberRoleKeys();
 
 function getHighestDaysRole(days: number): GuildRoleKey {
-  const memberRoles = Object.entries(GUILD_ROLES).filter(
-    ([, role]) => !role.isStaff,
-  );
+  const memberRoles = Object.entries(GUILD_ROLES)
+    .filter(([, role]) => !role.isStaff)
+    .sort(([, a], [, b]) => b.daysThreshold - a.daysThreshold);
+
   for (const [key, role] of memberRoles) {
     if (days >= role.daysThreshold) {
       return key as GuildRoleKey;
@@ -137,21 +139,35 @@ export async function weekly() {
       for (const member of allMembers) {
         const daysInGuild = getDaysInGuild(member.joined, member.baseDays);
         const highestDaysRole = getHighestDaysRole(daysInGuild);
-        const weeklyRole =
-          Object.entries(GUILD_ROLES).find(
-            ([, role]) =>
-              !role.isStaff && role.gexpThreshold <= member.weeklyGexp,
-          )?.[0] || "titan";
 
-        const assignRoleBasedOnDays =
-          roleOrder.indexOf(highestDaysRole) >
-          roleOrder.indexOf(weeklyRole as GuildRoleKey);
+        let weeklyRole: GuildRoleKey = "titan";
+        let highestThreshold = 0;
+
+        for (const key of getMemberRoleKeys()) {
+          const role = GUILD_ROLES[key];
+          if (
+            role.gexpThreshold <= member.weeklyGexp &&
+            role.gexpThreshold >= highestThreshold
+          ) {
+            weeklyRole = key;
+            highestThreshold = role.gexpThreshold;
+          }
+        }
+
+        const daysIndex = roleOrder.indexOf(highestDaysRole);
+        const gexpIndex = roleOrder.indexOf(weeklyRole);
+
+        const assignRoleBasedOnDays = daysIndex < gexpIndex;
 
         const targetRole = assignRoleBasedOnDays
           ? highestDaysRole
           : (weeklyRole as GuildRoleKey);
+
+        const roleData = GUILD_ROLES[targetRole];
+        const tagToSave = roleData.inGameTag ?? `[${roleData.displayName}]`;
+
         db.prepare("UPDATE guildMembers SET targetRank = ? WHERE uuid = ?").run(
-          `[${GUILD_ROLES[targetRole].displayName}]`,
+          tagToSave,
           member.uuid,
         );
 
@@ -177,22 +193,19 @@ export async function weekly() {
         date.getMonth() + 1,
       )}/${date.getFullYear()}`;
 
+      const description = getMemberRoleKeys()
+        .filter((role) => role !== "titan" && roleDesc[role])
+        .map(
+          (role) =>
+            `Congrats to the following **${GUILD_ROLES[role].displayName}** members:${roleDesc[role]}`,
+        )
+        .join("\n\n");
+
       const embed = new EmbedBuilder()
         .setColor(config.colors.discordGray)
         .setTitle(`Weekly Roles Update ${prevWeek} - ${previous}`)
         .setDescription(
-          `${Object.entries(roleDesc)
-            .filter(([role]) => role !== "titan")
-            .filter(([, desc]) => desc.trim() !== "")
-            .map(
-              ([role, desc]) =>
-                `Congrats to the following **${
-                  GUILD_ROLES[role as GuildRoleKey].displayName
-                }** members:${desc}`,
-            )
-            .join(
-              "\n\n",
-            )}\n\n**Detailed stats can be found in https://dominance.bridgesense.dev/stats**`,
+          `${description}\n\n**Detailed stats can be found in https://dominance.bridgesense.dev/stats**`,
         )
         .setImage(config.guild.banner);
 
@@ -410,8 +423,8 @@ export async function players() {
       return;
     }
 
-    const inGameRole = data.tag.replace(/[[\]]/g, "");
-    const targetRole = data.targetRank?.slice(1, -1) ?? "";
+    const _inGameRole = data.tag.replace(/[[\]]/g, "");
+    const targetRole = data.targetRank ?? "";
 
     const player = await hypixel.getPlayer(data.uuid).catch(() => null);
     if (!player || player.isRaw()) return;
@@ -429,28 +442,29 @@ export async function players() {
     const skillAverage = sbData ? sbData.skillAverage : 0;
     const sbLevel = sbData ? sbData.level : 0;
 
-    if (
-      data.targetRank &&
-      !isInGameTagStaff(data.tag) &&
-      data.targetRank !== data.tag
-    ) {
+    if (data.targetRank && data.targetRank !== data.tag) {
       const ign = await uuidToName(data.uuid);
       const currentRoleKey = getRoleByInGameTag(data.tag);
       const targetRoleKey = getRoleByInGameTag(data.targetRank);
 
       if (targetRoleKey && currentRoleKey) {
         const currentPriority = GUILD_ROLES[currentRoleKey].priority;
-        const targetPriority = GUILD_ROLES[targetRoleKey].priority;
 
-        if (targetPriority > currentPriority) {
-          chat(`/g promote ${ign}`);
-        } else if (targetPriority < currentPriority) {
-          chat(`/g demote ${ign}`);
+        const effectiveTargetRoleKey = getEffectiveGameRole(targetRoleKey);
+        const effectiveTargetPriority =
+          GUILD_ROLES[effectiveTargetRoleKey].priority;
+
+        const isCurrentStaff = isInGameTagStaff(data.tag);
+        const isTargetStaff = isInGameTagStaff(data.targetRank);
+
+        if (!isCurrentStaff && !isTargetStaff) {
+          if (effectiveTargetPriority < currentPriority) {
+            chat(`/g promote ${ign}`);
+          } else if (effectiveTargetPriority > currentPriority) {
+            chat(`/g demote ${ign}`);
+          }
         }
       }
-    } else if (!data.targetRank && ["Elite", "Hero"].includes(inGameRole)) {
-      const ign = await uuidToName(data.uuid);
-      chat(`/g demote ${ign}`);
     }
 
     if (data.discord) {
@@ -462,7 +476,6 @@ export async function players() {
         return;
       }
 
-      // Bedwars roles
       const bwRole = bwPrestiges[Math.floor(bw.level / 100) * 100];
       for (const roleId of Object.values(bwPrestiges)) {
         if (member.roles.cache.has(roleId) && roleId !== bwRole) {
@@ -488,9 +501,7 @@ export async function players() {
       }
 
       if (targetRole) {
-        const targetRoleKey = getRoleByInGameTag(
-          targetRole.replace(/[[\]]/g, ""),
-        );
+        const targetRoleKey = getRoleByInGameTag(targetRole);
         if (targetRoleKey) {
           await assignMemberRoles(member, targetRoleKey, roles);
         }

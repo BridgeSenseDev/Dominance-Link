@@ -17,7 +17,10 @@ export function getRoleByDiscordId(discordId: string): GuildRoleKey | null {
 
 export function getRoleByInGameTag(tag: string): GuildRoleKey | null {
   for (const [key, role] of Object.entries(GUILD_ROLES)) {
-    if (role.inGameTag === tag) {
+    if (
+      role.inGameTag === tag ||
+      (!role.inGameTag && tag === `[${role.displayName}]`)
+    ) {
       return key as GuildRoleKey;
     }
   }
@@ -48,6 +51,25 @@ export function isStaffRole(roleKey: GuildRoleKey): boolean {
 export function isInGameTagStaff(tag: string): boolean {
   const roleKey = getRoleByInGameTag(tag);
   return roleKey ? isStaffRole(roleKey) : false;
+}
+
+export function getEffectiveGameRole(roleKey: GuildRoleKey): GuildRoleKey {
+  const role = GUILD_ROLES[roleKey];
+  if (role.inGameTag) {
+    return roleKey;
+  }
+
+  const sortedRoles = getOrderedRoleKeys();
+  const startIndex = sortedRoles.indexOf(roleKey);
+
+  for (let i = startIndex + 1; i < sortedRoles.length; i++) {
+    const currentKey = sortedRoles[i];
+    if (GUILD_ROLES[currentKey].inGameTag) {
+      return currentKey;
+    }
+  }
+
+  return "titan";
 }
 
 export const guildMemberRoles = getGuildMemberRoleIds();
