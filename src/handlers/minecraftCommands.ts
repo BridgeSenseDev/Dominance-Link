@@ -1,5 +1,4 @@
 import type { Player } from "hypixel-api-reborn";
-import { ZombiesMap } from "hypixel-api-reborn";
 import config from "../config.json";
 import { abbreviateNumber, formatNumber } from "../helper/clientUtils.ts";
 import { checkRequirements } from "../helper/requirements.ts";
@@ -95,6 +94,16 @@ export async function handleMinecraftCommands(
         chat(await getWoolGamesStats(channel, player));
         break;
       }
+      case "bb":
+      case "buildbattle": {
+        chat(getBuildBattleStats(channel, player));
+        break;
+      }
+      case "ds":
+      case "disasters": {
+        chat(getDisastersStats(channel, player));
+        break;
+      }
     }
   }
 }
@@ -185,10 +194,10 @@ export async function getZombiesStats(channel: string, player: Player) {
   const nametag = player.rank ? `[${player.rank}] ` : "";
   const zb = player.stats.Arcade.zombies;
 
-  const deadEndMap = new ZombiesMap(player.stats.Arcade, "deadend");
-  const alienArcadiumMap = new ZombiesMap(player.stats.Arcade, "alienarcadium");
-  const badBloodMap = new ZombiesMap(player.stats.Arcade, "badblood");
-  const prisonMap = new ZombiesMap(player.stats.Arcade, "prison");
+  const deadEndMap = zb.maps.deadend;
+  const alienArcadiumMap = zb.maps.alienarcadium;
+  const badBloodMap = zb.maps.badblood;
+  const prisonMap = zb.maps.prison;
 
   const DE = deadEndMap.fastestTime30
     ? formatTime(deadEndMap.fastestTime30)
@@ -231,6 +240,26 @@ export async function getWoolGamesStats(channel: string, player: Player) {
   return `/${channel} [${wg.level}] ${nametag}${player.nickname} PT: ${formatNumber(wg.playtime / 3600)}h W: ${formatNumber(wins)} WLR: ${formatNumber(wins / losses)} K: ${formatNumber(kills)} KDR: ${formatNumber(kills / deaths)}`;
 }
 
+export function getBuildBattleStats(channel: string, player: Player) {
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const bb = player.stats.BuildBattle;
+  const title = bb.title ? `[${bb.title}] ` : "";
+  const losses = bb.playedGames - bb.wins;
+  const wlr = losses > 0 ? bb.wins / losses : bb.wins;
+
+  return `/${channel} ${title}${nametag}${player.nickname} W: ${formatNumber(bb.wins)} WLR: ${formatNumber(wlr)} Solo: ${formatNumber(bb.winsSoloNormal)} Teams: ${formatNumber(bb.winsTeamsNormal)} SB: ${formatNumber(bb.winsSpeedBuilders)} GTB: ${formatNumber(bb.winsGuessTheBuild)} Pro: ${formatNumber(bb.winsSoloPro)}`;
+}
+
+export function getDisastersStats(channel: string, player: Player) {
+  const nametag = player.rank ? `[${player.rank}] ` : "";
+  const ds = player.stats.Arcade.disasters;
+  const wlr =
+    ds.stats.losses > 0 ? ds.stats.wins / ds.stats.losses : ds.stats.wins;
+  const timeHours = ds.stats.time_survived / 3600;
+
+  return `/${channel} ${nametag}${player.nickname} W: ${formatNumber(ds.stats.wins)} WLR: ${formatNumber(wlr)} PT: ${formatNumber(timeHours)}h`;
+}
+
 export async function getReqs(channel: string, player: Player) {
   const nametag = player.rank ? `[${player.rank}] ` : "";
   const reqs = await checkRequirements(player.uuid, player);
@@ -262,6 +291,8 @@ export function getHelpMessage(channel: string) {
     "!z/zombies",
     "!wl/warlords",
     "!wg/woolgames",
+    "!bb/buildbattle",
+    "!ds/disasters",
     "!r/reqs",
   ];
 

@@ -150,17 +150,14 @@ export function formatNumber(inputNumber: number): string {
     return "0";
   }
 
-  let formattedNumber: string;
   const number = Number(inputNumber);
 
   if (number % 1 !== 0) {
-    const roundedNumber = Number.parseFloat(number.toPrecision(3));
-    formattedNumber = roundedNumber.toString();
-  } else {
-    formattedNumber = number.toString();
+    const formattedNumber = number.toFixed(2);
+    return formattedNumber.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
-  return formattedNumber.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
 export function abbreviateNumber(number: number) {
