@@ -82,8 +82,11 @@ async function assignMemberRoles(
   currentRole: GuildRoleKey,
   roles: Record<string, Role>,
 ) {
-  for (const role of roleOrder) {
-    if (role === currentRole) {
+  const targetIndex = roleOrder.indexOf(currentRole);
+  for (let i = 0; i < roleOrder.length; i++) {
+    const role = roleOrder[i];
+    const shouldHaveRole = i >= targetIndex;
+    if (shouldHaveRole) {
       if (!member.roles.cache.has(roles[role].id)) {
         await member.roles.add(roles[role].id);
       }
@@ -496,7 +499,7 @@ export async function players() {
         await member.roles.add(roles.titan);
       }
 
-      if (!memberRoles.includes(config.roles.unverified)) {
+      if (memberRoles.includes(config.roles.unverified)) {
         await member.roles.remove(roles.unverified);
       }
 
