@@ -21,7 +21,7 @@
     "hypixel-api-reborn": "git+https://github.com/BridgeSenseDev/hypixel-api-reborn.git#personal",
     "math-expression-evaluator": "^2.0.7",
     "mineflayer": "^4.33.0",
-    "node-cron": "^3.0.3",
+    "node-cron": "^4.2.1",
     "rss-parser": "^3.13.0",
     "skyhelper-networth": "^2.6.1"
   },
