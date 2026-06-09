@@ -4,8 +4,23 @@ import config from "../config.json";
 
 let bot: mineflayer.Bot;
 let spawned = false;
+let reconnectTimeout: Timer | undefined;
+
+function scheduleReconnect() {
+  if (reconnectTimeout) return;
+
+  reconnectTimeout = setTimeout(() => {
+    reconnectTimeout = undefined;
+    createBot();
+  }, 2500);
+}
 
 function createBot() {
+  if (reconnectTimeout) {
+    clearTimeout(reconnectTimeout);
+    reconnectTimeout = undefined;
+  }
+
   bot = mineflayer.createBot({
     host: "mc.hypixel.net",
     auth: "microsoft",
@@ -44,6 +59,7 @@ function createBot() {
 
   bot.on("end", () => {
     spawned = false;
+    scheduleReconnect();
   });
 }
 
