@@ -194,23 +194,23 @@ export async function getZombiesStats(channel: string, player: Player) {
   const nametag = player.rank ? `[${player.rank}] ` : "";
   const zb = player.stats.Arcade.zombies;
 
-  const deadEndMap = zb.maps.deadend;
-  const alienArcadiumMap = zb.maps.alienarcadium;
-  const badBloodMap = zb.maps.badblood;
-  const prisonMap = zb.maps.prison;
+  const deadEndMap = zb.deadEnd;
+  const alienArcadiumMap = zb.alienArcadium;
+  const badBloodMap = zb.badBlood;
+  const prisonMap = zb.prison;
 
   const DE = deadEndMap.fastestTime30
     ? formatTime(deadEndMap.fastestTime30)
-    : `Round ${deadEndMap.bestRoundZombies ?? 0}`;
+    : `Round ${deadEndMap.bestRound ?? 0}`;
   const AA = alienArcadiumMap.fastestTime30
     ? formatTime(alienArcadiumMap.fastestTime30)
-    : `Round ${alienArcadiumMap.bestRoundZombies ?? 0}`;
+    : `Round ${alienArcadiumMap.bestRound ?? 0}`;
   const BB = badBloodMap.fastestTime30
     ? formatTime(badBloodMap.fastestTime30)
-    : `Round ${badBloodMap.bestRoundZombies ?? 0}`;
+    : `Round ${badBloodMap.bestRound ?? 0}`;
   const P = prisonMap.fastestTime30
     ? formatTime(prisonMap.fastestTime30)
-    : `Round ${prisonMap.bestRoundZombies ?? 0}`;
+    : `Round ${prisonMap.bestRound ?? 0}`;
 
   return `/${channel} ${nametag}${player.nickname} W: ${formatNumber(zb.wins)} K: ${formatNumber(zb.zombieKills)} KDR: ${formatNumber(zb.zombieKills / zb.deaths)} DE: ${DE} AA: ${AA} BB: ${BB} P: ${P}`;
 }

@@ -124,4 +124,4 @@ export default async function execute(client: Client) {
   console.log(`[DISCORD] Logged in as ${client.user?.tag}`);
 }
 
-export { worker, voiceChannels, textChannels, messages };
+export { messages, textChannels, voiceChannels, worker };
