@@ -9,11 +9,11 @@
         "async-mutex": "^0.5.0",
         "discord-emoji-converter": "^1.2.10",
         "discord.js": "^14.26.4",
+        "hypixel-api-reborn": "git@github.com:saadndm/hypixel-api-reborn#personal",
         "googleapis": "^173.0.0",
-        "hypixel-api-reborn": "git@github.com:BridgeSenseDev/hypixel-api-reborn.git#personal",
         "math-expression-evaluator": "^2.0.7",
         "mineflayer": "^4.37.1",
-        "node-cron": "^4.2.1",
+        "node-cron": "^4.4.1",
         "rss-parser": "^3.13.0",
         "skyhelper-networth": "^2.7.2",
       },
@@ -262,7 +262,7 @@
 
     "https-proxy-agent": ["https-proxy-agent@5.0.1", "", { "dependencies": { "agent-base": "6", "debug": "4" } }, "sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA=="],
 
-    "hypixel-api-reborn": ["hypixel-api-reborn@git+ssh://git@github.com:BridgeSenseDev/hypixel-api-reborn.git#7406bcf4398249875a1c348993095e94dd5fc071", { "dependencies": { "minecraft-data": "^3.110.2", "mowojang": "^0.4.5", "node-cache": "^5.1.2", "prismarine-nbt": "^2.8.0", "rss-parser": "^3.13.0" } }, "7406bcf4398249875a1c348993095e94dd5fc071"],
+    "hypixel-api-reborn": ["hypixel-api-reborn@git+ssh://git@github.com:saadndm/hypixel-api-reborn#c796f9bff80366911b273cf80071f8831de965a5", { "dependencies": { "minecraft-data": "^3.110.2", "mowojang": "^0.4.6", "node-cache": "^5.1.2", "prismarine-nbt": "^2.8.0", "rss-parser": "^3.13.0" } }, "c796f9bff80366911b273cf80071f8831de965a5"],
 
     "ieee754": ["ieee754@1.2.1", "", {}, "sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA=="],
 
@@ -334,7 +334,7 @@
 
     "moo": ["moo@0.5.3", "", {}, "sha512-m2fmM2dDm7GZQsY7KK2cme8agi+AAljILjQnof7p1ZMDe6dQ4bdnSMx0cPppudoeNv5hEFQirN6u+O4fDE0IWA=="],
 
-    "mowojang": ["mowojang@0.4.6", "", { "dependencies": { "axios": "^1.16.1", "axios-cache-interceptor": "^1.12.0" } }, "sha512-Z959jfH1VvmDzBUlyW4ewGs5daoKFs8xbVG4I/GI0FGuIjkBsKL+CBOY+0OMfU3A8pxVIeHPfFaSZPKTzXUkug=="],
+    "mowojang": ["mowojang@0.4.7", "", { "dependencies": { "axios": "^1.16.1", "axios-cache-interceptor": "^1.12.0" } }, "sha512-1xqdFaG5YGfeeTu91T+rV8aw0ti1eWVlT9Zmk+ZN75mEP8T8XRkpv2LXh2ZAdNIkzQaCjoQdc5y91bJUpx01Zg=="],
 
     "ms": ["ms@2.1.3", "", {}, "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="],
 
@@ -342,7 +342,7 @@
 
     "node-cache": ["node-cache@5.1.2", "", { "dependencies": { "clone": "2.x" } }, "sha512-t1QzWwnk4sjLWaQAS8CHgOJ+RAfmHpxFWmc36IWTiWHQfs0w5JDMBS1b1ZxQteo0vVVuWJvIUKHDkkeK7vIGCg=="],
 
-    "node-cron": ["node-cron@4.2.1", "", {}, "sha512-lgimEHPE/QDgFlywTd8yTR61ptugX3Qer29efeyWw2rv259HtGBNn1vZVmp8lB9uo9wC0t/AT4iGqXxia+CJFg=="],
+    "node-cron": ["node-cron@4.4.1", "", {}, "sha512-1e4Gku1qeKx1ywNnMoA0o5hiZ8iA4klH84TIszTHZAME68xVIjLkiBo5KrtowbcOJn8MQqJG/yWHjC/dFdMWyQ=="],
 
     "node-domexception": ["node-domexception@1.0.0", "", {}, "sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ=="],
 
