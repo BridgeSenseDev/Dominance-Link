@@ -23,7 +23,7 @@
     "mineflayer": "^4.37.1",
     "node-cron": "^4.4.1",
     "rss-parser": "^3.13.0",
-    "skyhelper-networth": "^2.7.2"
+    "skyhelper-networth": "^2.10.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
