@@ -32,7 +32,7 @@
     "typescript": "^6.0.3"
   },
   "overrides": {
-    "minecraft-data": "^3.110.2"
+    "minecraft-data": "^3.116.0"
   },
   "trustedDependencies": [
     "hypixel-api-reborn"
