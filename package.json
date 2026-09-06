@@ -20,7 +20,7 @@
     "googleapis": "^173.0.0",
     "hypixel-api-reborn": "git@github.com:saadndm/hypixel-api-reborn#personal",
     "math-expression-evaluator": "^2.0.7",
-    "mineflayer": "^4.37.1",
+    "mineflayer": "^4.39.0",
     "node-cron": "^4.4.1",
     "rss-parser": "^3.13.0",
     "skyhelper-networth": "^2.7.2"
